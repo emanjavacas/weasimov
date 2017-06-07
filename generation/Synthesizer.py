@@ -43,9 +43,9 @@ class Synthesizer(object):
         for name in model_names:
             try:
                 p = os.path.join(self.model_dir, name)
-                d, m = load_model(p)
-                self.models[name] = d
-                self.dicts[name] = d
+                m = load_model(p)
+                self.models[name] = m['model']
+                self.dicts[name] = m['dict']
             except ValueError:
                 print('Unable to load model:', name)
 
@@ -105,10 +105,9 @@ class Synthesizer(object):
 
         tries, hyp = 0, []
         d = self.dicts[model_name]
-        e = d.get_eos()
         m = self.models[model_name]
 
-        while (not hyp or hyp[-1] != e) and tries < max_tries:
+        while (not hyp or hyp[-1] != d.get_eos()) and tries < max_tries:
             tries += 1
             scores, hyps = m.generate(d, max_seq_len=max_sent_len,
                                       temperature=temperature,
@@ -121,9 +120,8 @@ class Synthesizer(object):
             score, hyp = scores[0], hyps[0]
 
         sent = ''.join(d.vocab[c] for c in hyp)
-        sent = sent.replace('<bos>', '').replace('<eos>', '')
+        sent = sent.replace('<bos>', '') \
+                   .replace('<eos>', '\n') \
+                   .replace('<par>', '\n')
 
-        if not sent:
-            sent = ' <NO OUTPUT> '
-
-        return sent
+        return sent or '<NO OUTPUT>'

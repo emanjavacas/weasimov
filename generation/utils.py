@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import random
 import glob
 
@@ -34,21 +35,25 @@ def load_data(path='data/bigmama/',
     if filters:
         filenames = []
         for fn in glob.glob(path+'/*.txt'):
-            me = meta.loc(os.path.basename(fn))
-            if filters['authors'] and me['author'] not in filters['authors']:
+            me = meta.loc[meta.index == os.path.basename(fn)]
+            if me.empty:
                 continue
-            if filters['titles'] and me['title'] not in filters['titles']:
+            if 'authors' in filters and me['author'][0] not in filters['authors']:
+                continue
+            if 'titles' in filters and me['title'][0] not in filters['titles']:
                 continue
             filenames.append(fn)
     else:
-        filenames = glob.glob(path+'/*.txt')
+        filenames = glob.glob(path + '/*.txt')
 
     random.shuffle(filenames)
 
     if max_files:
         filenames = filenames[:max_files]
 
-    for fn in filenames:
+    for idx, fn in enumerate(filenames):
+        if idx % 200 == 0:
+            print(idx, fn)
         for l in open(fn, 'r'):
             if not l.strip():
                 if include_paragraphs:
