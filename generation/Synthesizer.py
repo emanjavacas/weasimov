@@ -57,7 +57,8 @@ class Synthesizer(object):
             ValueError('# dicts does not match # models.')
 
     def sample(self, model_name, seed_text=None,
-               max_seq_len=200, max_tries=5):
+               max_seq_len=200, max_tries=5, temperature=1.0,
+               method='sample'):
         """Samples a sentence.
 
         Samples a single sentence from a single model.
@@ -68,13 +69,22 @@ class Synthesizer(object):
             The name of the individual model to sample from.
         seed_text : str or None (default = None)
             The text (e.g. the previous sentence) to seed the
-            model with. If `None`
+            model with. Can be `None`, if no seed text is available.
         max_seq_len : int (default = 200)
             The maximum length of a sentence (expressed in # of
             characters) after which the generation breaks off.
         max_tries : int (default = 5)
             The maximum number of times we attempt to generate
             a sentence, until we get one that ends in <eos>.
+        temperature : float (default = 1.0)
+            The temperature passed to the sentence generator.
+        method : str (default = 'sample')
+            The sampling method used; one of:
+                * `'sample'`
+                * `'argmax'`
+                * `'beam'`
+        width : int (default=5)
+            The width of the beam used if method = `'beam'`.
 
         Returns
         -------
@@ -93,7 +103,8 @@ class Synthesizer(object):
 
         while (not hyp or hyp[-1] != e) and tries < max_tries:
             tries += 1
-            scores, hyps = m.generate(d, max_seq_len=max_sent_len, **kwargs)
+            scores, hyps = m.generate(d, max_seq_len=max_sent_len,
+                                      **kwargs)
             score, hyp = scores[0], hyps[0]
 
         sent = ''.join(d.vocab[c] for c in hyp)
