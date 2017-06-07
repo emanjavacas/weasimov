@@ -8,6 +8,13 @@ from seqmod.utils import load_model
 class Synthesizer(object):
 
     def __init__(self, model_dir):
+        """Constructor
+
+        Parameters
+        ----------
+        model_dir : str
+            Path to dir where saved models live.
+        """
 
         super(Synthesizer, self).__init__()
 
@@ -16,13 +23,26 @@ class Synthesizer(object):
         self.dicts = {}
 
     def load(model_names=None):
+        """Loads models from the model_dir
+
+        Parameters
+        ----------
+        model_names : iterable of str
+            Names of individual models to load under `self.model_dir`
+            If `None`, all models will be noted.
+
+        Notes
+        -----
+        Individual models are assumed to contain
+        (dict, model) tuples, stored after training.
+
+        """
         if not model_names:
             model_names = os.listdir(self.model_dir)
 
         for name in model_names:
             try:
                 p = os.path.join(self.model_dir, name)
-                # assume we pickled (dict, model) tuples:
                 d, m = load_model(p)
                 self.models[name] = d
                 self.dicts[name] = d
@@ -38,7 +58,31 @@ class Synthesizer(object):
 
     def sample(self, model_name, seed_text=None,
                max_seq_len=200, max_tries=5):
-        """Sample a single sentence from a given LM."""
+        """Samples a sentence.
+
+        Samples a single sentence from a single model.
+
+        Parameters
+        ----------
+        model_name : str
+            The name of the individual model to sample from.
+        seed_text : str or None (default = None)
+            The text (e.g. the previous sentence) to seed the
+            model with. If `None`
+        max_seq_len : int (default = 200)
+            The maximum length of a sentence (expressed in # of
+            characters) after which the generation breaks off.
+        max_tries : int (default = 5)
+            The maximum number of times we attempt to generate
+            a sentence, until we get one that ends in <eos>.
+
+        Returns
+        -------
+        str
+            A single generated sentence. If all tries failed,
+            we return a `" <NO OUTPUT> "` str.
+
+        """
         if not self.models:
             raise AttributeError('Models have not been set yet.')
 
