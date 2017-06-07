@@ -56,6 +56,9 @@ class Synthesizer(object):
         if len(self.models) != len(self.dicts):
             ValueError('# dicts does not match # models.')
 
+    def generate(self, text):
+        return "Some generated text."
+
     def sample(self, model_name, seed_texts=None,
                max_seq_len=200, max_tries=5, temperature=1.0,
                method='sample', batch_size=10, ignore_eos=False):
