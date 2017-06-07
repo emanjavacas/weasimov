@@ -18,7 +18,7 @@ def load_metadata(fn):
 def load_data(path='data/bigmama/',
               include_paragraphs=True,
               paragraph='<par>',
-              level='token',
+              level='char',
               max_files=None,
               filters={}):
     """Yields data for training a language model.

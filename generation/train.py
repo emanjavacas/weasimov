@@ -40,7 +40,7 @@ def load_from_file(path):
 
 # hook
 def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
-                       method='sample', temperature=1, width=5,
+                       method='sample', temperature=1., width=5,
                        early_stopping=None, validate=True):
 
     def hook(trainer, epoch, batch_num, checkpoint):
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     parser.add_argument('--save_data', action='store_true')
     parser.add_argument('--dict_path', type=str)
     parser.add_argument('--data_path', type=str)
-    parser.add_argument('--max_size', default=50000, type=int)
+    parser.add_argument('--max_size', default=25000, type=int)
     parser.add_argument('--min_freq', default=1, type=int)
     parser.add_argument('--level', default='char')
     parser.add_argument('--filter_titles')
@@ -106,9 +106,9 @@ if __name__ == '__main__':
     # - check
     parser.add_argument('--seed', default=None)
     parser.add_argument('--decoding_method', default='sample')
-    parser.add_argument('--max_seq_len', default=250, type=int)
+    parser.add_argument('--max_seq_len', default=50, type=int)
     parser.add_argument('--temperature', default=1, type=float)
-    parser.add_argument('--checkpoint', default=10, type=int)
+    parser.add_argument('--checkpoint', default=100, type=int)
     parser.add_argument('--hooks_per_epoch', default=200, type=int)
     parser.add_argument('--log_checkpoints', action='store_true')
     parser.add_argument('--visdom_server', default='localhost')
@@ -118,14 +118,8 @@ if __name__ == '__main__':
 
     if args.load_data:
         print("Loading preprocessed datasets...")
-        import time
-        start = time.time()
         assert args.dict_path, "Processed data requires DICT_PATH"
         data, d = load_from_file(args.data_path), u.load_model(args.dict_path)
-        train, valid, test = BlockDataset.splits_from_data(
-            data, d, args.batch_size, args.bptt,
-            gpu=args.gpu, test=args.test_split, dev=args.dev_split)
-        print("took", time.time() - start)
     else:
         print("Loading data...")
         d = Dict(max_size=args.max_size, min_freq=args.min_freq,
@@ -135,20 +129,20 @@ if __name__ == '__main__':
             filters['titles'] = args.filter_titles.split(args.sep)
         if args.filter_authors:
             filters['authors'] = args.filter_authors.split(args.sep)
-        print(filters)
         d.fit(load_data(level=args.level, filters=filters))
-        data = BlockDataset(
-            load_data(level=args.level, filters=filters), d,
-            args.batch_size, args.bptt, gpu=args.gpu).data
+        data = d.transform(load_data(level=args.level, filters=filters))
+        data = np.array([c for s in data for c in s], dtype=np.int32)
         if args.save_data:
-            np.save(args.data_path + '.npy', data.numpy().astype(np.int32))
+            np.save(args.data_path + '.npy', data)
             u.save_model(d, args.dict_path + '.dict')
-        train, valid, test = BlockDataset.splits_from_data(
-            data, d, args.batch_size, args.bptt,
-            gpu=args.gpu, test=args.test_split, dev=args.dev_split)
+    train, valid, test = BlockDataset.splits_from_data(
+        torch.LongTensor(data.astype(np.int64)), d,
+        args.batch_size, args.bptt, gpu=args.gpu,
+        test=args.test_split, dev=args.dev_split)
+    del data
 
     print(' * vocabulary size. %d' % len(d))
-    print(' * number of train batches. %d' % len(train))
+    print(' * number of train examples. %d' % len(train.data))
 
     print('Building model...')
     model = LM(len(d), args.emb_dim, args.hid_dim,
