@@ -1,18 +1,28 @@
+# -*- coding: utf-8 -*-
 
-import os
+import random
+import glob
 
+random.seed(12101985)
 
 def load_data(path='data/bigmama/',
-              include_paragraphs=True, paragraph='<par>',
-              level='token'):
-    for f in os.listdir(path):
-        with open(os.path.join(path, f), 'r') as infn:
-            for l in infn:
-                if not l.strip():
-                    if include_paragraphs:
-                        yield [paragraph]
-                else:
-                    if level == 'token':
-                        yield l.strip().split()
-                    elif level == 'char':
-                        yield list(l.strip())
+              include_paragraphs=True,
+              paragraph='<par>',
+              level='token',
+              max_files=None):
+    
+    filenames = glob.glob(path+'/*.txt')
+    filenames.shuffle()
+    if max_files:
+        filenames = filenames[:max_files]
+
+    for fn in filenames:
+        for line in open(fn, 'r'):
+            if not l.strip():
+                if include_paragraphs:
+                    yield [paragraph]
+            else:
+                if level == 'token':
+                    yield l.strip().split()
+                elif level == 'char':
+                    yield list(l.strip())
