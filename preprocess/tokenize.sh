@@ -3,7 +3,9 @@
 # deploy ucto with quote detection to segment each document
 # into paragraphs, sentences, and word tokens.
 
-for f in data/txt/*.txt
-  do
-      ucto -L nl -n -Q "$f" > "../tokenized/$f"
-  done;
+subdir=$1
+
+for f in data/$subdir/*.txt
+do
+    ucto -L nl -n -Q "$f" > "data/tokenized/${f##*/}"
+done;

@@ -25,9 +25,15 @@ def correct(f):
             quote = []
 
 if __name__ == '__main__':
-    for f in glob.glob("../data/tokenized/*.txt"):
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('path')
+    parser.add_argument('output_path')
+    args = parser.parse_args()
+
+    for f in glob.glob("{path}/*.txt".format(**vars(args))):
         print(f)
         fname = os.path.basename(f)
-        with open(f'../data/tokenized-quote-correction/{fname}', 'w') as outfile:
+        with open(os.path.join(args.output_path, fname), 'w') as outfile:
             for line in correct(f):
-                outfile.write(f'{line}\n')
+                outfile.write(line + '\n')
