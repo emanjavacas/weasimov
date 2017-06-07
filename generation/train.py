@@ -66,31 +66,34 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     # model
-    parser.add_argument('--layers', default=2, type=int)
+    parser.add_argument('--layers', default=1, type=int)
     parser.add_argument('--cell', default='LSTM')
-    parser.add_argument('--emb_dim', default=200, type=int)
-    parser.add_argument('--hid_dim', default=200, type=int)
+    parser.add_argument('--emb_dim', default=50, type=int)
+    parser.add_argument('--hid_dim', default=2064, type=int)
     parser.add_argument('--att_dim', default=0, type=int)
-    parser.add_argument('--dropout', default=0.3, type=float)
+    parser.add_argument('--dropout', default=0.2, type=float)
     parser.add_argument('--word_dropout', default=0.0, type=float)
     parser.add_argument('--tie_weights', action='store_true')
     parser.add_argument('--deepout_layers', default=0, type=int)
     parser.add_argument('--deepout_act', default='MaxOut')
     # dataset
-    parser.add_argument('--path', required=True)
+    parser.add_argument('--path')
     parser.add_argument('--load_data', action='store_true')
     parser.add_argument('--save_data', action='store_true')
     parser.add_argument('--dict_path', type=str)
     parser.add_argument('--data_path', type=str)
-    parser.add_argument('--max_size', default=1000000, type=int)
+    parser.add_argument('--max_size', default=50000, type=int)
     parser.add_argument('--min_freq', default=1, type=int)
-    parser.add_argument('--lower', action='store_true')
-    parser.add_argument('--num', action='store_true')
-    parser.add_argument('--level', default='token')
+    parser.add_argument('--level', default='char')
+    parser.add_argument('--filter_titles')
+    parser.add_argument('--filter_authors')
+    parser.add_argument('--sep', default=',')
+    parser.add_argument('--dev_split', default=0.0001, type=float)
+    parser.add_argument('--test_split', default=0.05, type=float)
     # training
     parser.add_argument('--epochs', default=10, type=int)
-    parser.add_argument('--batch_size', default=20, type=int)
-    parser.add_argument('--bptt', default=20, type=int)
+    parser.add_argument('--batch_size', default=464, type=int)
+    parser.add_argument('--bptt', default=250, type=int)
     parser.add_argument('--gpu', action='store_true')
     # - optimizer
     parser.add_argument('--optim', default='Adam', type=str)
@@ -103,10 +106,10 @@ if __name__ == '__main__':
     # - check
     parser.add_argument('--seed', default=None)
     parser.add_argument('--decoding_method', default='sample')
-    parser.add_argument('--max_seq_len', default=25, type=int)
+    parser.add_argument('--max_seq_len', default=250, type=int)
     parser.add_argument('--temperature', default=1, type=float)
-    parser.add_argument('--checkpoint', default=200, type=int)
-    parser.add_argument('--hooks_per_epoch', default=5, type=int)
+    parser.add_argument('--checkpoint', default=10, type=int)
+    parser.add_argument('--hooks_per_epoch', default=200, type=int)
     parser.add_argument('--log_checkpoints', action='store_true')
     parser.add_argument('--visdom_server', default='localhost')
     parser.add_argument('--save', action='store_true')
@@ -115,26 +118,34 @@ if __name__ == '__main__':
 
     if args.load_data:
         print("Loading preprocessed datasets...")
+        import time
+        start = time.time()
         assert args.dict_path, "Processed data requires DICT_PATH"
-        data, d = u.load_(args.path), u.load_model(args.dict_path)
-        train, valid, test = BlockDataset(
-            data, d, args.batch_size, args.bptt, gpu=args.gpu, fitted=True
-        ).splits(test=0.05, dev=0.05)
-        del data
+        data, d = load_from_file(args.data_path), u.load_model(args.dict_path)
+        train, valid, test = BlockDataset.splits_from_data(
+            data, d, args.batch_size, args.bptt,
+            gpu=args.gpu, test=args.test_split, dev=args.dev_split)
+        print("took", time.time() - start)
     else:
+        print("Loading data...")
         d = Dict(max_size=args.max_size, min_freq=args.min_freq,
                  eos_token=u.EOS, bos_token=u.BOS)
-        examples = list(load_data(level=args.level))
-        d.fit(examples)
-        dataset = BlockDataset(
-            examples, d, args.batch_size, args.bptt, gpu=args.gpu)
-        del examples
+        filters = {}
+        if args.filter_titles:
+            filters['titles'] = args.filter_titles.split(args.sep)
+        if args.filter_authors:
+            filters['authors'] = args.filter_authors.split(args.sep)
+        print(filters)
+        d.fit(load_data(level=args.level, filters=filters))
+        data = BlockDataset(
+            load_data(level=args.level, filters=filters), d,
+            args.batch_size, args.bptt, gpu=args.gpu).data
         if args.save_data:
-            np.save(args.data_path + '.npy',
-                    dataset.data.numpy().astype(np.int32))
-            u.save_model(d, args.dict_path + '.dict.pt')
-        train, valid, test = dataset.splits(test=0.05, dev=0.05)
-        del dataset
+            np.save(args.data_path + '.npy', data.numpy().astype(np.int32))
+            u.save_model(d, args.dict_path + '.dict')
+        train, valid, test = BlockDataset.splits_from_data(
+            data, d, args.batch_size, args.bptt,
+            gpu=args.gpu, test=args.test_split, dev=args.dev_split)
 
     print(' * vocabulary size. %d' % len(d))
     print(' * number of train batches. %d' % len(train))
@@ -195,4 +206,4 @@ if __name__ == '__main__':
                     print("Goodbye!")
                     sys.exit(0)
             print("Saving model to [%s]..." % fname)
-            u.save_model(model, fname, d=d)
+            u.save_model({'model': model, 'dict': d}, fname)
