@@ -29,7 +29,7 @@ def load_data(path='data/bigmama/',
              'titles':['Onder valse vlag']}
     """
 
-    meta = load_metadata(fn='../meta.csv')
+    meta = load_metadata(fn='meta.csv')
 
     if filters:
         filenames = []
@@ -43,13 +43,13 @@ def load_data(path='data/bigmama/',
     else:
         filenames = glob.glob(path+'/*.txt')
 
-    filenames.shuffle()
+    random.shuffle(filenames)
 
     if max_files:
         filenames = filenames[:max_files]
 
     for fn in filenames:
-        for line in open(fn, 'r'):
+        for l in open(fn, 'r'):
             if not l.strip():
                 if include_paragraphs:
                     yield [paragraph]
