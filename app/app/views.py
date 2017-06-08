@@ -22,13 +22,18 @@ def savedoc():
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    # TODO: retrieve data from synthesizer
-    return flask.jsonify(status='OK', message='generated text')
+    seed = flask.request.json["selection"]
+    text = app.synthesizer.sample(model_name='char.LSTM.1l.1046h.24e.200b.2.69.pt',
+                                  seed_texts=[seed],
+                                  temperature=app.synthesizer.temperature,
+                                  ignore_eos=True)
+    text = ' '.join(text.split('\n'))
+    return flask.jsonify(status='OK', message=text)
 
 @app.route('/temperature', methods=['POST'])
 def temperature():
-    # TODO: actually set the temperature
-    return flask.jsonify(status='OK', message=f'temperature adjusted to {flask.request.json["data"]}')
+    app.synthesizer.temperature = float(flask.request.json["data"])
+    return flask.jsonify(status='OK', message=f'temperature adjusted to {app.synthesizer.temperature}')
 
 def select_model():
     pass
