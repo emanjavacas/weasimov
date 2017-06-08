@@ -23,22 +23,42 @@
 
     // Save periodically
     setInterval(function() {
-      if (change.length() > 0) {
-        console.log('Saving changes', change);
-      /*
-      Send partial changes
-      $.post('/your-endpoint', {
-        partial: JSON.stringify(change)
-      });
-
-      Send entire document
-      $.post('/your-endpoint', {
-        doc: JSON.stringify(quill.getContents())
-      });
-      */
-        change = new Delta();
-      }
+        if (change.length() > 0) {
+            console.log('Saving changes', change);
+            // Send partial changes
+            $.ajax({
+                contentType: 'application/json;charset=UTF-8',
+                url: 'savechange',
+                data: JSON.stringify(change),//{text: },
+                type: 'POST',
+                dataType: 'json',
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+            change = new Delta();
+        }
     }, 5*1000);
+
+    setInterval(function() {
+        console.log('saving document');
+        $.ajax({
+            contentType: 'application/json;charset=UTF-8',
+            url: 'savedoc',
+            data: JSON.stringify(quill.getContents()),
+            type: 'POST',
+            dataType: 'json',
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }, 100*1000);
 
     window.onbeforeunload = function() {
       if (change.length() > 0) {
