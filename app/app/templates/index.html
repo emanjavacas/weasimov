@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div id="editor">
+  <p><br></p>
+</div>
+<button type="button" onclick="generate()" name="generate">Generate</button>
+<input onchange="temperature()" type="range" min="0.1" max="1.0" step="0.1" id="temperature" />
+
+<script src="https://cdn.quilljs.com/1.2.6/quill.js"></script>
+
+<script>
+    var Delta = Quill.import('delta');
+    var quill = new Quill('#editor', {
+        scrollingContainer: '#scrolling-container',
+        theme: 'snow',
+        placeholder: 'Bieb, Bieb!'
+    });
+
+    // Store accumulated changes
+    var change = new Delta();
+    quill.on('text-change', function(delta) {
+      change = change.compose(delta);
+    });
+
+    // Save periodically
+    setInterval(function() {
+        if (change.length() > 0) {
+            console.log('Saving changes', change);
+            // Send partial changes
+            $.ajax({
+                contentType: 'application/json;charset=UTF-8',
+                url: 'savechange',
+                data: JSON.stringify(change),//{text: },
+                type: 'POST',
+                dataType: 'json',
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+            change = new Delta();
+        }
+    }, 5*1000);
+
+    setInterval(function() {
+        console.log('saving document');
+        $.ajax({
+            contentType: 'application/json;charset=UTF-8',
+            url: 'savedoc',
+            data: JSON.stringify(quill.getContents()),
+            type: 'POST',
+            dataType: 'json',
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }, 50*1000);
+
+    function generate() {
+        var range = quill.getSelection();
+        if (range) {
+            if (range.length == 0) {
+                console.log('User cursor is at index', range.index);
+                var text = quill.getText(range.index - 100, range.index)
+                $.ajax({
+                    contentType: 'application/json;charset=UTF-8',
+                    url: 'generate',
+                    data: JSON.stringify({'selection': text}),
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log(response);
+                        var text = response['message'];
+                        if (range.index > 0) {
+                            text = " " + text;
+                        }
+                        quill.insertText(range.index, text, 'api');
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            } else {
+                var text = quill.getText(range.index, range.length);
+                console.log('User has highlighted: ', text);
+            }
+        } else {
+            console.log('User cursor is not in editor');
+        }
+    };
+
+    function temperature() {
+        var temp = document.getElementById('temperature').value;
+        $.ajax({
+            contentType: 'application/json;charset=UTF-8',
+            url: 'temperature',
+            data: JSON.stringify({data: temp}),
+            type: 'POST',
+            dataType: 'json',
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    };
+
+    window.onbeforeunload = function() {
+      if (change.length() > 0) {
+        return 'There are unsaved changes. Are you sure you want to leave?';
+      }
+    }
+</script>
+
+{% endblock %}
