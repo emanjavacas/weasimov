@@ -112,7 +112,7 @@ class Synthesizer(object):
                                       method=method,
                                       seed_texts=seed_texts)
             score, hyp = scores[0], hyps[0]
-
+        
         sent = ''.join(d.vocab[c] for c in hyp)
         sent = sent.replace('<bos>', '') \
                    .replace('<eos>', '\n') \
