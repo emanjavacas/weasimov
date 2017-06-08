@@ -4,6 +4,7 @@
 <div id="editor">
   <p><br></p>
 </div>
+<button type="button" onclick="generate()" name="generate">Generate</button>
 
 <script src="https://cdn.quilljs.com/1.2.6/quill.js"></script>
 
@@ -58,7 +59,41 @@
                 console.log(error);
             }
         });
-    }, 100*1000);
+    }, 50*1000);
+
+    function generate() {
+        var range = quill.getSelection();
+        if (range) {
+            if (range.length == 0) {
+                console.log('User cursor is at index', range.index);
+                var text = quill.getText(range.index - 100, range.index)
+                $.ajax({
+                    contentType: 'application/json;charset=UTF-8',
+                    url: 'generate',
+                    data: JSON.stringify({'selection': text}),
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log(response);
+                        console.log(range);
+                        var text = response['message'];
+                        if (range.index > 0) {
+                            text = " " + text;
+                        }
+                        quill.insertText(range.index, text, 'api');
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            } else {
+                var text = quill.getText(range.index, range.length);
+                console.log('User has highlighted: ', text);
+            }
+        } else {
+            console.log('User cursor is not in editor');
+        }
+    };
 
     window.onbeforeunload = function() {
       if (change.length() > 0) {
