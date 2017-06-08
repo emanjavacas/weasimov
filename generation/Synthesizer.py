@@ -60,7 +60,7 @@ class Synthesizer(object):
 
     def sample(self, model_name, seed_texts=None,
                max_seq_len=200, max_tries=5, temperature=1.0,
-               method='sample', batch_size=10, ignore_eos=False):
+               method='sample', batch_size=1, ignore_eos=False):
         """Samples a sentence.
 
         Samples a single sentence from a single model.
