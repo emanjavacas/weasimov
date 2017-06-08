@@ -135,9 +135,9 @@ if __name__ == '__main__':
         if args.save_data:
             np.save(args.data_path + '.npy', data)
             u.save_model(d, args.dict_path + '.dict')
+        data = torch.LongTensor(data.astype(np.int64))
     train, valid, test = BlockDataset.splits_from_data(
-        torch.LongTensor(data.astype(np.int64)), d,
-        args.batch_size, args.bptt, gpu=args.gpu,
+        data, d, args.batch_size, args.bptt, gpu=args.gpu,
         test=args.test_split, dev=args.dev_split)
     del data
 
@@ -200,4 +200,4 @@ if __name__ == '__main__':
                     print("Goodbye!")
                     sys.exit(0)
             print("Saving model to [%s]..." % fname)
-            u.save_model({'model': model, 'dict': d}, fname)
+            u.save_model({'model': model.cpu(), 'dict': d}, fname)

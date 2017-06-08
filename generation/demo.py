@@ -8,14 +8,14 @@ from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.completion import Completer, Completion
 
-class AsimovCompleter(Completer):
 
+class AsimovCompleter(Completer):
     def __init__(self, synthesizer):
         self.synthesizer = synthesizer
 
     def get_completions(self, document, complete_event):
         completion = self.synthesizer.generate(document.current_line_before_cursor)
-        yield Completion(f' {completion}', start_position=0)
+        yield Completion(' %s' % completion, start_position=0)
 
 typing_speed = 50
 

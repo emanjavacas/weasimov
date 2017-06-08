@@ -15,14 +15,13 @@ class Synthesizer(object):
         model_dir : str
             Path to dir where saved models live.
         """
-
         super(Synthesizer, self).__init__()
 
         self.model_dir = model_dir
         self.models = {}
         self.dicts = {}
 
-    def load(model_names=None):
+    def load(self, model_names=None):
         """Loads models from the model_dir
 
         Parameters
@@ -85,9 +84,6 @@ class Synthesizer(object):
             The sampling method used; one of:
                 * `'sample'`
                 * `'argmax'`
-                * `'beam'`
-        width : int (default=5)
-            The width of the beam used if method = `'beam'`.
         batch_size : int (default = 10)
             The sizes of the batches.
         ignore_eos : bool (default = 5)
@@ -109,11 +105,9 @@ class Synthesizer(object):
 
         while (not hyp or hyp[-1] != d.get_eos()) and tries < max_tries:
             tries += 1
-            scores, hyps = m.generate(d, max_seq_len=max_sent_len,
+            scores, hyps = m.generate(d, max_seq_len=max_seq_len,
                                       temperature=temperature,
                                       batch_size=batch_size,
-                                      beam=beam,
-                                      width=width,
                                       ignore_eos=ignore_eos,
                                       method=method,
                                       seed_texts=seed_texts)
