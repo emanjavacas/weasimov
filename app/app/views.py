@@ -22,10 +22,13 @@ def savedoc():
 
 @app.route('/generate', methods=['POST'])
 def generate():
+    # TODO: retrieve data from synthesizer
     return flask.jsonify(status='OK', message='generated text')
 
+@app.route('/temperature', methods=['POST'])
 def temperature():
-    pass
+    # TODO: actually set the temperature
+    return flask.jsonify(status='OK', message=f'temperature adjusted to {flask.request.json["data"]}')
 
 def select_model():
     pass
