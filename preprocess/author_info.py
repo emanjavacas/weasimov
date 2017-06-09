@@ -25,5 +25,5 @@ for f in glob.glob('../data/epubs/*.epub'):
         entries.append([id, f'{fname}.txt', author, title])
         id += 1
 
-df = pd.DataFrame(entries, columns=['id', 'fname', 'author', 'title'])
-df.to_csv("../data/meta.csv", sep=",", index=False)
+# df = pd.DataFrame(entries, columns=['id', 'fname', 'author', 'title'])
+# df.to_csv("../data/meta.csv", sep=",", index=False)

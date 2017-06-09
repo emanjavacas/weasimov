@@ -22,11 +22,15 @@ def savedoc():
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    seed = flask.request.json["selection"]
+    seed = [flask.request.json["selection"].strip()]
+    if not seed[0]:
+        seed = None
     text = app.synthesizer.sample(model_name='char.LSTM.1l.1046h.24e.200b.2.69.pt',
-                                  seed_texts=[seed],
-                                  temperature=app.synthesizer.temperature,
-                                  ignore_eos=True)
+                           seed_texts=seed,
+                           temperature=app.synthesizer.temperature,
+                           ignore_eos=True,
+                           max_seq_len=200,
+                           max_tries=10)
     text = ' '.join(text.split('\n'))
     return flask.jsonify(status='OK', message=text)
 

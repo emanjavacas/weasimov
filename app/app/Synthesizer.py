@@ -111,10 +111,12 @@ class Synthesizer(object):
                                       batch_size=batch_size,
                                       ignore_eos=ignore_eos,
                                       method=method,
-                                      seed_texts=seed_texts)
+                                      seed_texts=seed_texts.copy())
             score, hyp = scores[0], hyps[0]
+            print(''.join(d.vocab[c] for c in hyp))
 
         sent = ''.join(d.vocab[c] for c in hyp)
+        print(sent)
         sent = sent.replace('<bos>', '') \
                    .replace('<eos>', '\n') \
                    .replace('<par>', '\n')
