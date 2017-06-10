@@ -57,7 +57,7 @@ class Synthesizer(object):
 
     def sample(self, model_name, seed_texts=None,
                max_seq_len=200, max_tries=5, temperature=1.0,
-               method='sample', batch_size=1, ignore_eos=False):
+               method='sample', batch_size=1, ignore_eos=True):
         """Samples a sentence.
 
         Samples a single sentence from a single model.
@@ -83,7 +83,7 @@ class Synthesizer(object):
                 * `'argmax'`
         batch_size : int (default = 10)
             The sizes of the batches.
-        ignore_eos : bool (default = 5)
+        ignore_eos : bool (default = False)
             Whether to ignore the end-of-sentence symbol.
 
         Returns
@@ -95,21 +95,6 @@ class Synthesizer(object):
         """
         assert self.models, 'Models have not been set yet.'
 
-        tries, hyps = 0, []
-        d = self.dicts[model_name]
-        m = self.models[model_name]
-
-        def has_valid_hyp(hyps):
-            for hyp in hyps:
-                if hyp[-1] == d.get_eos():
-                    return True
-            return False
-
-        def filter_valid_hyps(hyps, scores):
-            return zip(*[(hyp, score)
-                         for hyp, score in zip(hyps, scores)
-                         if hyp[-1] == d.get_eos()])
-
         def hyps_to_str(hyps):
             return [''.join(d.vocab[c] for c in hyp) \
                     .replace(d.bos_token, '') \
@@ -117,15 +102,37 @@ class Synthesizer(object):
                     .replace('<par>', '\n')
                     for hyp in hyps]
 
-        while (not hyps or not has_valid_hyp(hyps)) and tries < max_tries:
-            tries += 1
-            scores, hyps = m.generate(
+        def has_valid_hyp(hyps):
+            for hyp in hyps:
+                if hyp[-1] == d.get_eos():
+                    return True
+            return False
+
+        d = self.dicts[model_name]
+        m = self.models[model_name]
+
+        if ignore_eos:
+            _, hyps = m.generate(
                 d, max_seq_len=max_seq_len,
                 temperature=temperature,
                 batch_size=batch_size,
                 ignore_eos=ignore_eos,
                 method=method,
                 bos=True,
-                seed_texts=seed_texts)
-        hyps, scores = filter_valid_hyps(hyps, scores)
-        return hyps_to_str(hyps)
+                seed_texts=seed_texts)            
+            return hyps_to_str(hyps)
+
+        else:
+            hyps, tries = [], 0
+            while (hyps and not has_valid_hyp(hyps)) and tries < max_tries:
+                _, hyps = m.generate(
+                    d, max_seq_len=max_seq_len,
+                    temperature=temperature,
+                    batch_size=batch_size,
+                    ignore_eos=ignore_eos,
+                    method=method,
+                    bos=True,
+                    seed_texts=seed_texts)
+                tries += 1
+            hyps = [hyp for hyp in hyps if hyp[-1] == d.get_eos()]
+            return hyps_to_str(hyps) or ['GENERATION FAILED']
