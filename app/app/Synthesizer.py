@@ -46,6 +46,7 @@ class Synthesizer(object):
                 m = load_model(p)
                 self.models[name] = m['model']
                 self.dicts[name] = m['dict']
+                print("Model loaded", name)
             except ValueError:
                 print('Unable to load model:', name)
 
@@ -111,7 +112,7 @@ class Synthesizer(object):
                                       batch_size=batch_size,
                                       ignore_eos=ignore_eos,
                                       method=method,
-                                      seed_texts=seed_texts.copy())
+                                      seed_texts=seed_texts.copy() if seed_texts is not None else None)
             score, hyp = scores[0], hyps[0]
             print(''.join(d.vocab[c] for c in hyp))
 

@@ -67,7 +67,20 @@
         if (range) {
             if (range.length == 0) {
                 console.log('User cursor is at index', range.index);
-                var text = quill.getText(Math.max(range.index - 100, 0), range.index)
+                t = quill.getText(0, range.index)
+                var start = range.index;
+                for (var i = start; i > -1; i--) {
+                    if (t[i] === "." && (start - i) > 10) {
+                        start = i;
+                        break;
+                    }
+                    if (i == 0) {
+                        start = -2;
+                        break;
+                    }
+                }
+                console.log(start, range.index);
+                var text = quill.getText(start + 2, range.index)
                 console.log(text);
                 $.ajax({
                     contentType: 'application/json;charset=UTF-8',
