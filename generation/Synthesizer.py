@@ -55,9 +55,6 @@ class Synthesizer(object):
         if len(self.models) != len(self.dicts):
             ValueError('# dicts does not match # models.')
 
-    def generate(self, text):
-        return "Some generated text."
-
     def sample(self, model_name, seed_texts=None,
                max_seq_len=200, max_tries=5, temperature=1.0,
                method='sample', batch_size=1, ignore_eos=False):
@@ -96,26 +93,40 @@ class Synthesizer(object):
             we return a `" <NO OUTPUT> "` str.
 
         """
-        if not self.models:
-            raise AttributeError('Models have not been set yet.')
+        assert self.models, 'Models have not been set yet.'
 
-        tries, hyp = 0, []
+        tries, hyps = 0, []
         d = self.dicts[model_name]
         m = self.models[model_name]
 
-        while (not hyp or hyp[-1] != d.get_eos()) and tries < max_tries:
-            tries += 1
-            scores, hyps = m.generate(d, max_seq_len=max_seq_len,
-                                      temperature=temperature,
-                                      batch_size=batch_size,
-                                      ignore_eos=ignore_eos,
-                                      method=method,
-                                      seed_texts=seed_texts)
-            score, hyp = scores[0], hyps[0]
-        
-        sent = ''.join(d.vocab[c] for c in hyp)
-        sent = sent.replace('<bos>', '') \
-                   .replace('<eos>', '\n') \
-                   .replace('<par>', '\n')
+        def has_valid_hyp(hyps):
+            for hyp in hyps:
+                if hyp[-1] == d.get_eos():
+                    return True
+            return False
 
-        return sent or '<NO OUTPUT>'
+        def filter_valid_hyps(hyps, scores):
+            filtered = ((hyp, score)
+                        for hyp, score in zip(hyps, scores)
+                        if hyp[-1] == d.get_eos())
+            return list(zip(*filtered))
+
+        def hyps_to_str(hyps):
+            return [''.join(d.vocab[c] for c in hyp) \
+                    .replace(d.bos_token, '') \
+                    .replace(d.eos_token, '\n') \
+                    .replace('<par>', '\n')
+                    for hyp in hyps]
+
+        while (not hyps or not has_valid_hyp(hyps)) and tries < max_tries:
+            tries += 1
+            scores, hyps = m.generate(
+                d, max_seq_len=max_seq_len,
+                temperature=temperature,
+                batch_size=batch_size,
+                ignore_eos=ignore_eos,
+                method=method,
+                bos=True,
+                seed_texts=seed_texts)
+        hyps, scores = filter_valid_hyps(hyps, scores)
+        return hyps_to_str(hyps)
