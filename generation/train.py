@@ -43,6 +43,7 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
                        method='sample', temperature=1., width=5,
                        early_stopping=None, validate=True):
 
+    seed_texts = None if not seed_text else [seed_text]
     def hook(trainer, epoch, batch_num, checkpoint):
         trainer.log("info", "Checking training...")
         if validate:
@@ -53,7 +54,7 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
                 early_stopping.add_checkpoint(loss)
         trainer.log("info", "Generating text...")
         scores, hyps = trainer.model.generate(
-            d, seed_text=seed_text, max_seq_len=max_seq_len, gpu=gpu,
+            d, seed_texts=seed_texts, max_seq_len=max_seq_len, gpu=gpu,
             method=method, temperature=temperature, width=width)
         hyps = [u.format_hyp(score, hyp, hyp_num + 1, d)
                 for hyp_num, (score, hyp) in enumerate(zip(scores, hyps))]
@@ -76,20 +77,32 @@ if __name__ == '__main__':
     parser.add_argument('--tie_weights', action='store_true')
     parser.add_argument('--deepout_layers', default=0, type=int)
     parser.add_argument('--deepout_act', default='MaxOut')
+    parser.add_argument('--load_model', action='store_true')
+    parser.add_argument('--model_path', help=('Path to pretrained model. ' +
+                                              'Required if --load_model'))
     # dataset
-    parser.add_argument('--path')
-    parser.add_argument('--corpus', type=str, default='data/asimov')
-    parser.add_argument('--load_data', action='store_true')
-    parser.add_argument('--save_data', action='store_true')
+    parser.add_argument('--corpus', type=str, default='data/asimov',
+                        help='Path to dir with input files')
+    parser.add_argument('--load_data', action='store_true',
+                        help=('Whether to load a preprocessed corpus. ' +
+                              'Requires DATA_PATH.'))
+    parser.add_argument('--save_data', action='store_true',
+                        help=('Save npy corpus file and Dict. ' +
+                              'Requires DICT_PATH and DATA_PATH'))
     parser.add_argument('--dict_path', type=str)
     parser.add_argument('--data_path', type=str)
-    parser.add_argument('--max_size', default=25000, type=int)
-    parser.add_argument('--min_freq', default=1, type=int)
+    parser.add_argument('--max_size', default=100000, type=int,
+                        help='Maximum items in the dictionary')
+    parser.add_argument('--min_freq', default=1, type=int,
+                        help=('Minimum frequency for an item to be ' +
+                              'include in the dictionary'))
     parser.add_argument('--level', default='char')
-    parser.add_argument('--filter_titles')
-    parser.add_argument('--filter_authors')
-    parser.add_argument('--sep', default=',')
-    parser.add_argument('--dev_split', default=0.0001, type=float)
+    parser.add_argument('--filter_titles', type=str)
+    parser.add_argument('--filter_authors', type=str)
+    parser.add_argument('--sep', default=',',
+                        help=('String to use as seperator in the input ' +
+                              'to filter_titles and filter_authors'))
+    parser.add_argument('--dev_split', default=0.01, type=float)
     parser.add_argument('--test_split', default=0.05, type=float)
     # training
     parser.add_argument('--epochs', default=10, type=int)
@@ -117,26 +130,42 @@ if __name__ == '__main__':
     parser.add_argument('--prefix', default='model', type=str)
     args = parser.parse_args()
 
+    model, d, data = None, None, None
+
+    # eventually load model and dict
+    if args.load_model:
+        assert args.model_path, "LOAD_MODEL needs MODEL_PATH"
+        model = u.load_model(args.model_path)
+        d, model = model['dict'], model['model']
+
+    # prepare data
     if args.load_data:
         print("Loading preprocessed datasets...")
         assert args.dict_path, "Processed data requires DICT_PATH"
-        data, d = load_from_file(args.data_path), u.load_model(args.dict_path)
+        data = load_from_file(args.data_path)
+        d = d or u.load_model(args.dict_path)
     else:
         print("Loading data...")
-        d = Dict(max_size=args.max_size, min_freq=args.min_freq,
-                 eos_token=u.EOS, bos_token=u.BOS)
+        d = d or Dict(max_size=args.max_size, min_freq=args.min_freq,
+                      eos_token=u.EOS, bos_token=u.BOS)
         filters = {}
         if args.filter_titles:
             filters['titles'] = args.filter_titles.split(args.sep)
         if args.filter_authors:
             filters['authors'] = args.filter_authors.split(args.sep)
-        d.fit(load_data(path=args.corpus, level=args.level, filters=filters))
-        data = d.transform(load_data(level=args.level, filters=filters))
+        if not d.fitted:
+            print("Fitting dictionary...")
+            d.fit(load_data(path=args.corpus, level=args.level,
+                            filters=filters))
+        print("Transforming data...")
+        data = d.transform(
+            load_data(path=args.corpus, level=args.level, filters=filters))
         data = np.array([c for s in data for c in s], dtype=np.int32)
         if args.save_data:
             np.save(args.data_path + '.npy', data)
             u.save_model(d, args.dict_path + '.dict')
         data = torch.LongTensor(data.astype(np.int64))
+    print("Splitting dataset...")
     train, valid, test = BlockDataset.splits_from_data(
         data, d, args.batch_size, args.bptt, gpu=args.gpu,
         test=args.test_split, dev=args.dev_split)
@@ -145,13 +174,16 @@ if __name__ == '__main__':
     print(' * vocabulary size. %d' % len(d))
     print(' * number of train examples. %d' % len(train.data))
 
-    print('Building model...')
-    model = LM(len(d), args.emb_dim, args.hid_dim,
-               num_layers=args.layers, cell=args.cell, dropout=args.dropout,
-               att_dim=args.att_dim, tie_weights=args.tie_weights,
-               deepout_layers=args.deepout_layers,
-               deepout_act=args.deepout_act, word_dropout=args.word_dropout,
-               target_code=d.get_unk())
+    if model is None:
+        print('Building model...')
+        model = LM(len(d), args.emb_dim, args.hid_dim,
+                   num_layers=args.layers, cell=args.cell,
+                   dropout=args.dropout, att_dim=args.att_dim,
+                   tie_weights=args.tie_weights,
+                   deepout_layers=args.deepout_layers,
+                   deepout_act=args.deepout_act,
+                   word_dropout=args.word_dropout,
+                   target_code=d.get_unk())
 
     model.apply(u.make_initializer())
     if args.gpu:
@@ -190,10 +222,13 @@ if __name__ == '__main__':
     trainer.train(args.epochs, args.checkpoint, gpu=args.gpu)
 
     if args.save:
+        fname = '{prefix}.{cell}.{layers}l.{hid_dim}h.{emb_dim}e.{bptt}b.{ppl}'
         test_ppl = trainer.validate_model(test=True)
         print("Test perplexity: %g" % test_ppl)
         if args.save:
-            f = '{prefix}.{cell}.{layers}l.{hid_dim}h.{emb_dim}e.{bptt}b.{ppl}'
+            if args.load_model:  # don't overwrite the existing model
+                fname = '.'.join(args.model_path.split('.')[:-1])
+                fname += '.post.{ppl}'
             fname = f.format(ppl="%.2f" % test_ppl, **vars(args))
             if os.path.isfile(fname):
                 answer = input("File [%s] exists. Overwrite? (y/n): " % fname)
