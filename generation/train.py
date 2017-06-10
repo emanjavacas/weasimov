@@ -78,6 +78,7 @@ if __name__ == '__main__':
     parser.add_argument('--deepout_act', default='MaxOut')
     # dataset
     parser.add_argument('--path')
+    parser.add_argument('--corpus', type=str, default='data/asimov')
     parser.add_argument('--load_data', action='store_true')
     parser.add_argument('--save_data', action='store_true')
     parser.add_argument('--dict_path', type=str)
@@ -129,7 +130,7 @@ if __name__ == '__main__':
             filters['titles'] = args.filter_titles.split(args.sep)
         if args.filter_authors:
             filters['authors'] = args.filter_authors.split(args.sep)
-        d.fit(load_data(level=args.level, filters=filters))
+        d.fit(load_data(path=args.corpus, level=args.level, filters=filters))
         data = d.transform(load_data(level=args.level, filters=filters))
         data = np.array([c for s in data for c in s], dtype=np.int32)
         if args.save_data:
