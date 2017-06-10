@@ -43,6 +43,7 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
                        method='sample', temperature=1., width=5,
                        early_stopping=None, validate=True):
 
+    seed_texts = None if not seed_text else [seed_text]
     def hook(trainer, epoch, batch_num, checkpoint):
         trainer.log("info", "Checking training...")
         if validate:
@@ -53,7 +54,7 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
                 early_stopping.add_checkpoint(loss)
         trainer.log("info", "Generating text...")
         scores, hyps = trainer.model.generate(
-            d, seed_text=seed_text, max_seq_len=max_seq_len, gpu=gpu,
+            d, seed_texts=seed_texts, max_seq_len=max_seq_len, gpu=gpu,
             method=method, temperature=temperature, width=width)
         hyps = [u.format_hyp(score, hyp, hyp_num + 1, d)
                 for hyp_num, (score, hyp) in enumerate(zip(scores, hyps))]
