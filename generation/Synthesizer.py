@@ -106,10 +106,9 @@ class Synthesizer(object):
             return False
 
         def filter_valid_hyps(hyps, scores):
-            filtered = ((hyp, score)
-                        for hyp, score in zip(hyps, scores)
-                        if hyp[-1] == d.get_eos())
-            return list(zip(*filtered))
+            return zip(*[(hyp, score)
+                         for hyp, score in zip(hyps, scores)
+                         if hyp[-1] == d.get_eos()])
 
         def hyps_to_str(hyps):
             return [''.join(d.vocab[c] for c in hyp) \
