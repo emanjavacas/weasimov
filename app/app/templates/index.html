@@ -1,11 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
 
+<div class="gen-bar">
+<button class="gen-button" id ="1" type="button" onclick="generate()" name="generate">
+    <img src="../static/image/plus.png">
+</button>
+<button class="gen-button" id ="2" type="button" onclick="generate()" name="generate">
+    <img src="../static/image/plus.png">
+</button>
+<button class="gen-button" id ="3" type="button" onclick="generate()" name="generate">
+    <img src="../static/image/plus.png">
+</button>
+<button class="gen-button" id ="4" type="button" onclick="generate()" name="generate">
+    <img src="../static/image/plus.png">
+</button>
+<!-- <input class="temp-slider" onchange="temperature()" type="range" value=0.3 min="0.01" max="1.0" step="0.01" id="temperature" /> -->
+</div>
+
 <div id="editor">
   <p><br></p>
 </div>
-<button type="button" onclick="generate()" name="generate">Generate</button>
-<input onchange="temperature()" type="range" value=0.3 min="0.01" max="1.0" step="0.01" id="temperature" />
 
 <script src="https://cdn.quilljs.com/1.2.6/quill.js"></script>
 
@@ -94,7 +108,8 @@
                         if (range.index > 0) {
                             text = " " + text;
                         }
-                        quill.insertText(range.index, text, 'api');
+                        quill.insertText(range.index, text, 'underline', true, 'api');
+                        quill.format('underline ',false);
                     },
                     error: function(error) {
                         console.log(error);

@@ -18,29 +18,28 @@
 }
 
 .gen-button{
-  
   border: none;
-  
-  border-radius: 50px;
-  width: 50px;
-  height: 50px;
+  border-radius: 35px;
+  width: 35px;
+  height: 35px;
+  margin-bottom: 20px;
 }
 
-.gen-bar #1{
+.gen-bar .gen-button:nth-of-type(1){
   background-color: lightcoral;
 }
-.gen-bar #2{
+.gen-bar .gen-button:nth-of-type(2){
   background-color: yellow;
 }
-.gen-bar #3{
+.gen-bar .gen-button:nth-of-type(3){
   background-color: lightblue;
 }
-.gen-bar #4{
+.gen-bar .gen-button:nth-of-type(4){
   background-color: lightgreen;
 }
 .gen-button img{
-  width: 63px;
-  margin: -7px 0px 0px -13px;
+  width: 45px;
+  margin: -5px 0px 0px -13px;
 }
 .temp-slider{
   width: 100px;

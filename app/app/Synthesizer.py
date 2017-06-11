@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-
+import sys
+sys.path.append('/home/burtenshaw/code/seqmod')
 from seqmod.utils import load_model
 
 

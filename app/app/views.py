@@ -37,7 +37,7 @@ def generate():
 @app.route('/temperature', methods=['POST'])
 def temperature():
     app.synthesizer.temperature = float(flask.request.json["data"])
-    return flask.jsonify(status='OK', message=f'temperature adjusted to {app.synthesizer.temperature}')
+    return flask.jsonify(status='OK', message=f'temperature adjusted to \{app.synthesizer.temperature\}')
 
 def select_model():
     pass
