@@ -184,8 +184,10 @@ if __name__ == '__main__':
                    deepout_act=args.deepout_act,
                    word_dropout=args.word_dropout,
                    target_code=d.get_unk())
+        model.apply(u.make_initializer())
+    else:
+        model.set_dropout(args.dropout)
 
-    model.apply(u.make_initializer())
     if args.gpu:
         model.cuda()
 
@@ -229,7 +231,7 @@ if __name__ == '__main__':
             if args.load_model:  # don't overwrite the existing model
                 fname = '.'.join(args.model_path.split('.')[:-1])
                 fname += '.post.{ppl}'
-            fname = f.format(ppl="%.2f" % test_ppl, **vars(args))
+            fname = fname.format(ppl="%.2f" % test_ppl, **vars(args))
             if os.path.isfile(fname):
                 answer = input("File [%s] exists. Overwrite? (y/n): " % fname)
                 if answer.lower() not in ("y", "yes"):
