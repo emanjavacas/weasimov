@@ -20,8 +20,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_dir", type=str)
     parser.add_argument("--output_dir", type=str)
+    parser.add_argument("--extension", type=str, default=".txt")
     args = parser.parse_args()
-
+    if not os.path.isdir(args.output_dir):
+        os.mkdir(args.output_dir)
     if args.input_dir.endswith('.tar.gz'):
         tar = tarfile.open(args.input_dir)
         for fname in tar.getmembers():
@@ -30,7 +32,8 @@ if __name__ == '__main__':
             tokenize_document(fname, text, args.output_dir)
     else:
         for fname in os.scandir(args.input_dir):
-            with open(fname.path) as infile:
-                text = infile.read()
-            print(fname.name)
-            tokenize_document(fname.name, text, args.output_dir)
+            if fname.name.endswith(args.extension):
+                with open(fname.path) as infile:
+                    text = infile.read()
+                print(fname.name)
+                tokenize_document(fname.name, text, args.output_dir)
