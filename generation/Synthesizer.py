@@ -20,6 +20,7 @@ class Synthesizer(object):
         self.model_dir = model_dir
         self.models = {}
         self.dicts = {}
+        self.temperature = 0.2
 
     def load(self, model_names=None):
         """Loads models from the model_dir
@@ -119,7 +120,7 @@ class Synthesizer(object):
                 ignore_eos=ignore_eos,
                 method=method,
                 bos=True,
-                seed_texts=seed_texts)            
+                seed_texts=seed_texts)
             return hyps_to_str(hyps)
 
         else:
