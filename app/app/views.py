@@ -1,5 +1,7 @@
 import json
+import unicodedata
 import flask
+import nltk
 from app import app
 
 @app.route('/')
@@ -22,16 +24,18 @@ def savedoc():
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    seed = [flask.request.json["selection"].strip()]
-    if not seed[0]:
+    seed = flask.request.json["selection"].strip()
+    if not seed:
         seed = None
-    text = app.synthesizer.sample(model_name='char-asi-sent.LSTM.2l.512h.24e.100b.2.94.pt',
+    else:
+        seed = [' '.join(nltk.word_tokenize(seed, language="dutch"))]
+    text = app.synthesizer.sample(model_name='char.LSTM.1l.2546h.46e.200b.2.49.pt.cpu.pt',
                            seed_texts=seed,
                            temperature=app.synthesizer.temperature,
                            ignore_eos=True,
                            max_seq_len=200,
                            max_tries=1)
-    text = ' '.join(text.split('\n'))
+    text = ' '.join(text).replace('\n', ' ')
     return flask.jsonify(status='OK', message=text)
 
 @app.route('/temperature', methods=['POST'])

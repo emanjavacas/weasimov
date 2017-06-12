@@ -1,11 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div id="editor">
-  <p><br></p>
+<div id="header">
+    <h1>Ik, Asimov</h1>
 </div>
-<button type="button" onclick="generate()" name="generate">Generate</button>
-<input onchange="temperature()" type="range" value=0.3 min="0.01" max="1.0" step="0.01" id="temperature" />
+
+<div class="gen-bar">
+<button class="gen-button" id ="1" type="button" onclick="generate()" name="generate">
+    <img src="../static/image/plus.png">
+</button>
+<button class="gen-button" id ="2" type="button" onclick="generate()" name="generate">
+    <img src="../static/image/plus.png">
+</button>
+<button class="gen-button" id ="3" type="button" onclick="generate()" name="generate">
+    <img src="../static/image/plus.png">
+</button>
+<button class="gen-button" id ="4" type="button" onclick="generate()" name="generate">
+    <img src="../static/image/plus.png">
+</button>
+<!-- <input class="temp-slider" onchange="temperature()" type="range" value=0.3 min="0.01" max="1.0" step="0.01" id="temperature" /> -->
+</div>
+
+<div id="editor">
+    <p><br></p>
+</div>
+
+<div id="history">
+    <p><br></p>
+</div>
 
 <script src="https://cdn.quilljs.com/1.2.6/quill.js"></script>
 
@@ -94,7 +116,8 @@
                         if (range.index > 0) {
                             text = " " + text;
                         }
-                        quill.insertText(range.index, text, 'api');
+                        quill.insertText(range.index, text, 'underline', true, 'api');
+                        quill.format('underline ',false);
                     },
                     error: function(error) {
                         console.log(error);
@@ -107,6 +130,7 @@
         } else {
             console.log('User cursor is not in editor');
         }
+        history(text)
     };
 
     function temperature() {
@@ -125,6 +149,11 @@
             }
         });
     };
+
+    function history(text) {
+        // add the text to a history stack, that gets printed on the side.
+        document.getElementById("history").innerHTML += ('<div class="history-item"><p>'+text[0]+'</p><ul><li><a onclick="quill.insertText(0, text)">'+text[1]+'</a></li><li><a onclick="quill.insertText(0, text)">'+text[2]+'</a></li><li><a onclick="quill.insertText(0, text)">'+text[3]+'</a></li><li><a onclick="quill.insertText(0, text)">'+text[4]+'</a></li><li><a onclick="quill.insertText(0, text)">'+text[5]+'</a></li></ul></div>');
+    }
 
     window.onbeforeunload = function() {
       if (change.length() > 0) {

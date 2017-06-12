@@ -1,6 +1,10 @@
+import os
+import sys
+
 import flask
 from flask_login import LoginManager
-from app import Synthesizer
+sys.path.append(os.path.abspath("../generation"))
+import Synthesizer
 
 app = flask.Flask(__name__)
 app.config.from_object('config')
