@@ -29,19 +29,29 @@ def generate():
         seed = None
     else:
         seed = [' '.join(nltk.word_tokenize(seed, language="dutch"))]
-    text = app.synthesizer.sample(model_name='char.LSTM.1l.2546h.46e.200b.2.49.pt.cpu.pt',
-                           seed_texts=seed,
-                           temperature=app.synthesizer.temperature,
-                           ignore_eos=True,
-                           max_seq_len=200,
-                           max_tries=1)
-    text = ' '.join(text).replace('\n', ' ')
-    return flask.jsonify(status='OK', message=text)
+    hyps = app.synthesizer.sample(
+        model_name=flask.request.json['model_name'],
+        seed_texts=seed,
+        temperature=app.synthesizer.temperature,
+        ignore_eos=True,
+        max_seq_len=200,
+        max_tries=1)
+    # text = ' '.join(text).replace('\n', ' ')
+    return flask.jsonify(status='OK', hyps=hyps)
 
 @app.route('/temperature', methods=['POST'])
 def temperature():
     app.synthesizer.temperature = float(flask.request.json["data"])
-    return flask.jsonify(status='OK', message=f'temperature adjusted to {app.synthesizer.temperature}')
+    return flask.jsonify(
+        status='OK',
+        message=f'temperature adjusted to {app.synthesizer.temperature}',
+        temperature=app.synthesizer.temperature)
 
-def select_model():
-    pass
+@app.route('/models', methods=['GET'])
+def models():
+    return flask.jsonify(status='OK', models=app.synthesizer.list_models())
+
+@app.route('/load_model', methods=['GET'])
+def load_model():
+    app.synthesizer.load(model_names=(flask.request.json['model_name']))
+    return flask.jsonify(status='OK')
