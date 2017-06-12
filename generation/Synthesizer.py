@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import math
 
 from seqmod.utils import load_model
 
@@ -22,6 +23,11 @@ class Synthesizer(object):
         self.dicts = {}
         self.temperature = 0.2
 
+    def list_models(self, only_loaded=False):
+        return [{'path': f, 'loaded': f in self.models}
+                for f in os.listdir(self.model_dir)
+                if f.endswith('pt') and (not only_loaded or f in self.models)]
+
     def load(self, model_names=None):
         """Loads models from the model_dir
 
@@ -38,17 +44,16 @@ class Synthesizer(object):
 
         """
         if not model_names:
-            model_names = os.listdir(self.model_dir)
+            model_names = [m['path']
+                           for m in self.list_models(only_loaded=True)]
 
         for name in model_names:
             try:
-                p = os.path.join(self.model_dir, name)
-                m = load_model(p)
+                m = load_model(os.path.join(self.model_dir, name))
                 self.models[name] = m['model']
                 self.dicts[name] = m['dict']
-            except ValueError:
-                print('Unable to load model:', name)
-
+            except (ValueError, FileNotFoundError):
+                print("Couldn't find model [%s]" % name)
         if not self.models:
             ValueError('No models were loaded.')
         if not self.dicts:
@@ -58,7 +63,7 @@ class Synthesizer(object):
 
     def sample(self, model_name, seed_texts=None,
                max_seq_len=200, max_tries=5, temperature=1.0,
-               method='sample', batch_size=1, ignore_eos=True):
+               method='sample', batch_size=5, ignore_eos=True):
         """Samples a sentence.
 
         Samples a single sentence from a single model.
@@ -89,19 +94,38 @@ class Synthesizer(object):
 
         Returns
         -------
-        str
-            A single generated sentence. If all tries failed,
-            we return a `" <NO OUTPUT> "` str.
+        [{'text': hypothesis text (str),
+          'bos': [pointers to original bos tokens (int)],
+          'eos': [pointers to original eos tokens (int)],
+          'pad': [pointers to original par tokens (int),
+          'score': hypothesis score (float)}
+         ...]
 
         """
         assert self.models, 'Models have not been set yet.'
 
-        def hyps_to_str(hyps):
-            return [''.join(d.vocab[c] for c in hyp)
+        def normalize_hyp(hyp):
+            bos, eos, par, found = [], [], [], 0
+            for idx, c in enumerate(hyp):
+                if c == d.get_bos():
+                    bos.append(idx - found)
+                    found += 1
+                elif c == d.get_eos():
+                    eos.append(idx - found)
+                    found += 1
+                elif c == d.s2i['<par>']:
+                    par.append(idx - found)
+                    found += 1
+
+            text = ''.join(d.vocab[c] for c in hyp)
+            return {'text': text
                     .replace(d.bos_token, '')
                     .replace(d.eos_token, '\n')
-                    .replace('<par>', '\n')
-                    for hyp in hyps]
+                    .replace('<par>', '\n'),
+                    'bos': bos, 'eos': eos, 'par': par}
+
+        def normalize_score(score):
+            return round(math.exp(score), 3)
 
         def has_valid_hyp(hyps):
             for hyp in hyps:
@@ -111,9 +135,10 @@ class Synthesizer(object):
 
         d = self.dicts[model_name]
         m = self.models[model_name]
+        out = []
 
         if ignore_eos:
-            _, hyps = m.generate(
+            scores, hyps = m.generate(
                 d, max_seq_len=max_seq_len,
                 temperature=temperature,
                 batch_size=batch_size,
@@ -121,12 +146,11 @@ class Synthesizer(object):
                 method=method,
                 bos=True,
                 seed_texts=seed_texts)
-            return hyps_to_str(hyps)
 
         else:
             hyps, tries = [], 0
             while (hyps and not has_valid_hyp(hyps)) and tries < max_tries:
-                _, hyps = m.generate(
+                scores, hyps = m.generate(
                     d, max_seq_len=max_seq_len,
                     temperature=temperature,
                     batch_size=batch_size,
@@ -135,5 +159,10 @@ class Synthesizer(object):
                     bos=True,
                     seed_texts=seed_texts)
                 tries += 1
-            hyps = [hyp for hyp in hyps if hyp[-1] == d.get_eos()]
-            return hyps_to_str(hyps) or ['GENERATION FAILED']
+
+        for score, hyp in sorted(zip(scores, hyps), key=lambda p: p[0], reverse=True):
+            if not ignore_eos and hyp[-1] == d.get_eos():
+                continue
+            out.append(dict(normalize_hyp(hyp), score=normalize_score(score)))
+
+        return out
