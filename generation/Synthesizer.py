@@ -97,9 +97,9 @@ class Synthesizer(object):
         assert self.models, 'Models have not been set yet.'
 
         def hyps_to_str(hyps):
-            return [''.join(d.vocab[c] for c in hyp) \
-                    .replace(d.bos_token, '') \
-                    .replace(d.eos_token, '\n') \
+            return [''.join(d.vocab[c] for c in hyp)
+                    .replace(d.bos_token, '')
+                    .replace(d.eos_token, '\n')
                     .replace('<par>', '\n')
                     for hyp in hyps]
 
