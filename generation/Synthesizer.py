@@ -8,7 +8,7 @@ from seqmod.utils import load_model
 
 class Synthesizer(object):
 
-    def __init__(self, model_dir, temperature=0.3):
+    def __init__(self, model_dir, temperature=0.35):
         """Constructor
 
         Parameters
