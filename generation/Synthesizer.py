@@ -2,8 +2,30 @@
 
 import os
 import math
+import functools
 
 from seqmod.utils import load_model
+
+
+def detokenizer(s):
+    post_punc = {';', '.', ',',
+                 ':', '?', '!',
+                 ')', '»', '›',
+                 '„', '‚', '❞',
+                 '❯', '”', '❜',
+                 '’', '...'}
+    pre_punc = {'(', '«', '‹',
+                '❮', '‟', '❝',
+                '❛', '‘', '‛', '“'}
+
+    def func(acc, x):
+        if x in post_punc:
+            return acc + x
+        if acc[-1] in pre_punc:
+                return acc + x
+        else:
+            return acc + ' ' + x
+    return functools.reduce(func, s.split())
 
 
 class Synthesizer(object):
@@ -119,10 +141,10 @@ class Synthesizer(object):
                     found += 1
 
             text = ''.join(d.vocab[c] for c in hyp)
-            return {'text': text
+            return {'text': detokenizer(text
                     .replace(d.bos_token, '')
                     .replace(d.eos_token, '\n')
-                    .replace('<par>', '\n'),
+                    .replace('<par>', '\n')),
                     'bos': bos, 'eos': eos, 'par': par}
 
         def normalize_score(score):
