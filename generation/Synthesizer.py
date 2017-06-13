@@ -8,7 +8,7 @@ from seqmod.utils import load_model
 
 class Synthesizer(object):
 
-    def __init__(self, model_dir):
+    def __init__(self, model_dir, temperature=0.3):
         """Constructor
 
         Parameters
@@ -21,7 +21,7 @@ class Synthesizer(object):
         self.model_dir = model_dir
         self.models = {}
         self.dicts = {}
-        self.temperature = 0.2
+        self.temperature = temperature
 
     def list_models(self, only_loaded=False):
         return [{'path': f, 'loaded': f in self.models}
@@ -62,7 +62,7 @@ class Synthesizer(object):
             ValueError('# dicts does not match # models.')
 
     def sample(self, model_name, seed_texts=None,
-               max_seq_len=200, max_tries=5, temperature=1.0,
+               max_seq_len=100, max_tries=1, temperature=1.0,
                method='sample', batch_size=5, ignore_eos=True):
         """Samples a sentence.
 

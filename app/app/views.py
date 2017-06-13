@@ -36,6 +36,7 @@ def generate():
             temperature=app.synthesizer.temperature,
             ignore_eos=True,
             max_seq_len=200,
+            batch_size=3,
             max_tries=1)
         # text = ' '.join(text).replace('\n', ' ')
         return flask.jsonify(status='OK', hyps=hyps)

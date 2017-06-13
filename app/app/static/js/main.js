@@ -61,6 +61,7 @@ setInterval(function() {
 // API
 // models
 var selectedModel;
+var usedSeed;
 
 function isLoaded(model_name) {
     return $('*[data-path="' + model_name + '"]').data('loaded');
@@ -94,7 +95,6 @@ function models() {
         dataType: 'json',
         success: function(response) {
 	    for (i=0; i<response.models.length; i++) {
-		if (i === 0); selectModel(response.models[0].path);
 		$('#models-dropdown').append(createDropdownItem(response.models[i]));
 	    }
         },
@@ -129,6 +129,24 @@ function loadModel(model_name) {
 }
 
 // generate
+function handleGeneration(selection, pasteTo) {
+    $.ajax({
+        contentType: 'application/json;charset=UTF-8',
+        url: 'generate',
+        data: JSON.stringify({'selection': selection, 'model_name': selectedModel}),
+        type: 'POST',
+        dataType: 'json',
+        success: function(response) {
+	    console.log(response.hyps);
+	    handleSuggestions(response.hyps, pasteTo);
+        },
+        error: function(error) {
+            console.log(error);
+	    alert(error.responseJSON.message);
+        }
+    });
+}
+
 function generate() {
     emptySuggestions();
     var range = quill.getSelection();
@@ -148,24 +166,11 @@ function generate() {
                 }
             }
             var text = quill.getText(start + 2, range.index);
-            $.ajax({
-                contentType: 'application/json;charset=UTF-8',
-                url: 'generate',
-                data: JSON.stringify({'selection': text, 'model_name': selectedModel}),
-                type: 'POST',
-                dataType: 'json',
-                success: function(response) {
-		    console.log(response.hyps);
-		    handleSuggestions(response.hyps, range);
-                },
-                error: function(error) {
-                    console.log(error);
-		    alert(error.responseJSON.message);
-                }
-            });
+	    handleGeneration(text, range.index);
         } else {
             var text = quill.getText(range.index, range.length);
             console.log('User has highlighted: ', text);
+	    handleGeneration(text, range.length);
         }
     } else {
 	alert('Cursor is not in editor');
@@ -176,7 +181,7 @@ function emptySuggestions() {
     $('#hyps-panel').empty();
 }
 
-function handleSuggestions(hyps, range) {
+function handleSuggestions(hyps, pasteTo) {
     function createSuggestionItem(hyp) {
 	var text = hyp.text.replace(/[\r\n]/g, " ");
 	$label = $(document.createElement('span'))
@@ -186,7 +191,7 @@ function handleSuggestions(hyps, range) {
 	    .addClass('list-group-item')
 	    .text(text)
 	    .click(function(e){
-		insertText(text, range);
+		insertText(text, pasteTo);
 		emptySuggestions();
 		$('#hyps-toolbar').css('visibility', 'hidden');
 	    });
@@ -203,12 +208,12 @@ function handleSuggestions(hyps, range) {
     }
 }
 
-function insertText(text, range) {
-    if (range.index > 0) {
+function insertText(text, pasteTo) {
+    if (pasteTo > 0) {
         text = " " + text;
     }
-    quill.insertText(range.index, text, 'underline', true, 'api');
-    quill.format('underline', false, 'api');
+    quill.insertText(pasteTo, text, 'italic', true, 'api');
+    quill.format('italic', false, 'api');
 }
 
 
