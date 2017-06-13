@@ -177,7 +177,7 @@ function emptySuggestions() {
 
 function handleSuggestions(hyps, range) {
     function createSuggestionItem(hyp) {
-	text = hyp.text.replace(/[\r\n]/g, " ");
+	var text = hyp.text.replace(/[\r\n]/g, " ");
 	$label = $(document.createElement('span'))
 	    .addClass("label").addClass("label-default").addClass("pull-right")
 	    .text(hyp.score);
