@@ -21,7 +21,7 @@ class Synthesizer(object):
         self.model_dir = model_dir
         self.models = {}
         self.dicts = {}
-        self.temperature = 0.2
+        self.temperature = 0.35
 
     def list_models(self, only_loaded=False):
         return [{'path': f, 'loaded': f in self.models}
