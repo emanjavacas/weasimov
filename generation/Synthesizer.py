@@ -102,7 +102,8 @@ class Synthesizer(object):
          ...]
 
         """
-        assert self.models, 'Models have not been set yet.'
+        if not self.models:
+            raise ValueError('Models have not been set yet.')
 
         def normalize_hyp(hyp):
             bos, eos, par, found = [], [], [], 0

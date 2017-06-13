@@ -29,15 +29,18 @@ def generate():
         seed = None
     else:
         seed = [' '.join(nltk.word_tokenize(seed, language="dutch"))]
-    hyps = app.synthesizer.sample(
-        model_name=flask.request.json['model_name'],
-        seed_texts=seed,
-        temperature=app.synthesizer.temperature,
-        ignore_eos=True,
-        max_seq_len=200,
-        max_tries=1)
-    # text = ' '.join(text).replace('\n', ' ')
-    return flask.jsonify(status='OK', hyps=hyps)
+    try:
+        hyps = app.synthesizer.sample(
+            model_name=flask.request.json['model_name'],
+            seed_texts=seed,
+            temperature=app.synthesizer.temperature,
+            ignore_eos=True,
+            max_seq_len=200,
+            max_tries=1)
+        # text = ' '.join(text).replace('\n', ' ')
+        return flask.jsonify(status='OK', hyps=hyps)
+    except ValueError as e:
+        return flask.jsonify(status='Error', message=str(e)), 500
 
 @app.route('/temperature', methods=['POST'])
 def temperature():
