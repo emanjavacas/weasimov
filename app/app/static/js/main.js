@@ -168,7 +168,7 @@ function generate() {
             console.log('User has highlighted: ', text);
         }
     } else {
-        console.log('User cursor is not in editor');
+	alert('Cursor is not in editor');
     }
 }
 
