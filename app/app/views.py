@@ -24,11 +24,14 @@ def savedoc():
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    seed = flask.request.json["selection"].strip()
+    seed = flask.request.json["selection"]
     if not seed:
         seed = None
     else:
+        seed_ends_with_space = seed.endswith(' ')
         seed = [' '.join(nltk.word_tokenize(seed, language="dutch"))]
+        if seed_ends_with_space:
+            seed[0] += ' '
     try:
         hyps = app.synthesizer.sample(
             model_name=flask.request.json['model_name'],
