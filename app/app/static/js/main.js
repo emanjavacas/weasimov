@@ -130,21 +130,26 @@ function loadModel(model_name) {
 
 // generate
 function handleGeneration(selection, pasteTo) {
-    $.ajax({
-        contentType: 'application/json;charset=UTF-8',
-        url: 'generate',
-        data: JSON.stringify({'selection': selection, 'model_name': selectedModel}),
-        type: 'POST',
-        dataType: 'json',
-        success: function(response) {
-	    console.log(response.hyps);
-	    handleSuggestions(response.hyps, pasteTo);
-        },
-        error: function(error) {
-            console.log(error);
-	    alert(error.responseJSON.message);
-        }
-    });
+    if (selectedModel) {
+	$.ajax({
+            contentType: 'application/json;charset=UTF-8',
+            url: 'generate',
+            data: JSON.stringify({'selection': selection, 'model_name': selectedModel}),
+            type: 'POST',
+            dataType: 'json',
+            success: function(response) {
+		console.log(response.hyps);
+		handleSuggestions(response.hyps, pasteTo);
+		usedSeed = selection;
+            },
+            error: function(error) {
+		console.log(error);
+		alert(error.responseJSON.message);
+            }
+	});
+    } else {
+	alert("Load a model first!");
+    }
 }
 
 function generate() {
