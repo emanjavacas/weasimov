@@ -1,8 +1,16 @@
+// Initialization
 var Delta = Quill.import('delta');
 var quill = new Quill('#editor', {
     scrollingContainer: '#scrolling-container',
     theme: 'snow',
     placeholder: 'Bieb, Bieb!'
+});
+
+// Slider
+$('#temp-slider').slider();
+$('#temp-slider').on('slide', function(e) {
+    $('#temp-label').text(e.value);
+    temperature();
 });
 
 // Store accumulated changes
@@ -54,6 +62,10 @@ setInterval(function() {
 // models
 var selectedModel;
 
+function isLoaded(model_name) {
+    return $('*[data-path="' + model_name + '"]').data('loaded');
+}
+
 function models() {
     $('#models-dropdown').empty();
     
@@ -65,7 +77,7 @@ function models() {
 	    .addClass('dropdown-item')
 	    .attr('data-loaded', model.loaded).attr('data-path', model.path)
 	    .click(function() {
-		if (!model.loaded) {
+		if (!isLoaded(model.path)) {
 		    console.log("loading model", model.path);
 		    loadModel(model.path);
 		}
@@ -103,11 +115,11 @@ function loadModel(model_name) {
     $.ajax({
         contentType: 'application/json;charset=UTF-8',
         url: 'load_model',
-        type: 'GET',
+        type: 'POST',
 	data: JSON.stringify({'model_name': model_name}),
         dataType: 'json',
         success: function(response) {
-	    $('*[data-path=' + model_name + ']').attr('data-loaded', 'true');
+	    $('*[data-path="' + model_name + '"]').attr('data-loaded', 'true');
 	    selectModel(model_name);
         },
         error: function(error) {
@@ -201,7 +213,7 @@ function insertText(text, range) {
 
 // temperature
 function temperature() {
-    var temp = document.getElementById('temperature').value;
+    var temp =$('#temp-label').text();
     $.ajax({
         contentType: 'application/json;charset=UTF-8',
         url: 'temperature',

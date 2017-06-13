@@ -1,49 +1,72 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div id="header">
-  <h1>Ik, Asimov
-    <small>
-      <span class="btn-group pull-right">
-        <button id="model-name" class="btn btn-mini" style="cursor: auto">Models</button>
-        <button class="btn btn-mini dropdown-toggle" data-toggle="dropdown">
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" id="models-dropdown">
-	  <li><a href="#">No models available</a></li>
-        </ul>
-      </span>
-    </small>
-  </h1>
-</div>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2"> <!-- left margin -->
+      <!-- <div class="gen-bar"> -->
+      <!--   <button class="gen-button" id ="1" type="button" onclick="generate()" name="generate"> -->
+      <!-- 	<img src="../static/image/plus.png"> -->
+      <!--   </button> -->
+      <!--   <button class="gen-button" id ="2" type="button" onclick="generate()" name="generate"> -->
+      <!-- 	<img src="../static/image/plus.png"> -->
+      <!--   </button> -->
+      <!--   <button class="gen-button" id ="3" type="button" onclick="generate()" name="generate"> -->
+      <!-- 	<img src="../static/image/plus.png"> -->
+      <!--   </button> -->
+      <!--   <button class="gen-button" id ="4" type="button" onclick="generate()" name="generate"> -->
+      <!-- 	<img src="../static/image/plus.png"> -->
+      <!--   </button> -->
+      <!-- </div> -->
+    </div>		 <!-- end of left margin -->
+    <div class="col-md-8"> <!-- main panel -->
 
-<br>
+      <div class="row">	 <!-- header -->
+	<div id="header"><h1>Ik, Asimov</h1></div>
+      </div>
+      <div class="row spacer"></div>
+      <div class="row spacer"></div>
+      <div class="row"> <!-- button toolbar -->
+	<div class="container-fluid">
+	<div class="col-md-6 pull-right"> <!-- right buttons -->
+	  <div class="btn-group pull-right">
+            <button id="model-name" class="btn btn-mini" style="cursor: auto">Models</button>
+            <button class="btn btn-mini dropdown-toggle" data-toggle="dropdown">
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" id="models-dropdown">
+	      <li><a href="#">No models available</a></li>
+            </ul>
+	  </div>
+	  <button class="btn btn-success pull-right" onclick="generate()">Generate</button>
+	</div> <!-- end of right buttons -->
 
-<div class="gen-bar">
-<button class="gen-button" id ="1" type="button" onclick="generate()" name="generate">
-    <img src="../static/image/plus.png">
-</button>
-<button class="gen-button" id ="2" type="button" onclick="generate()" name="generate">
-    <img src="../static/image/plus.png">
-</button>
-<button class="gen-button" id ="3" type="button" onclick="generate()" name="generate">
-    <img src="../static/image/plus.png">
-</button>
-<button class="gen-button" id ="4" type="button" onclick="generate()" name="generate">
-    <img src="../static/image/plus.png">
-</button>
-<!-- <input class="temp-slider" onchange="temperature()" type="range" value=0.3 min="0.01" max="1.0" step="0.01" id="temperature" /> -->
-</div>
+	<div class="col-md-6"> <!-- left buttons -->
+	  <input id="temp-slider" type="text" data-provide="slider" data-slider-min="0.01" data-slider-max="1" data-slider-step="0.01" data-slider-value="0.3">
+	  <span style="font-weight: bold">Creativity <span class="label label-default" id="temp-label">0.3</span></span>
+	</div>
+	</div>
+      </div> <!-- end of button toolbar -->
 
+      <div class="row spacer"></div>
 
-<div id="editor"><p><br></p></div>
+      <div class="row"> <!-- editor -->
+	<div id="editor"><p><br></p></div>
+      </div>	      <!-- end of editor -->
 
-<div id="hyps-toolbar" class="panel panel-default" style="visibility: hidden">
-  <!-- Default panel contents -->
-  <div class="panel-heading">Suggestions</div>
-  <!-- List group -->
-  <ul id="hyps-panel" class="list-group list-group-hover">
-  </ul>
+      <div class="row"> <!-- subpanel -->
+	<div id="hyps-toolbar" class="panel panel-default" style="visibility: hidden">
+	  <!-- Default panel contents -->
+	  <div class="panel-heading">Suggestions</div>
+	  <!-- List group -->
+	  <ul id="hyps-panel" class="list-group list-group-hover">
+	  </ul>
+	</div>
+      </div>	      <!-- end of subpanel -->
+    </div> <!-- end of main panel -->
+    
+    <div class="col-md-2"> <!-- right margin --> </div>
+  </div>
 </div>
 
 <script src="https://cdn.quilljs.com/1.2.6/quill.js"></script>

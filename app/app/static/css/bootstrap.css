@@ -1,6 +1,11 @@
 
+.spacer {
+    height: 15px;
+}
+
 .list-group-hover .list-group-item:hover {
     background-color: #f5f5f5;
+    cursor: pointer;
 }
 
 li.dropdown-item[data-loaded="true"] {

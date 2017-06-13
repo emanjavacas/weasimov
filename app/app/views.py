@@ -51,7 +51,7 @@ def temperature():
 def models():
     return flask.jsonify(status='OK', models=app.synthesizer.list_models())
 
-@app.route('/load_model', methods=['GET'])
+@app.route('/load_model', methods=['POST'])
 def load_model():
-    app.synthesizer.load(model_names=(flask.request.json['model_name']))
+    app.synthesizer.load(model_names=(flask.request.json['model_name'],))
     return flask.jsonify(status='OK')
