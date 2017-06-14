@@ -105,3 +105,10 @@ data/*
 
 # emacs
 *~
+
+# models
+app/models/*
+models/*
+
+# syncing
+.remote-sync.json
