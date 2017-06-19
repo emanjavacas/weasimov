@@ -112,3 +112,7 @@ models/*
 
 # syncing
 .remote-sync.json
+
+# npm
+node_modules/
+bundle.js
