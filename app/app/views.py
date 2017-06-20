@@ -25,6 +25,8 @@ def savedoc():
 @app.route('/generate', methods=['POST'])
 def generate():
     seed = flask.request.json["selection"]
+    temperature = float(flask.request.json['temperature'])
+    max_seq_len = int(flask.request.json['max_seq_len'])
     if not seed:
         seed = None
     else:
@@ -36,9 +38,9 @@ def generate():
         hyps = app.synthesizer.sample(
             model_name=flask.request.json['model_name'],
             seed_texts=seed,
-            temperature=app.synthesizer.temperature,
+            temperature=temperature,
             ignore_eos=True,
-            max_seq_len=200,
+            max_seq_len=max_seq_len,
             batch_size=5,
             max_tries=1)
         # text = ' '.join(text).replace('\n', ' ')
@@ -60,5 +62,8 @@ def models():
 
 @app.route('/load_model', methods=['POST'])
 def load_model():
-    app.synthesizer.load(model_names=(flask.request.json['model_name'],))
-    return flask.jsonify(status='OK')
+    model_name = flask.request.json['model_name']
+    app.synthesizer.load(model_names=(model_name,))
+    return flask.jsonify(status='OK',
+                         model={'path': model_name,
+                                'loaded': True})
