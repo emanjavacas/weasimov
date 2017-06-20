@@ -19,6 +19,7 @@ from seqmod import utils as u
 
 from seqmod.misc.trainer import LMTrainer
 from seqmod.misc.loggers import StdLogger, VisdomLogger
+from loggers import CSVLogger
 from seqmod.misc.optimizer import Optimizer
 from seqmod.misc.dataset import Dict, BlockDataset
 from seqmod.misc.early_stopping import EarlyStopping
@@ -128,6 +129,10 @@ if __name__ == '__main__':
     parser.add_argument('--visdom_server', default='localhost')
     parser.add_argument('--save', action='store_true')
     parser.add_argument('--prefix', default='model', type=str)
+
+    # logger
+    parser.add_argument('--csv', type=str, default=' ')
+    parser.add_argument('--note', type=str, default=" ", nargs='+')
     args = parser.parse_args()
 
     model, d, data = None, None, None
@@ -219,7 +224,11 @@ if __name__ == '__main__':
     visdom_logger = VisdomLogger(
         log_checkpoints=args.log_checkpoints, title=args.prefix, env='lm',
         server='http://' + args.visdom_server)
-    trainer.add_loggers(StdLogger(), visdom_logger)
+
+    if args.csv:
+        trainer.add_loggers(CSVLogger(args=args, model=model, save_path=args.csv))
+    else:
+        trainer.add_loggers(StdLogger(), visdom_logger)
 
     trainer.train(args.epochs, args.checkpoint, gpu=args.gpu)
 
