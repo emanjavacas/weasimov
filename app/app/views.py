@@ -43,7 +43,6 @@ def generate():
             max_seq_len=max_seq_len,
             batch_size=5,
             max_tries=1)
-        # text = ' '.join(text).replace('\n', ' ')
         return flask.jsonify(status='OK', hyps=hyps)
     except ValueError as e:
         return flask.jsonify(status='Error', message=str(e)), 500

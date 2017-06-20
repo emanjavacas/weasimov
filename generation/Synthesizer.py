@@ -25,11 +25,13 @@ def detokenizer(s):
                 return acc + x
         else:
             return acc + ' ' + x
-    return functools.reduce(func, s.split())
+    result = functools.reduce(func, s.split())
+    if s.startswith(' '):
+        result = ' ' + result
+    return result
 
 
 class Synthesizer(object):
-
     def __init__(self, model_dir, temperature=0.35):
         """Constructor
 
@@ -158,7 +160,7 @@ class Synthesizer(object):
 
         d = self.dicts[model_name]
         m = self.models[model_name]
-        out = []
+        result = []
 
         if ignore_eos:
             scores, hyps = m.generate(
@@ -167,7 +169,7 @@ class Synthesizer(object):
                 batch_size=batch_size,
                 ignore_eos=ignore_eos,
                 method=method,
-                bos=True,
+                bos=True,       # TODO: only add this when necessary
                 seed_texts=seed_texts)
 
         else:
@@ -179,13 +181,15 @@ class Synthesizer(object):
                     batch_size=batch_size,
                     ignore_eos=ignore_eos,
                     method=method,
-                    bos=True,
+                    bos=True,       # TODO: only add this when necessary
                     seed_texts=seed_texts)
                 tries += 1
 
-        for score, hyp in sorted(zip(scores, hyps), key=lambda p: p[0], reverse=True):
-            if not ignore_eos and hyp[-1] == d.get_eos():
+        sort_hyps = sorted(zip(scores, hyps), key=lambda p: p[0], reverse=True)
+        for score, hyp in sort_hyps:
+            if (not ignore_eos) and hyp[-1] != d.get_eos():
                 continue
-            out.append(dict(normalize_hyp(hyp), score=normalize_score(score)))
+            hyp = dict(normalize_hyp(hyp), score=normalize_score(score))
+            result.append(hyp)
 
-        return out
+        return result

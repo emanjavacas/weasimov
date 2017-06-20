@@ -113,7 +113,7 @@ class ButtonToolbar extends React.Component {
 	      {dropdownModels}
 	    </RB.DropdownButton>
 	    <RB.DropdownButton
-	       title="Size"
+	       title={"Size: " + this.props.maxSeqLen}
 	       id="dropdown-size">
 	      {dropdownSizes}
 	    </RB.DropdownButton>
