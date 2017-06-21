@@ -19,6 +19,7 @@ from seqmod import utils as u
 
 from seqmod.misc.trainer import LMTrainer
 from seqmod.misc.loggers import StdLogger, VisdomLogger
+from loggers import CSVLogger
 from seqmod.misc.optimizer import Optimizer
 from seqmod.misc.dataset import Dict, BlockDataset
 from seqmod.misc.early_stopping import EarlyStopping
@@ -44,6 +45,7 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
                        early_stopping=None, validate=True):
 
     seed_texts = None if not seed_text else [seed_text]
+
     def hook(trainer, epoch, batch_num, checkpoint):
         trainer.log("info", "Checking training...")
         if validate:
@@ -128,6 +130,10 @@ if __name__ == '__main__':
     parser.add_argument('--visdom_server', default='localhost')
     parser.add_argument('--save', action='store_true')
     parser.add_argument('--prefix', default='model', type=str)
+
+    # logger
+    parser.add_argument('--csv', type=str, default=' ')
+    parser.add_argument('--note', type=str, default=" ", nargs='+')
     args = parser.parse_args()
 
     model, d, data = None, None, None
@@ -219,7 +225,10 @@ if __name__ == '__main__':
     visdom_logger = VisdomLogger(
         log_checkpoints=args.log_checkpoints, title=args.prefix, env='lm',
         server='http://' + args.visdom_server)
+
     trainer.add_loggers(StdLogger(), visdom_logger)
+    if args.csv:
+        trainer.add_loggers(CSVLogger(args=args, save_path=args.csv))
 
     trainer.train(args.epochs, args.checkpoint, gpu=args.gpu)
 

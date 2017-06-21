@@ -113,9 +113,6 @@ models/*
 # syncing
 .remote-sync.json
 
-# vscode
-.vscode
-
-# output
-output/*
-examples/*
+# npm
+node_modules/
+bundle.js
