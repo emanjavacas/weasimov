@@ -36,7 +36,7 @@ function findHyps(contentBlock, callback, contentState) {
 };
 
 
-function insertText(editorState, text, type, mutable, data) {
+function insertGeneratedText(editorState, text, type, mutable, data) {
   const selection = editorState.getSelection();
   const currentContent = editorState.getCurrentContent().createEntity(type, mutable, data);
   const entityKey = currentContent.getLastCreatedEntityKey();
@@ -52,8 +52,10 @@ function handleContiguousEntity(char, editorState) {
   // handle the extending of mutable entities
   if (selection.isCollapsed()) {
     const startOffset = selection.getStartOffset();
-    if (startOffset > 0) {
-      // we are not at the start of the block
+    if (startOffset > 0) {// we are not at the start of the block
+      // TODO: add an if check for when being inside HYP entity
+      // and if so update entity data as follows:
+      // contentState.mergeEntityData(entityKey, {"edits": +1})
       const entityKeyBeforeCaret = block.getEntityAt(startOffset - 1);
       const entityKeyAfterCaret = block.getEntityAt(startOffset);
       const isCaretOutsideEntity = (entityKeyBeforeCaret !== entityKeyAfterCaret);
@@ -61,10 +63,9 @@ function handleContiguousEntity(char, editorState) {
         const entity = contentState.getEntity(entityKeyBeforeCaret);
         const isMutable = entity.getMutability() === "MUTABLE";
         const { contiguous = true } = entity.getData();
-        // if entity is mutable, and caret is outside, and contiguous is set the false
-        // remove the entity from the current char
+        // if entity is mutable and not contiguous, and caret is to its right
+        // insert new char without entity styling
         if (isMutable && !contiguous) {
-          // insert the text into the contentState
           contentState = Modifier.insertText(
             contentState,
             selection,
@@ -72,7 +73,6 @@ function handleContiguousEntity(char, editorState) {
             editorState.getCurrentInlineStyle(),
             null
           );
-          // push the new content into the editor state
           const newEditorState = EditorState.push(
             editorState,
             contentState,
@@ -89,13 +89,17 @@ function handleContiguousEntity(char, editorState) {
 
 const hypStyle = {background: 'lightBlue'};
 
-const Hyp = (props) => <span style={hypStyle}>{props.children}</span>;
+const Hyp = (props) => {
+  // TODO: make color dependent from number of edits
+  const data = props.contentState.getEntity(props.entityKey).getData();
+  return <span style={hypStyle}>{props.children}</span>;
+};
 
 const hypDecorator = new CompositeDecorator([{strategy: findHyps, component: Hyp}]);
 
 
 const EditorUtils = {
-  insertText: insertText,
+  insertGeneratedText: insertGeneratedText,
   handleContiguousEntity: handleContiguousEntity,
   getTextSelection: getTextSelection,
   hypDecorator: hypDecorator
