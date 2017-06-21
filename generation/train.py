@@ -228,8 +228,7 @@ if __name__ == '__main__':
 
     trainer.add_loggers(StdLogger(), visdom_logger)
     if args.csv:
-        trainer.add_loggers(
-            CSVLogger(args=args, model=model, save_path=args.csv))
+        trainer.add_loggers(CSVLogger(args=args, save_path=args.csv))
 
     trainer.train(args.epochs, args.checkpoint, gpu=args.gpu)
 

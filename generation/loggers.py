@@ -10,10 +10,9 @@ class CSVLogger(Logger):
     CSV logger to record model parametres and loss info per epoch.
 
     """
-    def __init__(self, args=None, save_path=None, model=None):
+    def __init__(self, args=None, save_path=None):
         self.args = args
         self.save_path = save_path
-        self.model = model
         self.note = args.note
 
     def store(self, save_path, payload):
