@@ -24,8 +24,8 @@ class Suggestions extends React.Component {
       return <Utils.Spinner/>;
     } else {
       return (
-	<div className="panel panel-info" style={{visibility: hasHyps ? "visible" : "hidden"}}>
-	  <div className="panel-heading">
+	<div className="panel panel-default" style={{visibility: hasHyps ? "visible" : "hidden"}}>
+	  <div className="panel-heading" style={{fontWeight: "bold"}}>
 	    <p>Suggestions
 	      <span className="pull-right">
 		<RB.Button
@@ -44,13 +44,3 @@ class Suggestions extends React.Component {
 }
 
 export default Suggestions;
-
-
-
-
-
-
-
-
-
-

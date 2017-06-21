@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {EditorState, RichUtils, Modifier, CompositeDecorator} from 'draft-js';
+import {EditorState, RichUtils, convertToRaw} from 'draft-js';
 import * as RB from 'react-bootstrap';
 import Sticky from 'react-stickynode';
 
@@ -104,7 +104,7 @@ class App extends React.Component {
     const oldContent = oldState.getCurrentContent();
     const newContent = editorState.getCurrentContent();
     if (oldContent !== newContent) {
-      console.log(newContent.getPlainText(), oldContent.getPlainText());
+      console.log(convertToRaw(newContent), convertToRaw(oldContent).entityMap);
     }
     this.setState({editorState});
   }
