@@ -5,17 +5,17 @@
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <title>WeAsimov</title>
    <meta name="viewport" content="width=device-width, initial-scale=1">
+   <!-- Favicon -->
+   <link rel="shortcut icon" href="{{ url_for('.static', filename='favicon.ico') }}">
    <!-- Stylesheets -->
-   <link rel="stylesheet" href="{{ url_for('.static', filename='css/Draft.css')}}">
-   <link rel="stylesheet" href="{{ url_for('.static', filename='css/rc-slider.css')}}">
-   <link rel="stylesheet" href="{{ url_for('.static', filename='css/main.css')}}">
-   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-   <!-- Spinners -->
-   <link rel="stylesheet" href="http://tawian.io/text-spinners/spinners.css">
-   <!-- font-awesome -->
-   <script src="https://use.fontawesome.com/072f1d67c6.js"></script>
+   <link rel="stylesheet" href="{{ url_for('.static', filename='css/vendor/draft.css') }}">
+   <link rel="stylesheet" href="{{ url_for('.static', filename='css/vendor/rc-slider.css') }}">
+   <link rel="stylesheet" href="{{ url_for('.static', filename='css/vendor/bootstrap.min.css') }}">
+   <link rel="stylesheet" href="{{ url_for('.static', filename='css/vendor/font-awesome.min.css') }}">
+   <link rel="stylesheet" href="{{ url_for('.static', filename='css/vendor/spinners.css') }}">
+   <link rel="stylesheet" href="{{ url_for('.static', filename='css/main.css') }}">
    <!-- Jquery -->
-   <script src="static/js/jquery-3.2.1.min.js"> </script>
+   <script src="static/js/vendor/jquery-3.2.1.min.js"> </script>
   </head>
   <body>
       {% block content %}
