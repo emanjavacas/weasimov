@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="app"></div>
+<!-- Attach React components -->
+<script type="text/javascript" src="{{ url_for('static', filename='bundle.js') }}"></script>
+{% endblock %}

@@ -1,13 +1,18 @@
 import os
-import sys
+import sys; sys.path.append(os.path.abspath("../generation"))
 
-import flask
-from flask_login import LoginManager
-sys.path.append(os.path.abspath("../generation"))
 from Synthesizer import Synthesizer
 
-app = flask.Flask(__name__)
+import flask
+
+app = flask.Flask(__name__,
+                  static_folder='../static',
+                  template_folder='../templates')
+
+# Configure
 app.config.from_object('config')
+
+# Services
 app.synthesizer = Synthesizer(model_dir=app.config['MODEL_DIR'])
 
 from app import views
