@@ -138,15 +138,16 @@ class Synthesizer(object):
                 elif c == d.get_eos():
                     eos.append(idx - found)
                     found += 1
-                elif c == d.s2i['<par>']:
+                elif c == d.s2i.get('<par>'):
                     par.append(idx - found)
                     found += 1
 
-            return {'text': detokenizer(''.join(d.vocab[c] for c in hyp)
-                                        .replace(d.bos_token, '')
-                                        .replace(d.eos_token, '\n')
-                                        .replace('<par>', '\n')),
-                    'bos': bos, 'eos': eos, 'par': par}
+            text = detokenizer(
+                ''.join(d.vocab[c] for c in hyp)
+                .replace(d.bos_token, '')
+                .replace(d.eos_token, '\n')
+                .replace('<par>', '\n'))
+            return {'text': text, 'bos': bos, 'eos': eos, 'par': par}
 
         def normalize_score(score):
             return round(math.exp(score), 3)
@@ -157,8 +158,7 @@ class Synthesizer(object):
                     return True
             return False
 
-        d = self.dicts[model_name]
-        m = self.models[model_name]
+        d, m = self.dicts[model_name], self.models[model_name]
         result = []
 
         if ignore_eos:

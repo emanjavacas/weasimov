@@ -27,6 +27,7 @@ def generate():
     seed = flask.request.json["selection"]
     temperature = float(flask.request.json['temperature'])
     max_seq_len = int(flask.request.json['max_seq_len'])
+    batch_size = int(flask.request.json['batch_size'])
     if not seed:
         seed = None
     else:
@@ -41,7 +42,7 @@ def generate():
             temperature=temperature,
             ignore_eos=True,
             max_seq_len=max_seq_len,
-            batch_size=5,
+            batch_size=batch_size,
             max_tries=1)
         return flask.jsonify(status='OK', hyps=hyps)
     except ValueError as e:
