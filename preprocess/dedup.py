@@ -20,7 +20,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('path')
     args = parser.parse_args()
-    
+
     for dups in read_dedup_file(args.path):
         for f in dups[1:]:
-            os.remove(f)
+            try:
+                os.remove(f)
+            except FileNotFoundError:
+                print(f)
