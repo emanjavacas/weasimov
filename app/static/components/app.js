@@ -18,6 +18,7 @@ class App extends React.Component {
     this.state = {
       temperature: 0.35,
       maxSeqLen: 200,
+      batchSize: 5,
       currentModel: null,
       hyps: [],
       lastSeed: null,
@@ -29,6 +30,7 @@ class App extends React.Component {
     this.onSliderChange = (value) => this.setState({temperature: value});
     this.onModelSelect = (model) => this.setState({currentModel: model});
     this.onSeqLenChange = (value) => this.setState({maxSeqLen: value});
+    this.onBatchSizeChange = (value) => this.setState({batchSize: value});
     // editor functions
     this.insertHypAtCursor = this.insertHypAtCursor.bind(this);
     this.onEditorChange = this.onEditorChange.bind(this);
@@ -112,7 +114,7 @@ class App extends React.Component {
   // generation functions
   launchGeneration(seed) {
     console.log("Generating with seed: ", seed);
-    const {temperature, currentModel, maxSeqLen} = this.state;
+    const {temperature, currentModel, maxSeqLen, batchSize} = this.state;
     if (!currentModel) {
       alert('Pick a model first!');
       return;
@@ -124,7 +126,8 @@ class App extends React.Component {
     	{'selection': seed,
     	 'temperature': temperature,
     	 'model_name': currentModel,
-	 'max_seq_len': maxSeqLen}),
+	 'max_seq_len': maxSeqLen,
+	 'batch_size': batchSize}),
       type: 'POST',
       dataType: 'json',
       success: (response) => {
@@ -182,6 +185,9 @@ class App extends React.Component {
 			 currentModel={this.state.currentModel}
 			 maxSeqLen={this.state.maxSeqLen}
 			 onSeqLenChange={this.onSeqLenChange}
+			 batchSize={this.state.batchSize}
+			 onBatchSizeChange={this.onBatchSizeChange}
+			 batchSizes={[1, 2, 3, 4, 5, 10, 15]}
 			 sizes={[10, 20, 30, 50, 75, 100, 150, 200, 250, 300]}/>
 		    </div>
 		  </div>
@@ -189,7 +195,7 @@ class App extends React.Component {
 	      </RB.Col>
 	    </RB.Row>
 	    <RB.Row>
-	      <RB.Col md={12}>
+	      <RB.Col md={12} style={{zIndex:"-1"}}>
 		<Utils.Spacer height="25px"/>
 		<Suggestions
 		   hyps={this.state.hyps}

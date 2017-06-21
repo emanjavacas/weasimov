@@ -4,6 +4,24 @@ import * as RB  from 'react-bootstrap';
 import Slider, { createSliderWithTooltip } from 'rc-slider';
 
 
+function makeMenuItems(iterable, isActiveFn, getChildFn, onSelect) {
+  let menuItems = [];
+  for (var i=0; i<iterable.length; i++) {
+    const item = iterable[i];
+    menuItems.push(
+      <RB.MenuItem
+	 style={{"backgroundColor": isActiveFn(item) ? "darkseagreen" : "white"}}
+	 eventKey={i}
+	 key={i}
+	 onSelect={(key, obj) => onSelect(iterable[key])}>
+       {getChildFn(item)}
+      </RB.MenuItem>
+    );
+  }
+  return menuItems;
+}
+
+
 const SliderWithTooltip = createSliderWithTooltip(Slider);
 
 class ButtonToolbar extends React.Component {
@@ -58,41 +76,30 @@ class ButtonToolbar extends React.Component {
   
   render() {
     const {models} = this.state;
-    const {temperature, currentModel} = this.props;
+    const {temperature, currentModel, sizes, maxSeqLen, batchSizes, batchSize} = this.props;
     // create dropdown items for models
-    const hasModels = (models.length > 0);
-    let dropdownModels = null;
-    if (hasModels) {
-      dropdownModels = [];
-      for (var i=0; i<models.length; i++) {
-	const model = models[i];
-	dropdownModels.push(
-	  <RB.MenuItem
-	     style={{"backgroundColor": model.loaded ? "darkseagreen" : "white"}}
-	     eventKey={i}
-	     key={i}
-	     onSelect={(key, obj) => this.loadModel(models[key])}>
-	    {model.path}
-	  </RB.MenuItem>
-	);
-      }
+    let dropdownModels;
+    if (models.length > 0) {
+      dropdownModels = makeMenuItems(
+	models,
+	(model) => model.loaded,
+	(model) => model.path,
+	this.loadModel);
     } else {
       dropdownModels = <RB.MenuItem>No available models</RB.MenuItem>;
     }
     // create dropdown items for size
-    const dropdownSizes = [];
-    for (var i=0; i<this.props.sizes.length; i++) {
-      const size = this.props.sizes[i];
-      dropdownSizes.push(
-	<RB.MenuItem
-	   style={{"backgroundColor": (size === this.props.maxSeqLen) ? "darkseagreen" : "white"}}
-	   eventKey={i}
-	   key={i}
-	   onSelect={(key, obj) => this.props.onSeqLenChange(this.props.sizes[key])}>
-            {size}
-	</RB.MenuItem>
-      );
-    }
+    const dropdownSizes = makeMenuItems(
+      sizes,
+      (size) => size === maxSeqLen,
+      (size) => size,
+      this.props.onSeqLenChange);
+    // create dropdown items for batchSize
+    const dropdownBatchSizes = makeMenuItems(
+      batchSizes,
+      (selectedBatchSize) => selectedBatchSize === batchSize,
+      (batchSize) => batchSize,
+      this.props.onBatchSizeChange);
     const tempStr = (temperature.toString().length === 3) ?
 	    temperature.toString() + '0' :
 	    temperature;
@@ -128,9 +135,21 @@ class ButtonToolbar extends React.Component {
 	  </RB.Col>
 	  <RB.Col md={9} sm={8}>
       	    <RB.DropdownButton
-      	       title={this.props.maxSeqLen + " characters"}
+      	       title={maxSeqLen + " characters"}
       	       id="dropdown-size">
       	      {dropdownSizes}
+      	    </RB.DropdownButton>
+	  </RB.Col>
+	</RB.FormGroup>
+	<RB.FormGroup  style={{zIndex:1}}>
+	  <RB.Col componentClass={RB.ControlLabel} md={3} sm={4}>
+	    Batch size
+	  </RB.Col>
+	  <RB.Col md={9} sm={8}>
+      	    <RB.DropdownButton
+      	       title={batchSize + " suggestions"}
+      	       id="dropdown-size">
+      	      {dropdownBatchSizes}
       	    </RB.DropdownButton>
 	  </RB.Col>
 	</RB.FormGroup>
