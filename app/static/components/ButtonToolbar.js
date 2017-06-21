@@ -93,42 +93,59 @@ class ButtonToolbar extends React.Component {
 	</RB.MenuItem>
       );
     }
+    const tempStr = (temperature.toString().length === 3) ?
+	    temperature.toString() + '0' :
+	    temperature;
     return (
-      <div className="container-fluid">
-        <div className="col-md-6">
-	  <SliderWithTooltip
-	     defaultValue={temperature} min={0.1} max={1.0} step={0.05}
-	     style={{width: "100%"}}
-	     onChange={this.props.onSliderChange}
-	     tipProps={{ overlayClassName: 'foo' }}/>
-	  <span style={{fontWeight: "bold"}} className="pull-right">
-	    Creativity <RB.Label bsStyle="default">{temperature}</RB.Label>
-	  </span>
-	</div>
-	<div className="col-md-6">
-	  <RB.ButtonGroup className="pull-right">
-	    <RB.DropdownButton
-	       title={currentModel || "Model selection"}
-	       id="dropdown-model">
-	      {dropdownModels}
-	    </RB.DropdownButton>
-	    <RB.DropdownButton
-	       title={"Size: " + this.props.maxSeqLen}
-	       id="dropdown-size">
-	      {dropdownSizes}
-	    </RB.DropdownButton>
-	    <RB.Button bsStyle="primary"
-		       onClick={this.props.onGenerate}>
-	      Generate
-	    </RB.Button>
-	  </RB.ButtonGroup>
-	</div>
-      </div>
+      <RB.Form horizontal>
+	<RB.FormGroup>
+	  <RB.Col componentClass={RB.ControlLabel} md={3} sm={4}>
+	    Creativity <RB.Label bsStyle="default">{tempStr}</RB.Label>
+	  </RB.Col>
+	  <RB.Col md={9} sm={8}>
+	    <SliderWithTooltip
+      	       defaultValue={temperature} min={0.1} max={1.0} step={0.05}
+      	       style={{width: "100%", marginTop: "10px"}}
+      	       onChange={this.props.onSliderChange}
+      	       tipProps={{ overlayClassName: 'foo' }}/>
+	  </RB.Col>
+	</RB.FormGroup>
+	<RB.FormGroup>
+	  <RB.Col componentClass={RB.ControlLabel} md={3} sm={4}>
+	    Model
+	  </RB.Col>
+	  <RB.Col md={9} sm={8}>
+      	    <RB.DropdownButton
+      	       title={currentModel || "Model selection"}
+      	       id="dropdown-model">
+      	      {dropdownModels}
+      	    </RB.DropdownButton>
+	  </RB.Col>
+	</RB.FormGroup>
+	<RB.FormGroup>
+	  <RB.Col componentClass={RB.ControlLabel} md={3} sm={4}>
+	    Size
+	  </RB.Col>
+	  <RB.Col md={9} sm={8}>
+      	    <RB.DropdownButton
+      	       title={this.props.maxSeqLen + " characters"}
+      	       id="dropdown-size">
+      	      {dropdownSizes}
+      	    </RB.DropdownButton>
+	  </RB.Col>
+	</RB.FormGroup>
+	<RB.FormGroup>
+	  <RB.Col smOffset={3} sm={9}>
+	    <RB.Button
+      	       bsStyle="primary"
+      	       onClick={this.props.onGenerate}>
+      	      Generate
+      	    </RB.Button>
+	  </RB.Col>
+	</RB.FormGroup>
+      </RB.Form>
     );
   }
 };
 
 export default ButtonToolbar;
-
-
-

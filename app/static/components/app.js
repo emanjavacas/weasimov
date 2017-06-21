@@ -1,7 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {EditorState, RichUtils, Modifier, CompositeDecorator} from 'draft-js';
+import * as RB from 'react-bootstrap';
+import Sticky from 'react-stickynode';
 
+import Navbar from './Navbar';
 import ButtonToolbar from './ButtonToolbar';
 import TextEditor from './TextEditor';
 import Suggestions from './Suggestions';
@@ -150,45 +153,55 @@ class App extends React.Component {
 
   render() {
     return (
-      <div className="container-fluid">
-	<div className="row">
-          <div className="col-md-2"></div>
-          <div className="col-md-8">
-	    <div className="row"><h1>Ik, Asimov</h1></div>
-            <Utils.Spacer height="45px"/>
-            <div className="row">
-	      <ButtonToolbar
-		 onGenerate={this.onGenerate}
-		 onSliderChange={this.onSliderChange}
-		 onModelSelect={this.onModelSelect}
-		 temperature={this.state.temperature}
-		 currentModel={this.state.currentModel}
-		 maxSeqLen={this.state.maxSeqLen}
-		 onSeqLenChange={this.onSeqLenChange}
-		 sizes={[10, 20, 30, 50, 75, 100, 150, 200, 250, 300]}/>
-	    </div>
-	    <Utils.Spacer height="25px"/>
-	    <div className="row">
-	      <TextEditor
-		 editorState={this.state.editorState}
-		 onChange={this.onEditorChange}
-		 handleKeyCommand={this.handleKeyCommand}
-		 onTab={this.onTab}
-		 toggleBlockType={this.toggleBlockType}
-		 toggleInlineStyle={this.toggleInlineStyle}
-		 handleBeforeInput={this.handleBeforeInput}/>
-	    </div>
-	    <Utils.Spacer height="25px"/>
-	    <div className="row">
-	      <Suggestions
-		 hyps={this.state.hyps}
-		 loadingHyps={this.state.loadingHyps}
-		 onRegenerate={this.onRegenerate}
-		 onHypSelect={this.insertHypAtCursor}/>
-	    </div>
-	  </div>
-	  <div className="col-md-2"></div>
-	</div>
+      <div>
+	<Navbar/>
+      <RB.Grid fluid={true}>
+	<RB.Row>
+	  <RB.Col md={1} sm={1}/>
+	  <RB.Col md={10} sm={10}>
+	    <RB.Row>
+	      <RB.Col md={7} sm={7}>
+		<TextEditor
+		   editorState={this.state.editorState}
+		   onChange={this.onEditorChange}
+		   handleKeyCommand={this.handleKeyCommand}
+		   onTab={this.onTab}
+		   toggleBlockType={this.toggleBlockType}
+		   toggleInlineStyle={this.toggleInlineStyle}
+		   handleBeforeInput={this.handleBeforeInput}/>
+              </RB.Col>
+	      <RB.Col md={5} sm={5}>
+		<Sticky enabled={true} top={25}>
+		  <div className="panel panel-default">
+		    <div className="panel-heading">
+		      <ButtonToolbar
+			 onGenerate={this.onGenerate}
+			 onSliderChange={this.onSliderChange}
+			 onModelSelect={this.onModelSelect}
+			 temperature={this.state.temperature}
+			 currentModel={this.state.currentModel}
+			 maxSeqLen={this.state.maxSeqLen}
+			 onSeqLenChange={this.onSeqLenChange}
+			 sizes={[10, 20, 30, 50, 75, 100, 150, 200, 250, 300]}/>
+		    </div>
+		  </div>
+		</Sticky>
+	      </RB.Col>
+	    </RB.Row>
+	    <RB.Row>
+	      <RB.Col md={12}>
+		<Utils.Spacer height="25px"/>
+		<Suggestions
+		   hyps={this.state.hyps}
+		   loadingHyps={this.state.loadingHyps}
+		   onRegenerate={this.onRegenerate}
+		   onHypSelect={this.insertHypAtCursor}/>
+	      </RB.Col>
+	    </RB.Row>
+	  </RB.Col>
+	  <RB.Col md={1} sm={1}/>
+	</RB.Row>
+      </RB.Grid>
       </div>
     );
   }

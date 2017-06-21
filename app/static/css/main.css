@@ -6,6 +6,10 @@ li.list-group-hover.list-group-item:hover {
   cursor: pointer;
 }
 
+.form-group {
+  margin-bottom: 8px;
+}
+
 /* Editor */
 .RichEditor-root {
   background: #fff;
