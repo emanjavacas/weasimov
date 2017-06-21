@@ -142,11 +142,11 @@ class Synthesizer(object):
                     par.append(idx - found)
                     found += 1
 
-            text = ''.join(d.vocab[c] for c in hyp)
-            return {'text': detokenizer(text
-                    .replace(d.bos_token, '')
-                    .replace(d.eos_token, '\n')
-                    .replace('<par>', '\n')),
+            return {'text': detokenizer(''.join(d.vocab[c] for c in hyp)
+                                        .replace(d.bos_token, '')
+                                        .replace(d.eos_token, '\n')
+                                        .replace('<par>', '\n')
+            ),
                     'bos': bos, 'eos': eos, 'par': par}
 
         def normalize_score(score):

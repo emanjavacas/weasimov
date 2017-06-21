@@ -97,6 +97,9 @@ class App extends React.Component {
   }
   
   onEditorChange(editorState) {
+    const oldState = this.state.editorState;
+    console.log(oldState.getCurrentContent().getPlainText(),
+		editorState.getCurrentContent().getPlainText());
     this.setState({editorState});
   }
 
