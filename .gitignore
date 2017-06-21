@@ -112,3 +112,10 @@ models/*
 
 # syncing
 .remote-sync.json
+
+# vscode
+.vscode
+
+# output
+output/*
+examples/*
