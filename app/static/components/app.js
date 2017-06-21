@@ -174,7 +174,7 @@ class App extends React.Component {
 		   handleBeforeInput={this.handleBeforeInput}/>
               </RB.Col>
 	      <RB.Col md={5} sm={5}>
-		<Sticky enabled={true} top={25}>
+		<Sticky enabled={true} top={25} innerZ={1001}>
 		  <div className="panel panel-default">
 		    <div className="panel-heading">
 		      <ButtonToolbar
@@ -195,7 +195,7 @@ class App extends React.Component {
 	      </RB.Col>
 	    </RB.Row>
 	    <RB.Row>
-	      <RB.Col md={12} style={{zIndex:"-1"}}>
+	      <RB.Col md={12}>
 		<Utils.Spacer height="25px"/>
 		<Suggestions
 		   hyps={this.state.hyps}

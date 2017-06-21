@@ -141,7 +141,7 @@ class ButtonToolbar extends React.Component {
       	    </RB.DropdownButton>
 	  </RB.Col>
 	</RB.FormGroup>
-	<RB.FormGroup  style={{zIndex:1}}>
+	<RB.FormGroup>
 	  <RB.Col componentClass={RB.ControlLabel} md={3} sm={4}>
 	    Batch size
 	  </RB.Col>
