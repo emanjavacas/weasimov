@@ -45,6 +45,7 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
                        early_stopping=None, validate=True):
 
     seed_texts = None if not seed_text else [seed_text]
+
     def hook(trainer, epoch, batch_num, checkpoint):
         trainer.log("info", "Checking training...")
         if validate:
@@ -225,10 +226,10 @@ if __name__ == '__main__':
         log_checkpoints=args.log_checkpoints, title=args.prefix, env='lm',
         server='http://' + args.visdom_server)
 
+    trainer.add_loggers(StdLogger(), visdom_logger)
     if args.csv:
-        trainer.add_loggers(CSVLogger(args=args, model=model, save_path=args.csv), StdLogger(), visdom_logger)
-    else:
-        trainer.add_loggers(StdLogger(), visdom_logger)
+        trainer.add_loggers(
+            CSVLogger(args=args, model=model, save_path=args.csv))
 
     trainer.train(args.epochs, args.checkpoint, gpu=args.gpu)
 
