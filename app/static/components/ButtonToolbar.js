@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDom from 'react-dom';
 import * as RB  from 'react-bootstrap';
-import Slider, { createSliderWithTooltip } from 'rc-slider';
+import Slider from 'rc-slider';
 
 
 function makeMenuItems(iterable, isActiveFn, getChildFn, onSelect) {
@@ -21,8 +21,6 @@ function makeMenuItems(iterable, isActiveFn, getChildFn, onSelect) {
   return menuItems;
 }
 
-
-const SliderWithTooltip = createSliderWithTooltip(Slider);
 
 class ButtonToolbar extends React.Component {
   constructor(props) {
@@ -107,14 +105,20 @@ class ButtonToolbar extends React.Component {
       <RB.Form horizontal>
 	<RB.FormGroup>
 	  <RB.Col componentClass={RB.ControlLabel} md={3} sm={4}>
-	    Creativity <RB.Label bsStyle="default">{tempStr}</RB.Label>
+	    Creativity
 	  </RB.Col>
 	  <RB.Col md={9} sm={8}>
-	    <SliderWithTooltip
-      	       defaultValue={temperature} min={0.1} max={1.0} step={0.05}
-      	       style={{width: "100%", marginTop: "10px"}}
-      	       onChange={this.props.onSliderChange}
-      	       tipProps={{ overlayClassName: 'foo' }}/>
+	    <RB.Row>
+	      <RB.Col md={10}>
+		<Slider
+      		   defaultValue={temperature} min={0.1} max={1.0} step={0.05}
+      		   style={{width: "100%", marginTop: "10px"}}
+      		   onChange={this.props.onSliderChange}/>
+	      </RB.Col>
+	      <RB.Col md={2}>
+		<RB.Label bsStyle="default" style={{verticalAlign:"bottom"}}>{tempStr}</RB.Label>
+	      </RB.Col>
+	    </RB.Row>
 	  </RB.Col>
 	</RB.FormGroup>
 	<RB.FormGroup>

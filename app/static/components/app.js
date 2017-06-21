@@ -163,7 +163,7 @@ class App extends React.Component {
 	  <RB.Col md={1} sm={1}/>
 	  <RB.Col md={10} sm={10}>
 	    <RB.Row>
-	      <RB.Col md={7} sm={7}>
+	      <RB.Col md={8} sm={8}>
 		<TextEditor
 		   editorState={this.state.editorState}
 		   onChange={this.onEditorChange}
@@ -173,7 +173,7 @@ class App extends React.Component {
 		   toggleInlineStyle={this.toggleInlineStyle}
 		   handleBeforeInput={this.handleBeforeInput}/>
               </RB.Col>
-	      <RB.Col md={5} sm={5}>
+	      <RB.Col md={4} sm={4}>
 		<Sticky enabled={true} top={25} innerZ={1001}>
 		  <div className="panel panel-default">
 		    <div className="panel-heading">
