@@ -226,7 +226,7 @@ if __name__ == '__main__':
         server='http://' + args.visdom_server)
 
     if args.csv:
-        trainer.add_loggers(CSVLogger(args=args, model=model, save_path=args.csv))
+        trainer.add_loggers(CSVLogger(args=args, model=model, save_path=args.csv), StdLogger(), visdom_logger)
     else:
         trainer.add_loggers(StdLogger(), visdom_logger)
 
