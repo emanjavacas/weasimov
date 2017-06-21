@@ -145,8 +145,7 @@ class Synthesizer(object):
             return {'text': detokenizer(''.join(d.vocab[c] for c in hyp)
                                         .replace(d.bos_token, '')
                                         .replace(d.eos_token, '\n')
-                                        .replace('<par>', '\n')
-            ),
+                                        .replace('<par>', '\n')),
                     'bos': bos, 'eos': eos, 'par': par}
 
         def normalize_score(score):
