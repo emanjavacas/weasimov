@@ -223,8 +223,8 @@ if __name__ == '__main__':
 
     # loggers
     visdom_logger = VisdomLogger(
-        log_checkpoints=args.log_checkpoints, title=args.prefix, env='lm',
-        server='http://' + args.visdom_server)
+        log_checkpoints=args.log_checkpoints, title=args.prefix,
+        env='weasimov', server='http://146.175.11.197')
 
     trainer.add_loggers(StdLogger(), visdom_logger)
     if args.csv:
