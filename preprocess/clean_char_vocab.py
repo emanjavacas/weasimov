@@ -4,53 +4,60 @@ import shutil
 import random
 from collections import Counter
 
+HYPHENS = '-–‐—−‑‒', '-'
+QUOTES = "'′’”\"‚“„ʼ`ʻ‟«¨'´»‘˝″", "'"
+SPACES = "\x94\x92\x9a\x96\u200b\x9c\x8e\x9d\x9e\x88", " "
+STARS = "∗✷★", "*"
+LIGATURES = 'ﬁ', 'fi'
+GARBAGE = '�•·€¬©™', ''
+MAPPINGS = HYPHENS, QUOTES, SPACES, STARS, LIGATURES, GARBAGE
+CHAR_MAPPINGS = {c: r for chars, r in MAPPINGS for c in chars}
+KEEP = 'Ë+ùÍìÓÜãÇ⁄ÈÁ'
 
-def main(indir, outdir, max_nb_files, min_char_freq):
-    indir = os.path.expanduser(indir)
-    outdir = os.path.expanduser(outdir)
-    if os.path.isdir(outdir):
-        shutil.rmtree(outdir)
-    os.mkdir(outdir)
+def main(input_dir, output_dir, max_nb_files, min_char_freq):
+    if os.path.isdir(output_dir):
+        shutil.rmtree(output_dir)
+    os.mkdir(output_dir)
 
-    filenames = glob.glob(indir + '/*.txt')
+    filenames = os.scandir(input_dir)
     if max_nb_files:
         random.shuffle(filenames)
         filenames = filenames[:max_nb_files]
     char_cnt = Counter()
 
     print('-> Establishing char frequencies...')
-    for filename in filenames:
-        print('  -', filename)
-        for line in open(filename, 'r'):
-            char_cnt.update(line)
+    for i, filename in enumerate(filenames):
+        print(f'{i: <8}-{filename.name}')
+        with open(filename.path) as infile:
+            char_cnt.update(infile.read())
 
-    print('Original character distribution:', str(char_cnt))
-    vocab = set([char for char, cnt in char_cnt.items()
-                 if cnt >= min_char_freq])
-    print('Pruned character vocabulary:', sorted(vocab))
+    print('Original character vocabulary:', ''.join(sorted(char_cnt)))
+
+    replacer = str.maketrans(CHAR_MAPPINGS)
+    deletable = ''.join(char for char, cnt in char_cnt.items()
+                        if cnt < min_char_freq and char not in KEEP)
+    deleter = str.maketrans('', '', deletable)
+
+    print('Pruned character vocabulary:', ''.join(sorted(set(''.join(char_cnt).translate(replacer).translate(deleter)))))
 
     print('-> Pruning files...')
-    for filename in filenames:
-        print('  -', filename)
-        bn = os.path.basename(filename)
-        with open(os.sep.join((outdir, bn)), 'w') as outf:
-            for line in open(filename):
-                line = ''.join([c for c in line if c in vocab])
-                if line.strip():
-                    outf.write(line.lstrip())
+    for i, filename in enumerate(os.scandir(input_dir)):
+        print(f'{i: <8}-{filename.name}')
+        with open(filename.path) as infile:
+            text = infile.read()
+        text = text.translate(replacer).translate(deleter)
+        with open(os.sep.join((output_dir, filename.name)), 'w') as outfile:
+            outfile.write(text)
 
 
 if __name__ == '__main__':
 
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--indir', type=str)
-    parser.add_argument('--outdir', type=str, default='cleaned')
+    parser.add_argument('--input_dir', type=str)
+    parser.add_argument('--output_dir', type=str, default='cleaned')
     parser.add_argument('--max_nb_files', default=None, type=int)
-    parser.add_argument('--min_char_freq', default=5000, type=int)
+    parser.add_argument('--min_char_freq', default=2000, type=int)
     args = parser.parse_args()
 
-    main(indir=args.indir,
-         outdir=args.outdir,
-         max_nb_files=args.max_nb_files,
-         min_char_freq=args.min_char_freq)
+    main(args.input_dir, args.output_dir, args.max_nb_files, args.min_char_freq)
