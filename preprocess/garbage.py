@@ -1,6 +1,7 @@
 import os
 import numpy as np
 
+
 def coverage(text: str, stopwords: list) -> float:
     return sum(text.find(w) > -1 for w in stopwords) / len(stopwords)
 
