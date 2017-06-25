@@ -116,3 +116,9 @@ models/*
 # npm
 node_modules/
 bundle.js
+
+examples/*
+.vscode/*
+analysis/*
+output/*
+app/db_repository/*
