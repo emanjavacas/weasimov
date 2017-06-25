@@ -121,4 +121,5 @@ examples/*
 .vscode/*
 analysis/*
 output/*
+*.db
 app/db_repository/*
