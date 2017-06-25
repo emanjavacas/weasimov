@@ -21,10 +21,13 @@ def nur_tree(fpath: str) -> dict:
 class DanteMeta:
     def __init__(self, fname, nur_tree, expand_categories=False):
         self.fname = fname
-        self.tree = lxml.etree.parse(fname)
+        self.tree = lxml.etree.parse(fname.path)
         self.ns = {'ns': 'http://www.editeur.org/onix/3.0/reference'}
         self.nur_tree = nur_tree
         self.expand_categories = expand_categories
+
+    def get_fname(self):
+        return {'txt_file': self.fname.name}
 
     def in_dante(self):
         if not hasattr(self, 'n_products'):
@@ -90,7 +93,8 @@ class DanteMeta:
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_dir')
+    parser.add_argument('--input_dir', type=str)
+    parser.add_argument('--output_file', type=str)
     args = parser.parse_args()
 
     dicts = []
@@ -98,5 +102,6 @@ if __name__ == '__main__':
     for fname in os.scandir(args.input_dir):
         if fname.name.endswith('.xml'):
             print(fname)
-            tree = DanteMeta(fname.path, nur, expand_categories=True)
+            tree = DanteMeta(fname, nur, expand_categories=True)
             dicts.append(tree.meta_info())
+    df = pd.DataFrame(dicts).fillna('').to_csv(args.output_file, index=False)
