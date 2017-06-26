@@ -1,8 +1,9 @@
 import json
 import unicodedata
 import flask
-from app import app, db
-from .models import Edit, Text, Generation, User
+from app import app, db, lm
+import models
+import forms
 
 
 @app.route('/')
@@ -10,10 +11,34 @@ def index():
     return flask.render_template('index.html')
 
 
+@lm.user_loader
+def load_user(id):
+    return models.User.query.get(int(id))
+
+
+@app.before_request
+def before_request():
+    flask.g.user = current_user
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if flask.g.user is not None and flask.g.user.is_authenticated:
+        return flask.redirect(flask.url_for('index'))
+    form = forms.LoginForm()
+    if flask.request.method == 'GET':
+        return flask.render_template('login.html', title='Sign in', form=form)
+    if form.validate_on_submit() and form.validate_fields():
+        flask.session['remember_me'] = form.remember_me.data
+        flask_login.login_user(form.get_user(), remember=form.remember_me.data)
+        return flask.redirect(flask.url_for("index"))
+    return flask.render_template("login.html", title='Sign in', form=form)
+
+
 @app.route('/savechange', methods=['POST'])
 def savechange():
     data = flask.request.json
-    edit = Edit(start=int(data['start']), end=int(data['end']), edit=data['edit'])
+    edit = models.Edit(start=int(data['start']), end=int(data['end']), edit=data['edit'])
     db.session.add(edit)
     db.session.commit()
     return flask.jsonify(status='OK', message='changes saved.')
@@ -22,7 +47,7 @@ def savechange():
 @app.route('/savedoc', methods=['POST'])
 def savedoc():
     data = flask.request.json
-    text = Text(text=data['text'])
+    text = models.Text(text=data['text'])
     db.session.add(text)
     db.session.commit()
     return flask.jsonify(status='OK', message='document saved.')
@@ -46,7 +71,7 @@ def generate():
             max_tries=1)
         timestamp = datetime.datetime.utcnow()
         for hyp in hyps:
-            db.session.add(Generation(
+            db.session.add(models.Generation(
                 model=flask.request.json['model_name'],
                 seed=seed[0],
                 temp=temperature,
