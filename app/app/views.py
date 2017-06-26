@@ -44,12 +44,14 @@ def generate():
             max_seq_len=max_seq_len,
             batch_size=batch_size,
             max_tries=1)
+        timestamp = datetime.datetime.utcnow()
         for hyp in hyps:
             db.session.add(Generation(
                 model=flask.request.json['model_name'],
                 seed=seed[0],
                 temp=temperature,
-                text=hyp['text']))
+                text=hyp['text'],
+                timestamp=timestamp))
         db.session.commit()
         return flask.jsonify(status='OK', hyps=hyps)
     except ValueError as e:
