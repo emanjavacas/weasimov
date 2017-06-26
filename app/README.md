@@ -36,6 +36,12 @@ Running `webpack` creates a file in `static/bundle.js`, which is the bundled ver
 
 ## Running the app
 
+Before running the Flask app, make sure you have set up the database. If not, simply run:
+
+```make```
+
+in the `weasimov/app` dir.
+
 Run the Flask app
 
 ```
