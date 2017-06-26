@@ -19,7 +19,7 @@ def nur_tree(fpath: str) -> dict:
 
 
 class DanteMeta:
-    def __init__(self, fname, nur_tree, expand_categories=False):
+    def __init__(self, fname: str, nur_tree: dict, expand_categories=False):
         self.fname = fname
         self.tree = lxml.etree.parse(fname.path)
         self.ns = {'ns': 'http://www.editeur.org/onix/3.0/reference'}
@@ -55,7 +55,8 @@ class DanteMeta:
         if not hasattr(self, 'title'):
             self.title = next({'title:detail': title.find('ns:TitleElement/ns:TitleText', namespaces=self.ns).text}
                 for title in self.tree.xpath('//ns:TitleDetail', namespaces=self.ns)
-                if title.find('ns:TitleType', namespaces=self.ns).text == '01')
+                if title.find('ns:TitleType', namespaces=self.ns).text == '01' and
+                   title.find('ns:TitleElement/ns:TitleElementLevel', namespaces=self.ns).text == '01')
         return self.title
 
     def get_subject(self):
@@ -87,6 +88,8 @@ class DanteMeta:
             for name, method in inspect.getmembers(self, predicate=inspect.ismethod):
                 if name.startswith('get_'):
                     meta.update(method())
+        else:
+            meta.update(self.get_fname())
         return meta
 
 
@@ -104,4 +107,8 @@ if __name__ == '__main__':
             print(fname)
             tree = DanteMeta(fname, nur, expand_categories=True)
             dicts.append(tree.meta_info())
-    df = pd.DataFrame(dicts).fillna('').to_csv(args.output_file, index=False)
+    df = pd.DataFrame(dicts).fillna('')
+    df['txt_file_common'] = df.txt_file.str.extract(r'(.*?)[\-0-9]*.xml')
+    df = df.drop_duplicates(subset=['author:id', 'author:lastname', 'categories', 'language',
+                                    'subject', 'title:detail', 'txt_file_common'])
+    df.drop('txt_file_common', 1).sort_values('txt_file').to_csv(args.output_file, index=False)
