@@ -1,26 +1,32 @@
 import json
 import unicodedata
 import flask
-import nltk
-from app import app
+from app import app, db
+from .models import Edit, Text, Generation, User
+
 
 @app.route('/')
 def index():
     return flask.render_template('index.html')
 
+
 @app.route('/savechange', methods=['POST'])
 def savechange():
     data = flask.request.json
-    print(data)
-    # TODO: actually save the changes
+    edit = Edit(start=int(data['start']), end=int(data['end']), edit=data['edit'])
+    db.session.add(edit)
+    db.session.commit()
     return flask.jsonify(status='OK', message='changes saved.')
+
 
 @app.route('/savedoc', methods=['POST'])
 def savedoc():
     data = flask.request.json
-    print(data)
-    # TODO: actually save the document
+    text = Text(text=data['text'])
+    db.session.add(text)
+    db.session.commit()
     return flask.jsonify(status='OK', message='document saved.')
+
 
 @app.route('/generate', methods=['POST'])
 def generate():
@@ -28,13 +34,7 @@ def generate():
     temperature = float(flask.request.json['temperature'])
     max_seq_len = int(flask.request.json['max_seq_len'])
     batch_size = int(flask.request.json['batch_size'])
-    if not seed:
-        seed = None
-    else:
-        seed_ends_with_space = seed.endswith(' ')
-        seed = [' '.join(nltk.word_tokenize(seed, language="dutch"))]
-        if seed_ends_with_space:
-            seed[0] += ' '
+    seed = None if not seed else [seed]
     try:
         hyps = app.synthesizer.sample(
             model_name=flask.request.json['model_name'],
@@ -44,9 +44,17 @@ def generate():
             max_seq_len=max_seq_len,
             batch_size=batch_size,
             max_tries=1)
+        for hyp in hyps:
+            db.session.add(Generation(
+                model=flask.request.json['model_name'],
+                seed=seed[0],
+                temp=temperature,
+                text=hyp['text']))
+        db.session.commit()
         return flask.jsonify(status='OK', hyps=hyps)
     except ValueError as e:
         return flask.jsonify(status='Error', message=str(e)), 500
+
 
 @app.route('/temperature', methods=['POST'])
 def temperature():
@@ -56,9 +64,11 @@ def temperature():
         message=f'temperature adjusted to {app.synthesizer.temperature}',
         temperature=app.synthesizer.temperature)
 
+
 @app.route('/models', methods=['GET'])
 def models():
     return flask.jsonify(status='OK', models=app.synthesizer.list_models())
+
 
 @app.route('/load_model', methods=['POST'])
 def load_model():
