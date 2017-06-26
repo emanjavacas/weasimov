@@ -1,0 +1,48 @@
+<!-- extend from base layout -->
+{% extends "base.html" %}
+{% block content %}
+
+<div class="text-center" style="padding:50px 0">
+    <div class="login-message">login</div>
+    <div class="login-form-1">
+        <form action="" method="POST" name="login" class="text-left">
+            <div class="login-form-main-message"></div>
+            <div class="main-login-form">
+                <div class="login-group">
+                    {{ form.hidden_tag() }}
+                    <fieldset>
+                    <div class="form-group">
+                        <label for="name" class="sr-only">{{ form.username.label }}</label>
+                        {{ form.username(class="form-control", placeholder="username") }}
+                        {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                            <span class="help-block" style="color: brown">{{ error }}</span>
+                        {% endfor %} 
+                        {% endif %} 
+                    </div>
+                    <div class="form-group">
+                    <label for="password" class="sr-only">{{ form.password.label }}</label>
+                    {{ form.password(class="form-control", placeholder="password") }}
+                    {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                        <span class="help-block" style="color: brown">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                    </div>
+                    <div class="form-group login-group-checkbox">
+                        {{ form.remember_me() }}
+                        <label for="remember_me">remember</label>
+                    </div>
+                    </fieldset>
+                </div>
+                <button class="login-button" type="submit">
+                <i class="fa fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="etc-login-form">
+				<p>nieuwe gebruiker? <a href="{{ url_for('register') }}">registreer</a></p>
+			</div>
+        </form>
+    </div>
+</div>
+{% endblock %}
