@@ -5,27 +5,6 @@ import requests
 import lxml.etree
 import pandas as pd
 
-def nur_tree(fpath: str) -> dict:
-    tree = {}
-    anchor, depth = [None, None, None], 0
-    for line in open(fpath):
-        depth = line.count('\t')
-        code, description = line.strip().split(' ', 1)
-        if depth > 0:
-            tree[code] = {'description': description, 'parent': anchor[depth - 1]}
-        else:
-            tree[code] = {'description': description, 'parent': None}
-        anchor[depth] = code
-    return tree
-
-
-def get_categories(code: str, tree: dict) -> list:
-    results = [tree[code]['description']]
-    parent = tree[code]['parent']
-    if parent is not None:
-        results += get_categories(parent, tree)
-    return results
-
 
 def query(isbn, api_key, url='http://db.meta4books.be/REST/onix3plus/product/isbn'):
     try:
@@ -46,6 +25,7 @@ def get_nonexistant_path(fname):
         i += 1
         new_fname = "{}-{}{}".format(filename, i, file_extension)
     return new_fname
+
 
 if __name__ == '__main__':
     import argparse
