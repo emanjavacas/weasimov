@@ -25,7 +25,7 @@ class Edit(db.Model):
 
 class Generation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    model = db.Column(db.String(64))
+    model = db.Column(db.String(120))
     seed = db.Column(db.String())
     temp = db.Column(db.Float)
     text = db.Column(db.String())
