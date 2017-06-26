@@ -26,8 +26,6 @@ class LoginForm(Form):
 
 class RegisterForm(Form):
     username = StringField('username', validators=[DataRequired()])
-    firstname = StringField('Voornaam', validators=[DataRequired()])
-    surname = StringField('Achternaam', validators=[DataRequired()])
     password = PasswordField('password', validators=[DataRequired()])
     cpassword = PasswordField('confirm password', validators=[DataRequired()])
 
