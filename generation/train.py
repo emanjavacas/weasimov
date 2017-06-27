@@ -1,12 +1,15 @@
 
 import os
 import sys
+import re
 
-import random; random.seed(1001)
+import random
+random.seed(1001)
 
 import numpy as np
 
-import torch; torch.manual_seed(1001)
+import torch
+torch.manual_seed(1001)
 try:
     torch.cuda.manual_seed(1001)
 except:
@@ -39,12 +42,18 @@ def load_from_file(path):
     return data
 
 
-# hook
+# check hook
 def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
-                       method='sample', temperature=1., width=5,
-                       early_stopping=None, validate=True):
+                       method='sample', temperature=.6, width=5,
+                       early_stopping=None, validate=True,
+                       nb_temperatures=4):
 
-    seed_texts = None if not seed_text else [seed_text]
+    dpath = os.path.dirname(os.path.realpath(__file__))
+    fpath = os.sep.join((dpath, 'seed-sentences.txt'))
+    seed_texts = [l.strip() for l in open(fpath, 'r')][:1]
+    temperatures = np.linspace(0.1, temperature, nb_temperatures)
+    s = re.compile(r' +')
+    ss = re.compile(r"(?<=\S)\s(?=\S)")
 
     def hook(trainer, epoch, batch_num, checkpoint):
         trainer.log("info", "Checking training...")
@@ -55,14 +64,44 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
             if early_stopping is not None:
                 early_stopping.add_checkpoint(loss)
         trainer.log("info", "Generating text...")
-        scores, hyps = trainer.model.generate(
-            d, seed_texts=seed_texts, max_seq_len=max_seq_len, gpu=gpu,
-            method=method, temperature=temperature, width=width)
-        hyps = [u.format_hyp(score, hyp, hyp_num + 1, d)
-                for hyp_num, (score, hyp) in enumerate(zip(scores, hyps))]
-        trainer.log("info", '\n***' + ''.join(hyps) + "\n***")
+        for temp in temperatures:
+            trainer.log("info", "Temperature at " + "%.2f" % temp)
+            scores, hyps = trainer.model.generate(
+                d, seed_texts=seed_texts, max_seq_len=max_seq_len, gpu=gpu,
+                method=method, temperature=temp, width=width)
+            hyps = [u.format_hyp(score, hyp, hyp_num + 1, d)
+                    for hyp_num, (score, hyp) in enumerate(zip(scores, hyps))]
+            hyps = [ss.sub('', h) for h in hyps]
+            hyps = [s.sub(' ', h) for h in hyps]
+            trainer.log("info", '\n***' + ''.join(hyps) + "\n***")
 
     return hook
+
+
+# check hook
+def make_lm_save_hook(args):
+
+    def hook(trainer, epoch, batch_num, checkpoint):
+        trainer.log("info", "Saving model...")
+        save_model(trainer.model, args, ppl=None)
+
+    return hook
+
+
+def save_model(model, args, ppl=None):
+    fname = '{prefix}.{cell}.{layers}l.{hid_dim}h.{emb_dim}e.{bptt}b'
+
+    if ppl:  # add test ppl to final save
+        fname += '.{ppl}'
+        fname = fname.format(ppl="%.2f" % ppl, **vars(args))
+    else:
+        fname = fname.format(**vars(args))
+
+    u.save_model({'model': model.cpu(),
+                  'dict': d,
+                  'train_params': vars(args)},
+                 fname)
+    print("Model saved to [%s]..." % fname)
 
 
 if __name__ == '__main__':
@@ -97,7 +136,7 @@ if __name__ == '__main__':
                         help='Maximum items in the dictionary')
     parser.add_argument('--min_freq', default=1, type=int,
                         help=('Minimum frequency for an item to be ' +
-                              'include in the dictionary'))
+                              'included in the dictionary'))
     parser.add_argument('--level', default='char')
     parser.add_argument('--filter_titles', type=str)
     parser.add_argument('--filter_authors', type=str)
@@ -123,9 +162,10 @@ if __name__ == '__main__':
     parser.add_argument('--seed', default=None)
     parser.add_argument('--decoding_method', default='sample')
     parser.add_argument('--max_seq_len', default=50, type=int)
-    parser.add_argument('--temperature', default=1, type=float)
+    parser.add_argument('--temperature', default=.75, type=float)
     parser.add_argument('--checkpoint', default=100, type=int)
     parser.add_argument('--hooks_per_epoch', default=200, type=int)
+    parser.add_argument('--saves_per_epoch', default=200, type=int)
     parser.add_argument('--log_checkpoints', action='store_true')
     parser.add_argument('--visdom_server', default='localhost')
     parser.add_argument('--save', action='store_true')
@@ -164,6 +204,7 @@ if __name__ == '__main__':
             d.fit(load_data(path=args.corpus, level=args.level,
                             filters=filters))
         print("Transforming data...")
+        print(args.corpus)
         data = d.transform(
             load_data(path=args.corpus, level=args.level, filters=filters))
         data = np.array([c for s in data for c in s], dtype=np.int32)
@@ -210,16 +251,24 @@ if __name__ == '__main__':
     trainer = LMTrainer(model, {"train": train, "test": test, "valid": valid},
                         criterion, optim)
 
-    # hooks
+    # check hooks:
     early_stopping = None
     if args.early_stopping > 0:
         early_stopping = EarlyStopping(args.early_stopping)
+
     model_check_hook = make_lm_check_hook(
         d, method=args.decoding_method, temperature=args.temperature,
         max_seq_len=args.max_seq_len, seed_text=args.seed, gpu=args.gpu,
         early_stopping=early_stopping)
-    num_checkpoints = len(train) // (args.checkpoint * args.hooks_per_epoch)
+    num_checkpoints = max(1, len(train) // (args.checkpoint *
+                                            args.hooks_per_epoch))
     trainer.add_hook(model_check_hook, num_checkpoints=num_checkpoints)
+
+    # save hooks:
+    model_save_hook = make_lm_save_hook(args)
+    num_checkpoints = max(1, len(train) // (args.checkpoint *
+                                            args.saves_per_epoch))
+    trainer.add_hook(model_save_hook, num_checkpoints=num_checkpoints)
 
     # loggers
     visdom_logger = VisdomLogger(
@@ -233,21 +282,7 @@ if __name__ == '__main__':
     trainer.train(args.epochs, args.checkpoint, gpu=args.gpu)
 
     if args.save:
-        fname = '{prefix}.{cell}.{layers}l.{hid_dim}h.{emb_dim}e.{bptt}b.{ppl}'
         test_ppl = trainer.validate_model(test=True)
         print("Test perplexity: %g" % test_ppl)
         if args.save:
-            if args.load_model:  # don't overwrite the existing model
-                fname = '.'.join(args.model_path.split('.')[:-1])
-                fname += '.post.{ppl}'
-            fname = fname.format(ppl="%.2f" % test_ppl, **vars(args))
-            if os.path.isfile(fname):
-                answer = input("File [%s] exists. Overwrite? (y/n): " % fname)
-                if answer.lower() not in ("y", "yes"):
-                    print("Goodbye!")
-                    sys.exit(0)
-            print("Saving model to [%s]..." % fname)
-            u.save_model({'model': model.cpu(),
-                          'dict': d,
-                          'train_params': vars(args)},
-                         fname)
+            save_model(trainer.model, args, test_ppl)
