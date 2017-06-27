@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans');
 @import url('https://fonts.googleapis.com/css?family=Cousine');
+
 .navbar-default {
   background-color: #fff
 }
@@ -14,43 +15,38 @@ li.list-group-hover.list-group-item:hover {
 }
 
 /* generate bar */
-.sticky-inner-wrapperelement {
-	position: fixed;
-	top: 0px;
-}
-.panel-heading{
+
+.generate-bar .panel-heading{
   padding: 0;
 }
-.form-group {
+.generate-bar .form-group {
   margin-bottom: 10px !important;
   display: inline-flex;
 }
-.form-horizontal .control-label {
+.generate-bar .form-horizontal .control-label {
   width: 120px;
 }
-/* Individual Elements*/
 
-.rc-slider {
-  margin-left: 16px;
+/* Individual elements on the generate bar*/
+
+.generate-bar .rc-slider {
   width: 140px !important;
 }
-.panel-heading .form-group:nth-child(2){
+.generate-bar .panel-heading .form-group:nth-child(2){
   margin-right: -30px;
 }
-.panel-heading .form-group:nth-child(3){
+.generate-bar .panel-heading .form-group:nth-child(3){
   margin-right: 10px;
 }
-.panel-heading .form-group:nth-child(4){
-
-}
-.panel-heading .form-group:nth-last-child(1){
+.generate-bar .panel-heading .form-group:nth-last-child(1){
   float: right;
   margin-top: 15px;
   margin-right: 0px
-
 }
 
+
 /* Editor */
+
 .RichEditor-root {
   background: #fff;
   border: none;
@@ -101,6 +97,13 @@ li.list-group-hover.list-group-item:hover {
   font-size: 14px;
   margin-bottom: 5px;
   user-select: none;
+  position: absolute;
+  width: 20px;
+  left: -50px;
+  top: 0px;
+}
+.RichEditor-controls .btn-sm{
+  margin: 6px;
 }
 
 .RichEditor-styleButton {

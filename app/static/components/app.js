@@ -160,6 +160,7 @@ class App extends React.Component {
 <RB.Grid fluid={true}>
 	<RB.Row>
 	  <RB.Col md={1} sm={1}></RB.Col>
+    <div className="generate-bar">
 	  <RB.Col md={10} sm={10}>
           <Sticky enabled={true} top={25} innerZ={1001}>
             <div className="panel panel-default">
@@ -180,6 +181,7 @@ class App extends React.Component {
             </div>
           </Sticky>
     </RB.Col>
+    </div>
     <RB.Col md={1} sm={1}></RB.Col>
   </RB.Row>
 
