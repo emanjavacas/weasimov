@@ -76,7 +76,7 @@ def load_data(path='data/bigmama/',
             if 'genres' in filters:
                 match = False
                 for f in filters['genres']:
-                    if f in str(me['categories']).lower():
+                    if f in me['categories'].lower():
                         match = True
                         continue
                 if not match:
