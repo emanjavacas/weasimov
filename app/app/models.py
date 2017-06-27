@@ -59,5 +59,5 @@ class Generation(db.Model):
     seed = db.Column(db.String())
     temp = db.Column(db.Float)
     text = db.Column(db.String())
-    generation_id = db.Column(String(64))
+    generation_id = db.Column(db.String(64))
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
