@@ -104,14 +104,15 @@ class App extends React.Component {
     const oldContent = oldState.getCurrentContent();
     const newContent = editorState.getCurrentContent();
     if (oldContent !== newContent) {
-      console.log(convertToRaw(newContent), convertToRaw(oldContent));
+      // console.log(convertToRaw(newContent), convertToRaw(oldContent));
+      EditorUtils.updateHypMetadata(editorState);
     }
     this.setState({editorState});
   }
 
   // generation functions
   launchGeneration(seed) {
-    console.log("Generating with seed: ", seed);
+    console.log(`Generating with seed: [${seed}]`);
     const {temperature, currentModel, maxSeqLen, batchSize} = this.state;
     if (!currentModel) {
       alert('Pick a model first!');
@@ -121,19 +122,19 @@ class App extends React.Component {
       contentType: 'application/json;charset=UTF-8',
       url: 'generate',
       data: JSON.stringify(
-    	{'selection': seed,
-    	 'temperature': temperature,
-    	 'model_name': currentModel,
-	 'max_seq_len': maxSeqLen,
-	 'batch_size': batchSize}),
+      {'selection': seed,
+       'temperature': temperature,
+       'model_name': currentModel,
+   'max_seq_len': maxSeqLen,
+   'batch_size': batchSize}),
       type: 'POST',
       dataType: 'json',
       success: (response) => {
-    	this.setState({hyps: response.hyps, lastSeed: seed, loadingHyps: false});
+      this.setState({hyps: response.hyps, lastSeed: seed, loadingHyps: false});
       },
       error: (error) => {
-    	console.log(error);
-	this.setState({loadingHyps: false});
+      console.log(error);
+  this.setState({loadingHyps: false});
       }
     });
     this.setState({loadingHyps: true});
@@ -156,56 +157,63 @@ class App extends React.Component {
     return (
       <div>
 	<Navbar/>
-      <RB.Grid fluid={true}>
+<RB.Grid fluid={true}>
 	<RB.Row>
-	  <RB.Col md={1} sm={1}/>
+	  <RB.Col md={1} sm={1}></RB.Col>
 	  <RB.Col md={10} sm={10}>
-	    <RB.Row>
-	      <RB.Col md={8} sm={8}>
-		<TextEditor
-		   editorState={this.state.editorState}
-		   onChange={this.onEditorChange}
-		   handleKeyCommand={this.handleKeyCommand}
-		   onTab={this.onTab}
-		   toggleBlockType={this.toggleBlockType}
-		   toggleInlineStyle={this.toggleInlineStyle}
-		   handleBeforeInput={this.handleBeforeInput}/>
-              </RB.Col>
-	      <RB.Col md={4} sm={4}>
-		<Sticky enabled={true} top={25} innerZ={1001}>
-		  <div className="panel panel-default">
-		    <div className="panel-heading">
-		      <ButtonToolbar
-			 onGenerate={this.onGenerate}
-			 onSliderChange={this.onSliderChange}
-			 onModelSelect={this.onModelSelect}
-			 temperature={this.state.temperature}
-			 currentModel={this.state.currentModel}
-			 maxSeqLen={this.state.maxSeqLen}
-			 onSeqLenChange={this.onSeqLenChange}
-			 batchSize={this.state.batchSize}
-			 onBatchSizeChange={this.onBatchSizeChange}
-			 batchSizes={[1, 2, 3, 4, 5, 10, 15]}
-			 sizes={[10, 20, 30, 50, 75, 100, 150, 200, 250, 300]}/>
-		    </div>
-		  </div>
-		</Sticky>
-	      </RB.Col>
-	    </RB.Row>
-	    <RB.Row>
-	      <RB.Col md={12}>
-		<Utils.Spacer height="25px"/>
-		<Suggestions
-		   hyps={this.state.hyps}
-		   loadingHyps={this.state.loadingHyps}
-		   onRegenerate={this.onRegenerate}
-		   onHypSelect={this.insertHypAtCursor}/>
-	      </RB.Col>
-	    </RB.Row>
-	  </RB.Col>
-	  <RB.Col md={1} sm={1}/>
-	</RB.Row>
-      </RB.Grid>
+          <Sticky enabled={true} top={25} innerZ={1001}>
+            <div className="panel panel-default">
+              <div className="panel-heading">
+                <ButtonToolbar
+             onGenerate={this.onGenerate}
+             onSliderChange={this.onSliderChange}
+             onModelSelect={this.onModelSelect}
+             temperature={this.state.temperature} 
+             currentModel={this.state.currentModel}
+             maxSeqLen={this.state.maxSeqLen}
+             onSeqLenChange={this.onSeqLenChange}
+             batchSize={this.state.batchSize}
+             onBatchSizeChange={this.onBatchSizeChange}
+             batchSizes={[1, 2, 3, 4, 5, 10, 15]}
+             sizes={[10, 20, 30, 50, 75, 100, 150, 200, 250, 300]}/>
+              </div>
+            </div>
+          </Sticky>
+    </RB.Col>
+    <RB.Col md={1} sm={1}></RB.Col>
+  </RB.Row>
+
+  <RB.Row>
+    <RB.Col md={3} sm={1}></RB.Col>
+    <RB.Col md={6} sm={10}>
+      <TextEditor
+         editorState={this.state.editorState}
+         onChange={this.onEditorChange}
+         handleKeyCommand={this.handleKeyCommand}
+         onTab={this.onTab}
+         toggleBlockType={this.toggleBlockType}
+         toggleInlineStyle={this.toggleInlineStyle}
+         handleBeforeInput={this.handleBeforeInput}/>
+    </RB.Col>
+    <RB.Col md={3} sm={1}></RB.Col>
+  </RB.Row>
+   
+  <RB.Row>
+    <RB.Col md={3} sm={1}></RB.Col>
+      <RB.Col md={6}>
+    		<Utils.Spacer height="25px"/>
+    		<Suggestions
+    		   hyps={this.state.hyps}
+    		   loadingHyps={this.state.loadingHyps}
+    		   onRegenerate={this.onRegenerate}
+    		   onHypSelect={this.insertHypAtCursor}/>
+      </RB.Col>
+
+      <RB.Col md={3} sm={1}>
+      </RB.Col>
+  </RB.Row>
+    
+</RB.Grid>
       </div>
     );
   }

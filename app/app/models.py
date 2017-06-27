@@ -1,5 +1,22 @@
 import datetime
+import json
 from app import db
+
+
+class JSONEncodedDict(db.TypeDecorator):
+    "Represents an immutable structure as a json-encoded string."
+
+    impl = db.VARCHAR
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = json.dumps(value)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = json.loads(value)
+        return value
 
 
 class User(db.Model):
@@ -25,14 +42,13 @@ class User(db.Model):
 
 class Text(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String())
+    text = db.Column(JSONEncodedDict)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 
 class Edit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    start, end = db.Column(db.Integer), db.Column(db.Integer)
-    edit = db.String(db.String())
+    edit = db.String(JSONEncodedDict)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 
@@ -41,5 +57,7 @@ class Generation(db.Model):
     model = db.Column(db.String(120))
     seed = db.Column(db.String())
     temp = db.Column(db.Float)
+    selected = db.Column(db.Boolean, default=False)
     text = db.Column(db.String())
+    generation_id = db.Column(db.String(64))
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)

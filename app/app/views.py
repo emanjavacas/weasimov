@@ -1,6 +1,7 @@
 import json
 import datetime
 import unicodedata
+import uuid
 import flask
 import flask_login
 from app import app, db, lm
@@ -67,7 +68,9 @@ def logout():
 @flask_login.login_required
 def savechange():
     data = flask.request.json
-    edit = Edit(start=int(data['start']), end=int(data['end']), edit=data['edit'])
+    timestamp = datetime.datetime.strptime(
+        data['timestamp'], "%Y-%m-%d %H:%M:%S.%f")
+    edit = Edit(edit=data['edit'], timestamp=timestamp)
     db.session.add(edit)
     db.session.commit()
     return flask.jsonify(status='OK', message='changes saved.')
@@ -77,7 +80,9 @@ def savechange():
 @flask_login.login_required
 def savedoc():
     data = flask.request.json
-    text = Text(text=data['text'])
+    timestamp = datetime.datetime.strptime(
+        data['timestamp'], "%Y-%m-%d %H:%M:%S.%f")
+    text = Text(text=data['text'], timestamp=timestamp)
     db.session.add(text)
     db.session.commit()
     return flask.jsonify(status='OK', message='document saved.')
@@ -102,12 +107,15 @@ def generate():
             max_tries=1)
         timestamp = datetime.datetime.utcnow()
         for hyp in hyps:
+            generation_id = str(uuid.uuid4())
             db.session.add(Generation(
                 model=flask.request.json['model_name'],
                 seed=seed[0] if seed is not None else '',
                 temp=temperature,
                 text=hyp['text'],
+                generation_id=generation_id,
                 timestamp=timestamp))
+            hyp['generation_id'] = generation_id
         db.session.commit()
         return flask.jsonify(status='OK', hyps=hyps)
     except ValueError as e:

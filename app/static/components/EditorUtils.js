@@ -2,27 +2,29 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {EditorState, RichUtils, Modifier, CompositeDecorator} from 'draft-js';
 
+import Levenshtein from 'fast-levenshtein';
 
-function getTextSelection(contentState, selection) {
-  const blockDelimiter = '\n';
-  const startKey = selection.getStartKey();
-  const endKey = selection.getEndKey();
 
+function getSelectedBlocks(contentState, selection) {
+  const startKey = selection.getStartKey(), endKey = selection.getEndKey();
   return contentState.getBlockMap()
     .skipUntil((block) => block.getKey() === startKey).reverse()
-    .skipUntil((block) => block.getKey() === endKey).reverse()
+    .skipUntil((block) => block.getKey() === endKey).reverse();
+}
+
+
+function getTextSelection(contentState, selection, blockDelimiter) {
+  const startKey = selection.getStartKey(), endKey = selection.getEndKey();
+
+  return getSelectedBlocks(contentState, selection)
     .map((block) => {
       const key = block.getKey();
       const text = block.getText();
       let start = 0, end = text.length;
-      if (key === startKey) {
-	start = selection.getStartOffset();
-      }
-      if (key === endKey) {
-	end = selection.getEndOffset();
-      }
+      if (key === startKey) start = selection.getStartOffset();
+      if (key === endKey) end = selection.getEndOffset();
       return text.slice(start, end);;
-    }).join(blockDelimiter);
+    }).join(blockDelimiter || '\n');
 }
 
 
@@ -56,40 +58,41 @@ function getEntityText(block, offset, entityKey) {
   return block.getText().slice(startOffset + 1, endOffset);
 }
 
-function LCS(x,y){
-  var s, i, j, m, n,
-      lcs = [], row = [], c = [],
-      left, diag, latch;
-  //make sure shorter string is the column string
-  if (m<n) {s=x; x=y; y=s;}
-  m = x.length;
-  n = y.length;
-  //build the c-table
-  for (j=0; j<n; row[j++]=0);
-  for (i=0; i<m; i++) {
-    c[i] = row = row.slice();
-    for (diag=0, j=0; j<n;j++, diag=latch) {
-      latch = row[j];
-      if (x[i] == y[j]) {row[j] = diag+1;}
-      else{
-	left = row[j-1]||0;
-	if (left>row[j]) {row[j] = left;}
+
+function getNormLev(s1, s2) {
+  const lev = Levenshtein.get(s1, s2);
+  // normalized levenshtein
+  // - lower bound: different in size between strings
+  // - upper bound: length of the longest string
+  const max = Math.max(s1.length, s2.length);
+  console.log('lev', lev, 'normlev', lev / max, 'max', max);
+  return lev/ max;
+}
+
+
+function updateHypMetadata(editorState) {
+  const selection = editorState.getSelection();
+  if (selection.isCollapsed()) {
+    const startKey = selection.getStartKey();
+    const startOffset = selection.getStartOffset();
+    let currentContent = editorState.getCurrentContent();
+    const block = currentContent.getBlockForKey(startKey);
+    if (startOffset > 0) {     // we are not at the start of the block
+      const entityKeyBeforeCaret = block.getEntityAt(startOffset - 1);
+      const entityKeyAfterCaret = block.getEntityAt(startOffset);
+      const isCaretOutsideEntity = (entityKeyBeforeCaret !== entityKeyAfterCaret);
+      if (entityKeyBeforeCaret && !isCaretOutsideEntity) {
+	const entity = currentContent.getEntity(entityKeyBeforeCaret);
+	if (entity.type === 'HYP') {
+	  const entityText = getEntityText(block, startOffset, entityKeyBeforeCaret);
+	  const sourceText = entity.getData().source;
+	  currentContent.mergeEntityData(
+	    entityKeyBeforeCaret, {'lev': getNormLev(entityText, sourceText)});
+	}
       }
     }
   }
-  i--,j--;
-  //row[j] now contains the length of the lcs
-  //recover the lcs from the table
-  while (i>-1&&j>-1) {
-    switch (c[i][j]) {
-      default: j--;
-      lcs.unshift(x[i]);
-    case (i&&c[i-1][j]): i--;
-      continue;
-    case (j&&c[i][j-1]): j--;
-    }
-  }
-  return lcs.join('');
+  return false;
 }
 
 
@@ -115,17 +118,6 @@ function handleContiguousEntity(char, editorState) {
             currentContent, selection, char, editorState.getCurrentInlineStyle(), null);
 	  return EditorState.push(editorState, currentContent, "insert-characters");
         }
-      } else if (entityKeyBeforeCaret && !isCaretOutsideEntity) {
-	// handle inside entity events
-	const entity = currentContent.getEntity(entityKeyBeforeCaret);
-	if (entity.type === 'HYP') {
-	  const entityText = getEntityText(block, startOffset, entityKeyBeforeCaret);
-	  currentContent = currentContent.mergeEntityData(
-	    entityKeyBeforeCaret,
-	    {'LCS': LCS(entity.getData().source, entityText)}); // todo get entity text from content block
-	  console.log(LCS(entity.getData().source, entityText));
-	  console.log(entity.getData().source, entityText);
-	}
       }
     }
   }
@@ -133,13 +125,31 @@ function handleContiguousEntity(char, editorState) {
 }
 
 
-const hypStyle = {background: 'lightBlue'};
+function generalSigmoid(a, b, c) {
+  a = a || 1, b = b || 1, c = c || 1;
+  return function(x) {
+    return a / (1 + b * Math.exp(-x * c));
+  };
+}
+
+
+function getStyle(data) {
+  let alpha = 1;
+  // const a = 1, b = 1000, inflection = 0.15;
+  // const c = Math.log(b) / inflection;
+  if (data.lev) {
+    // alpha = 1 - generalSigmoid(a, b, c)(data.lev);
+    alpha = 1 - data.lev;
+  }
+  return {'background': `rgba(173,216,230,${alpha})`};
+}
+
 
 const Hyp = (props) => {
-  // TODO: make color dependent from number of edits
   const data = props.contentState.getEntity(props.entityKey).getData();
-  return <span style={hypStyle}>{props.children}</span>;
+  return <span style={getStyle(data)}>{props.children}</span>;
 };
+
 
 const hypDecorator = new CompositeDecorator([{strategy: findHyps, component: Hyp}]);
 
@@ -148,7 +158,9 @@ const EditorUtils = {
   insertGeneratedText: insertGeneratedText,
   handleContiguousEntity: handleContiguousEntity,
   getTextSelection: getTextSelection,
-  hypDecorator: hypDecorator
+  hypDecorator: hypDecorator,
+  updateHypMetadata: updateHypMetadata,
+  getSelectedBlocks: getSelectedBlocks
 };
 
 export default EditorUtils;

@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans');
+@import url('https://fonts.googleapis.com/css?family=Cousine');
 
 /* Bootstrap tweaks */
 li.list-group-hover.list-group-item:hover {
@@ -6,23 +7,56 @@ li.list-group-hover.list-group-item:hover {
   cursor: pointer;
 }
 
+/* generate bar */
+.sticky-inner-wrapperelement {
+	position: fixed;
+	top: 0px;
+}
+.panel-heading{
+  padding: 0;
+}
 .form-group {
-  margin-bottom: 8px;
+  margin-bottom: 10px !important;
+  display: inline-flex;
+}
+.form-horizontal .control-label {
+  width: 120px;
+}
+/* Individual Elements*/
+
+.rc-slider {
+  margin-left: 16px;
+  width: 140px !important;
+}
+.panel-heading .form-group:nth-child(2){
+  margin-right: -30px;
+}
+.panel-heading .form-group:nth-child(3){
+  margin-right: 10px;
+}
+.panel-heading .form-group:nth-child(4){
+
+}
+.panel-heading .form-group:nth-last-child(1){
+  float: right;
+  margin-top: 15px;
+  margin-right: 0px
+
 }
 
 /* Editor */
 .RichEditor-root {
   background: #fff;
-  border: 1px solid #ddd;
-  font-family: 'Georgia', serif;
-  font-size: 14px;
-  padding: 15px;
+  border: none;
+  font-family: 'Cousine', monospace;
+  font-size: 18px;
+  padding: 18px;
 }
 
 .RichEditor-editor {
   border-top: 1px solid #ddd;
   cursor: text;
-  font-size: 16px;
+  font-size: 18px;
   margin-top: 10px;
 }
 
