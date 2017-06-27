@@ -114,7 +114,7 @@ if __name__ == '__main__':
     if args.load_data:
         print("Loading preprocessed datasets...")
         assert args.dict_path, "Processed data requires DICT_PATH"
-        data = load_from_file(args.data_path)
+        data = load_from_file(args.data_path, filter_file='filters.csv')
     else:
         filters = {}
         if args.filter_titles:
