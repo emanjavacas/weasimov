@@ -43,4 +43,3 @@ class Generation(db.Model):
     temp = db.Column(db.Float)
     text = db.Column(db.String())
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-
