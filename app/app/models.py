@@ -48,7 +48,6 @@ class Text(db.Model):
 
 class Edit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    start, end = db.Column(db.Integer), db.Column(db.Integer)
     edit = db.String(JSONEncodedDict)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
@@ -58,6 +57,7 @@ class Generation(db.Model):
     model = db.Column(db.String(120))
     seed = db.Column(db.String())
     temp = db.Column(db.Float)
+    selected = db.Column(db.Boolean, default=False)
     text = db.Column(db.String())
     generation_id = db.Column(db.String(64))
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
