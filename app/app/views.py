@@ -116,15 +116,6 @@ def generate():
         return flask.jsonify(status='Error', message=str(e)), 500
 
 
-@app.route('/temperature', methods=['POST'])
-def temperature():
-    app.synthesizer.temperature = float(flask.request.json["data"])
-    return flask.jsonify(
-        status='OK',
-        message=f'temperature adjusted to {app.synthesizer.temperature}',
-        temperature=app.synthesizer.temperature)
-
-
 @app.route('/models', methods=['GET'])
 def models():
     return flask.jsonify(status='OK', models=app.synthesizer.list_models())
