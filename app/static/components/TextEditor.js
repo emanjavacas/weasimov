@@ -27,13 +27,13 @@ class TextEditor extends React.Component {
     return (
       <div className="RichEditor-root">
         <BlockStyleControls
-          editorState={editorState}
-          onToggle={this.props.toggleBlockType}
-        />
+           editorState={editorState}
+           onToggle={this.props.toggleBlockType}
+           />
         <InlineStyleControls
-          editorState={editorState}
-          onToggle={this.props.toggleInlineStyle}
-        />
+           editorState={editorState}
+           onToggle={this.props.toggleInlineStyle}
+           />
         <div className={className} onClick={this.focus}>
           <Editor
             blockStyleFn={getBlockStyle}
@@ -54,8 +54,8 @@ class TextEditor extends React.Component {
 
 function getBlockStyle(block) {
   switch (block.getType()) {
-    case 'blockquote': return 'RichEditor-blockquote';
-    default: return null;
+  case 'blockquote': return 'RichEditor-blockquote';
+  default: return null;
   }
 }
 
@@ -100,22 +100,22 @@ const BlockStyleControls = (props) => {
   const {editorState} = props;
   const selection = editorState.getSelection();
   const blockType = editorState
-    .getCurrentContent()
-    .getBlockForKey(selection.getStartKey())
-    .getType();
+	  .getCurrentContent()
+	  .getBlockForKey(selection.getStartKey())
+	  .getType();
 
   return (
     <div className="RichEditor-controls">
       {BLOCK_TYPES.map((type) =>
-	<StyleButton
-          key={type.label}
-          active={type.style === blockType}
-          label={type.label}
-          onToggle={props.onToggle}
-	  style={type.style}
-	  icon={type.icon}
-        />
-      )}
+		       <StyleButton
+			    key={type.label}
+			    active={type.style === blockType}
+			    label={type.label}
+			    onToggle={props.onToggle}
+			    style={type.style}
+			    icon={type.icon}
+			    />
+		      )}
     </div>
   );
 };
@@ -132,15 +132,15 @@ const InlineStyleControls = (props) => {
   return (
     <div className="RichEditor-controls">
       {INLINE_STYLES.map(type =>
-        <StyleButton
-          key={type.label}
-          active={currentStyle.has(type.style)}
-          label={type.label}
-          onToggle={props.onToggle}
-          style={type.style}
-          icon={type.icon}
-        />
-      )}
+			 <StyleButton
+			      key={type.label}
+			      active={currentStyle.has(type.style)}
+			      label={type.label}
+			      onToggle={props.onToggle}
+			      style={type.style}
+			      icon={type.icon}
+			      />
+			)}
     </div>
   );
 };
