@@ -36,16 +36,16 @@ class TextEditor extends React.Component {
            />
         <div className={className} onClick={this.focus}>
           <Editor
-             blockStyleFn={getBlockStyle}
-             editorState={editorState}
-             handleKeyCommand={this.props.handleKeyCommand}
-             onChange={this.props.onChange}
-             onTab={this.props.onTab}
-             placeholder="Biep biep..."
-             ref="editor"
-             spellCheck={false}
-	     handleBeforeInput={this.props.handleBeforeInput}
-	     />
+            blockStyleFn={getBlockStyle}
+            editorState={editorState}
+            handleKeyCommand={this.props.handleKeyCommand}
+            onChange={this.props.onChange}
+            onTab={this.props.onTab}
+            placeholder="Bieb bieb..."
+            ref="editor"
+            spellCheck={false}
+	    handleBeforeInput={this.props.handleBeforeInput}
+	   />
         </div>
       </div>
     );
