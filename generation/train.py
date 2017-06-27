@@ -44,13 +44,13 @@ def load_from_file(path):
 
 # check hook
 def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
-                       method='sample', temperature=.6, width=5,
+                       method='sample', temperature=.5, width=5,
                        early_stopping=None, validate=True,
-                       nb_temperatures=4):
+                       nb_temperatures=3):
 
     dpath = os.path.dirname(os.path.realpath(__file__))
     fpath = os.sep.join((dpath, 'seed-sentences.txt'))
-    seed_texts = [l.strip() for l in open(fpath, 'r')][:1]
+    seed_texts = [l.strip() for l in open(fpath, 'r')]
     temperatures = np.linspace(0.1, temperature, nb_temperatures)
     s = re.compile(r' +')
     ss = re.compile(r"(?<=\S)\s(?=\S)")
@@ -69,8 +69,9 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
             scores, hyps = trainer.model.generate(
                 d, seed_texts=seed_texts, max_seq_len=max_seq_len, gpu=gpu,
                 method=method, temperature=temp, width=width)
-            hyps = [u.format_hyp(score, hyp, hyp_num + 1, d)
-                    for hyp_num, (score, hyp) in enumerate(zip(scores, hyps))]
+            hyps = [u.format_hyp(score, hyp, s.sub('  ', st)[:25]+'...', d)
+                    for hyp_num, (score, st, hyp)
+                    in enumerate(zip(scores, seed_texts, hyps))]
             hyps = [ss.sub('', h) for h in hyps]
             hyps = [s.sub(' ', h) for h in hyps]
             trainer.log("info", '\n***' + ''.join(hyps) + "\n***")
@@ -166,7 +167,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', default=None)
     parser.add_argument('--decoding_method', default='sample')
     parser.add_argument('--max_seq_len', default=50, type=int)
-    parser.add_argument('--temperature', default=.75, type=float)
+    parser.add_argument('--temperature', default=.5, type=float)
     parser.add_argument('--checkpoint', default=100, type=int)
     parser.add_argument('--hooks_per_epoch', default=200, type=int)
     parser.add_argument('--saves_per_epoch', default=200, type=int)
