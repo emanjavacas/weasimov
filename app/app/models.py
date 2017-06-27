@@ -58,6 +58,7 @@ class Generation(db.Model):
     model = db.Column(db.String(120))
     seed = db.Column(db.String())
     temp = db.Column(db.Float)
+    selected = db.Column(db.Boolean, default=False)
     text = db.Column(db.String())
     generation_id = db.Column(db.String(64))
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
