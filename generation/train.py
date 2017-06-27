@@ -247,4 +247,7 @@ if __name__ == '__main__':
                     print("Goodbye!")
                     sys.exit(0)
             print("Saving model to [%s]..." % fname)
-            u.save_model({'model': model.cpu(), 'dict': d}, fname)
+            u.save_model({'model': model.cpu(),
+                          'dict': d,
+                          'train_params': vars(args)},
+                         fname)
