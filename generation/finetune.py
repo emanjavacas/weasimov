@@ -49,15 +49,11 @@ if __name__ == '__main__':
                               'Requires DICT_PATH and DATA_PATH'))
     parser.add_argument('--dict_path', type=str)
     parser.add_argument('--data_path', type=str)
-    parser.add_argument('--filter_titles', type=str)
-    parser.add_argument('--filter_authors', type=str)
+    parser.add_argument('--filter_file', type=str, default=None)
     parser.add_argument('--skip_head_lines', default=20, type=int,
                         help='Ignore first n lines of a file.')
     parser.add_argument('--skip_tail_lines', default=20, type=int,
                         help='Ignore last n lines of a file.')
-    parser.add_argument('--sep', default=',',
-                        help=('String to use as seperator in the input ' +
-                              'to filter_titles and filter_authors'))
     parser.add_argument('--dev_split', default=0.01, type=float)
     parser.add_argument('--test_split', default=0.05, type=float)
     # training
@@ -114,18 +110,13 @@ if __name__ == '__main__':
     if args.load_data:
         print("Loading preprocessed datasets...")
         assert args.dict_path, "Processed data requires DICT_PATH"
-        data = load_from_file(args.data_path, filter_file='filters.csv')
+        data = load_from_file(args.data_path, filter_file=args.filter_file)
     else:
-        filters = {}
-        if args.filter_titles:
-            filters['titles'] = args.filter_titles.split(args.sep)
-        if args.filter_authors:
-            filters['authors'] = args.filter_authors.split(args.sep)
-
         print("Transforming data...")
         print(args.corpus)
         data = d.transform(
-            load_data(path=args.corpus, level=args.level, filters=filters,
+            load_data(path=args.corpus, level=args.level,
+                      filters=args.filter_file,
                       skip_head_lines=args.skip_head_lines,
                       skip_tail_lines=args.skip_tail_lines))
         data = np.array([c for s in data for c in s], dtype=np.int32)

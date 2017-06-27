@@ -139,15 +139,11 @@ if __name__ == '__main__':
                         help=('Minimum frequency for an item to be ' +
                               'included in the dictionary'))
     parser.add_argument('--level', default='char')
-    parser.add_argument('--filter_titles', type=str)
-    parser.add_argument('--filter_authors', type=str)
+    parser.add_argument('--filter_file', type=str, default=None)
     parser.add_argument('--skip_head_lines', default=20, type=int,
                         help='Ignore first n lines of a file.')
     parser.add_argument('--skip_tail_lines', default=20, type=int,
                         help='Ignore last n lines of a file.')
-    parser.add_argument('--sep', default=',',
-                        help=('String to use as seperator in the input ' +
-                              'to filter_titles and filter_authors'))
     parser.add_argument('--dev_split', default=0.01, type=float)
     parser.add_argument('--test_split', default=0.05, type=float)
     # training
@@ -199,19 +195,17 @@ if __name__ == '__main__':
         print("Loading data...")
         d = d or Dict(max_size=args.max_size, min_freq=args.min_freq,
                       eos_token=u.EOS, bos_token=u.BOS)
-        filters = {}
-        if args.filter_titles:
-            filters['titles'] = args.filter_titles.split(args.sep)
-        if args.filter_authors:
-            filters['authors'] = args.filter_authors.split(args.sep)
         if not d.fitted:
             print("Fitting dictionary...")
             d.fit(load_data(path=args.corpus, level=args.level,
-                            filters=filters))
+                            filters=args.filter_file,
+                            skip_head_lines=args.skip_head_lines,
+                            skip_tail_lines=args.skip_tail_lines))
         print("Transforming data...")
         print(args.corpus)
         data = d.transform(
-            load_data(path=args.corpus, level=args.level, filters=filters,
+            load_data(path=args.corpus, level=args.level,
+                      filters=args.filter_file,
                       skip_head_lines=args.skip_head_lines,
                       skip_tail_lines=args.skip_tail_lines))
         data = np.array([c for s in data for c in s], dtype=np.int32)
