@@ -68,7 +68,9 @@ def logout():
 @flask_login.login_required
 def savechange():
     data = flask.request.json
-    edit = Edit(start=int(data['start']), end=int(data['end']), edit=data['edit'])
+    timestamp = datetime.datetime.strptime(
+        data['timestamp'], "%Y-%m-%d %H:%M:%S.%f")
+    edit = Edit(edit=data['edit'], timestamp=timestamp)
     db.session.add(edit)
     db.session.commit()
     return flask.jsonify(status='OK', message='changes saved.')
@@ -78,7 +80,9 @@ def savechange():
 @flask_login.login_required
 def savedoc():
     data = flask.request.json
-    text = Text(text=data['text'])
+    timestamp = datetime.datetime.strptime(
+        data['timestamp'], "%Y-%m-%d %H:%M:%S.%f")
+    text = Text(text=data['text'], timestamp=timestamp)
     db.session.add(text)
     db.session.commit()
     return flask.jsonify(status='OK', message='document saved.')
