@@ -93,9 +93,7 @@ class App extends React.Component {
     const {eos, bos, par, text, score} = hyp;
     const {editorState} = this.state;
     const stateWithHyp = EditorUtils.insertGeneratedText(
-      editorState,
-      text,
-      'HYP', 'MUTABLE', {score: score, contiguous: false, source: text});
+      editorState, text, {score: score, source: text});
     this.setState({
       editorState: EditorState.push(editorState, stateWithHyp, 'insert-characters')
     });
@@ -106,7 +104,7 @@ class App extends React.Component {
     const oldContent = oldState.getCurrentContent();
     const newContent = editorState.getCurrentContent();
     if (oldContent !== newContent) {
-      console.log(convertToRaw(newContent), convertToRaw(oldContent).entityMap);
+      console.log(convertToRaw(newContent), convertToRaw(oldContent));
     }
     this.setState({editorState});
   }
