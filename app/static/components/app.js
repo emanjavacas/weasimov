@@ -104,14 +104,15 @@ class App extends React.Component {
     const oldContent = oldState.getCurrentContent();
     const newContent = editorState.getCurrentContent();
     if (oldContent !== newContent) {
-      console.log(convertToRaw(newContent), convertToRaw(oldContent));
+      // console.log(convertToRaw(newContent), convertToRaw(oldContent));
+      EditorUtils.updateHypMetadata(editorState);
     }
     this.setState({editorState});
   }
 
   // generation functions
   launchGeneration(seed) {
-    console.log("Generating with seed: ", seed);
+    console.log(`Generating with seed: [${seed}]`);
     const {temperature, currentModel, maxSeqLen, batchSize} = this.state;
     if (!currentModel) {
       alert('Pick a model first!');
