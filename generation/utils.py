@@ -10,12 +10,27 @@ random.seed(12101985)
 
 
 def load_metadata(fn):
-    df = pd.read_csv(fn, sep=';')
-    df = df.set_index('fname')
+    df = pd.read_csv(fn, header=0, sep=',', dtype={'author:id': str})
+    df = df.set_index('filepath').fillna('')
     return df
 
 
+def parse_filter_file(fn):
+    df = pd.read_csv(fn, header=0, sep=';', dtype=str)
+    df = df.set_index('filters').fillna('')
+    filters = {}
+    for f in ('authors', 'titles', 'genres'):
+        try:
+            vals = df.loc[f]['values'].split(',')
+            filters[f] = set([v.strip() for v in vals])
+        except:
+            pass
+    return filters
+
+
 def load_data(path='data/bigmama/',
+              metapath='metainfo.csv',
+              filter_file=None,
               include_paragraphs=False,
               paragraph='<par>',
               level='char',
@@ -23,27 +38,50 @@ def load_data(path='data/bigmama/',
               filters={},
               skip_head_lines=0,
               skip_tail_lines=0):
-    """Yields data for training a language model.
+    """
+    Yields data for training a language model.
 
     Iterator that yields sentences, tokens or characters for training.
 
     E.g.
-    filters={'authors':['Pieter Aspe', 'Baantjer'],
-             'titles':['Onder valse vlag']}
+    filters={'authors':['31666', '34508', '38668'],
+             'titles':['Coraline', 'Kardinaal van het Kremlin'],
+             'genres':['thriller', 'romantiek']}
+
+    Notes
+    -----
+    * Text will be included if ALL the filters yield a match for the file.
+    * Note that genres are partially matched.
+    * The `filters` option will be overridden if you specify a `filter_file`.
+
     """
 
-    meta = load_metadata(fn='meta.csv')
+    meta = load_metadata(fn=metapath)
+
+    if filter_file:
+        filters = parse_filter_file(filter_file)
 
     if filters:
         filenames = []
         for fn in glob.glob(path+'/*.txt'):
-            me = meta.loc[meta.index == os.path.basename(fn)]
+            me = meta.loc[os.path.basename(fn)]
             if me.empty:
                 continue
-            if 'authors' in filters and me['author'][0] not in filters['authors']:
+            if 'authors' in filters and \
+                    me['author:id'] not in filters['authors']:
                 continue
-            if 'titles' in filters and me['title'][0] not in filters['titles']:
+            if 'titles' in filters and \
+                    str(me['title:detail']).strip() not in filters['titles']:
                 continue
+            if 'genres' in filters:
+                match = False
+                for f in filters['genres']:
+                    if f in str(me['categories']).lower():
+                        match = True
+                        continue
+                if not match:
+                    continue
+
             filenames.append(fn)
     else:
         filenames = glob.glob(path + '/*.txt')
