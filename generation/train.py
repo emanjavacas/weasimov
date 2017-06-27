@@ -80,16 +80,16 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
 
 
 # check hook
-def make_lm_save_hook(args):
+def make_lm_save_hook(d, args):
 
     def hook(trainer, epoch, batch_num, checkpoint):
         trainer.log("info", "Saving model...")
-        save_model(trainer.model, args, ppl=None)
+        save_model(d, trainer.model, args, ppl=None)
 
     return hook
 
 
-def save_model(model, args, ppl=None):
+def save_model(d, model, args, ppl=None):
     fname = '{prefix}.{cell}.{layers}l.{hid_dim}h.{emb_dim}e.{bptt}b'
 
     if ppl:  # add test ppl to final save
@@ -272,7 +272,7 @@ if __name__ == '__main__':
     trainer.add_hook(model_check_hook, num_checkpoints=num_checkpoints)
 
     # save hooks:
-    model_save_hook = make_lm_save_hook(args)
+    model_save_hook = make_lm_save_hook(d, args)
     num_checkpoints = max(1, len(train) // (args.checkpoint *
                                             args.saves_per_epoch))
     trainer.add_hook(model_save_hook, num_checkpoints=num_checkpoints)
@@ -292,4 +292,4 @@ if __name__ == '__main__':
         test_ppl = trainer.validate_model(test=True)
         print("Test perplexity: %g" % test_ppl)
         if args.save:
-            save_model(trainer.model, args, test_ppl)
+            save_model(d, trainer.model, args, test_ppl)
