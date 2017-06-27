@@ -1,4 +1,5 @@
 import json
+import datetime
 import unicodedata
 import flask
 import flask_login
@@ -49,7 +50,9 @@ def register():
 @app.route('/index', methods=['GET', 'POST'])
 @flask_login.login_required
 def index():
-    # TODO: get last state from database
+    text = Text.query.order_by('timestamp desc').first()
+    if text is None:
+        text = "Bieb, bieb!"
     return flask.render_template('index.html')
 
 
@@ -88,6 +91,7 @@ def generate():
     max_seq_len = int(flask.request.json['max_seq_len'])
     batch_size = int(flask.request.json['batch_size'])
     seed = None if not seed else [seed]
+    print(seed)
     try:
         hyps = app.synthesizer.sample(
             model_name=flask.request.json['model_name'],
@@ -99,9 +103,10 @@ def generate():
             max_tries=1)
         timestamp = datetime.datetime.utcnow()
         for hyp in hyps:
+            print(hyp['text'])
             db.session.add(Generation(
                 model=flask.request.json['model_name'],
-                seed=seed[0],
+                seed=seed[0] if seed is not None else '',
                 temp=temperature,
                 text=hyp['text'],
                 timestamp=timestamp))
