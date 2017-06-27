@@ -49,12 +49,6 @@ if __name__ == '__main__':
                               'Requires DICT_PATH and DATA_PATH'))
     parser.add_argument('--dict_path', type=str)
     parser.add_argument('--data_path', type=str)
-    parser.add_argument('--max_size', default=100000, type=int,
-                        help='Maximum items in the dictionary')
-    parser.add_argument('--min_freq', default=1, type=int,
-                        help=('Minimum frequency for an item to be ' +
-                              'included in the dictionary'))
-    parser.add_argument('--level', default='char')
     parser.add_argument('--filter_titles', type=str)
     parser.add_argument('--filter_authors', type=str)
     parser.add_argument('--skip_head_lines', default=20, type=int,
@@ -113,7 +107,7 @@ if __name__ == '__main__':
     d, model, old_args = model['dict'], model['model'], model['train_params']
 
     # copy unaltered train vars from model
-    for v in 'cell layers hid_dim emb_dim bptt'.split():
+    for v in 'cell layers hid_dim emb_dim bptt level'.split():
         args.__dict__[v] = old_args[v]
 
     # prepare data
