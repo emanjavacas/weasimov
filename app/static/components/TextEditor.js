@@ -41,7 +41,7 @@ class TextEditor extends React.Component {
             handleKeyCommand={this.props.handleKeyCommand}
             onChange={this.props.onChange}
             onTab={this.props.onTab}
-            placeholder="Biep biep..."
+            placeholder="Bieb bieb..."
             ref="editor"
             spellCheck={false}
 	    handleBeforeInput={this.props.handleBeforeInput}
