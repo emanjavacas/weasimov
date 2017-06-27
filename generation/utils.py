@@ -62,7 +62,7 @@ def load_data(path='data/bigmama/',
                 if len(lines) > 100:
                     lines = lines[skip_head_lines:-skip_tail_lines]
                 for l in lines:
-                    l = line.strip()
+                    l = l.strip()
                     if l:
                         if level == 'token':
                             yield l.strip().split()

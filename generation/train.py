@@ -212,7 +212,7 @@ if __name__ == '__main__':
         data = d.transform(
             load_data(path=args.corpus, level=args.level, filters=filters,
                       skip_head_lines=args.skip_head_lines,
-                      skip_tail_line=args.skip_tail_lines))
+                      skip_tail_lines=args.skip_tail_lines))
         data = np.array([c for s in data for c in s], dtype=np.int32)
         if args.save_data:
             np.save(args.data_path + '.npy', data)
