@@ -1,6 +1,7 @@
 import json
 import datetime
 import unicodedata
+import uuid
 import flask
 import flask_login
 from app import app, db, lm
@@ -102,12 +103,15 @@ def generate():
             max_tries=1)
         timestamp = datetime.datetime.utcnow()
         for hyp in hyps:
+            generation_id = str(uuid.uuid4())
             db.session.add(Generation(
                 model=flask.request.json['model_name'],
                 seed=seed[0] if seed is not None else '',
                 temp=temperature,
                 text=hyp['text'],
+                generation_id=generation_id,
                 timestamp=timestamp))
+            hyp['generation_id'] = generation_id
         db.session.commit()
         return flask.jsonify(status='OK', hyps=hyps)
     except ValueError as e:
