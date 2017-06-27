@@ -48,7 +48,6 @@ class Text(db.Model):
 
 class Edit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    start, end = db.Column(db.Integer), db.Column(db.Integer)
     edit = db.String(JSONEncodedDict)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
