@@ -53,6 +53,13 @@ def index():
     return flask.render_template('index.html')
 
 
+@app.route('/logout', methods=['POST', 'GET'])
+@flask_login.login_required
+def logout():
+    flask_login.logout_user()
+    return flask.redirect(flask.url_for('login'))
+
+
 @app.route('/savechange', methods=['POST'])
 @flask_login.login_required
 def savechange():
