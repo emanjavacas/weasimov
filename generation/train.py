@@ -140,6 +140,10 @@ if __name__ == '__main__':
     parser.add_argument('--level', default='char')
     parser.add_argument('--filter_titles', type=str)
     parser.add_argument('--filter_authors', type=str)
+    parser.add_argument('--skip_head_lines', type=int, 
+                        help='Ignore first n lines of a file.')
+    parser.add_argument('--skip_tail_lines', type=int,
+                        help='Ignore last n lines of a file.')
     parser.add_argument('--sep', default=',',
                         help=('String to use as seperator in the input ' +
                               'to filter_titles and filter_authors'))
@@ -206,7 +210,9 @@ if __name__ == '__main__':
         print("Transforming data...")
         print(args.corpus)
         data = d.transform(
-            load_data(path=args.corpus, level=args.level, filters=filters))
+            load_data(path=args.corpus, level=args.level, filters=filters,
+                      skip_head_lines=args.skip_head_lines, 
+                      skip_tail_line=args.skip_tail_lines))
         data = np.array([c for s in data for c in s], dtype=np.int32)
         if args.save_data:
             np.save(args.data_path + '.npy', data)

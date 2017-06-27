@@ -16,11 +16,13 @@ def load_metadata(fn):
 
 
 def load_data(path='data/bigmama/',
-              include_paragraphs=True,
+              include_paragraphs=False,
               paragraph='<par>',
               level='char',
               max_files=None,
-              filters={}):
+              filters={},
+              skip_head_lines=0,
+              skip_tail_lines=0):
     """Yields data for training a language model.
 
     Iterator that yields sentences, tokens or characters for training.
@@ -54,6 +56,19 @@ def load_data(path='data/bigmama/',
     for idx, fn in enumerate(filenames):
         if idx % 200 == 0:
             print(idx, fn)
+        if skip_head_lines or skip_tail_lines:
+            with open(fn, 'r') as inf:
+                lines = inf.readlines()
+                if len(lines) > 100:
+                    lines = lines[skip_head_lines:-skip_tail_lines]
+                for l in lines:
+                    l = line.strip()
+                    if l:
+                        if level == 'token':
+                            yield l.strip().split()
+                        elif level == 'char':
+                            yield list(l.strip())
+
         for l in open(fn, 'r'):
             if not l.strip():
                 if include_paragraphs:
