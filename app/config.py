@@ -19,4 +19,4 @@ MODEL_NAMES = {
     'char.LSTM.1l.2546h.46e.200b.2.49.pt.cpu.pt': '5000 romans'
 }
 
-COLOR_CODES = [colors.to_rgba(c) for c in plt.get_cmap('Pastel2').colors]
+COLOR_CODES = [colors.to_hex(c) for c in plt.get_cmap('Pastel2').colors]
