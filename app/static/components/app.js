@@ -165,11 +165,10 @@ class App extends React.Component {
 	<Navbar/>
 <RB.Grid fluid={true}>
 	<RB.Row>
-	  <RB.Col md={1} sm={1}></RB.Col>
-    <div className="generate-bar">
-	  <RB.Col md={10} sm={10}>
+	  <RB.Col md={3} sm={1}></RB.Col>
+	  <RB.Col md={6} sm={10}>
           <Sticky enabled={true} top={25} innerZ={1001}>
-            <div className="panel panel-default">
+            <div className="panel panel-default generate-panel">
               <div className="panel-heading">
                 <ButtonToolbar
              onGenerate={this.onGenerate}
@@ -187,8 +186,7 @@ class App extends React.Component {
             </div>
           </Sticky>
     </RB.Col>
-    </div>
-    <RB.Col md={1} sm={1}></RB.Col>
+    <RB.Col md={3} sm={1}></RB.Col>
   </RB.Row>
 
   <RB.Row>
