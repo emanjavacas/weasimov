@@ -13,13 +13,17 @@ import Utils from './Utils';
 import EditorUtils from './EditorUtils';
 
 
+function timestamp() {
+  return Date.now() / 1000;
+}
+
 // edit: json
 // timestamp: %Y-%m-%d %H:%M:%S.%f
 function saveChange(edit) {
   $.ajax({
     contentType: 'application/json;charset=UTF-8',
     url: 'savechange',
-    data: JSON.stringify({edit: edit, timestamp: Date.now()}),
+    data: JSON.stringify({edit: edit, timestamp: timestamp()}),
     type: 'POST',
     dataType: 'json',
     success: (response) => console.log(response),
@@ -34,7 +38,7 @@ function saveDoc(text) {
   $.ajax({
     contentType: 'application/json;charset=UTF-8',
     url: 'savedoc',
-    data: JSON.stringify({text: text, timestamp: Date.now()}),
+    data: JSON.stringify({text: text, timestamp: timestamp()}),
     type: 'POST',
     dataType: 'json',
     success: (response) => console.log(response),
@@ -50,7 +54,7 @@ function saveSuggestion(generation_id, draft_entity_id) {
   $.ajax({
     contentType: 'application/json;charset=UTF-8',
     url: 'savesuggestion',
-    data: JSON.stringify({generation_id, draft_entity_id, timestamp: Date.now()}),
+    data: JSON.stringify({generation_id, draft_entity_id, timestamp: timestamp()}),
     type: 'POST',
     dataType: 'json',
     success: (response) => console.log(response),
@@ -232,7 +236,7 @@ class App extends React.Component {
 	<RB.Row>
 	  <RB.Col md={3} sm={1}></RB.Col>
 	  <RB.Col md={6} sm={10}>
-          <Sticky enabled={true} top={25} innerZ={1001}>
+          <Sticky enabled={true} top={0} innerZ={1001}>
             <div className="panel panel-default generate-panel">
               <div className="panel-heading">
                 <ButtonToolbar
