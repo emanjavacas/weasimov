@@ -60,4 +60,6 @@ class Generation(db.Model):
     selected = db.Column(db.Boolean, default=False)
     text = db.Column(db.String())
     generation_id = db.Column(db.String(64))
+    draft_entity_id = db.Column(db.String(64), default='')
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    selected_timestamp = db.Column(db.DateTime)
