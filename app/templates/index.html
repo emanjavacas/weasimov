@@ -2,5 +2,8 @@
 {% block content %}
 <div id="app"></div>
 <!-- Attach React components -->
+<script>
+var model_names = {{ model_names|tojson|safe }};
+</script>
 <script type="text/javascript" src="{{ url_for('static', filename='bundle.js') }}"></script>
 {% endblock %}
