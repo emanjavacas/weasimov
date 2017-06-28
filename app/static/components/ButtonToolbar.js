@@ -23,14 +23,12 @@ function makeMenuItems(iterable, isActiveFn, getChildFn, onSelect) {
 }
 
 // make a set of buttons from an iterable
-
 function makeButtons(iterable, isActiveFn, getChildFn, onSelect) {
   let buttons = [];
-	var palette = ["#E39980", "#E3DA80", "#789DA7", "#A2CD74"]
-	// TODO move the palette to a global variable of colours.
+
   for (var i=0; i<iterable.length; i++) {
     const model = iterable[i];
-		var color = palette[i]
+		var color = color_codes[i]
 		if (model_names[model.path]) {
 					var names = model_names[model.path].split(" ");
 					var button_title = ""
@@ -39,13 +37,13 @@ function makeButtons(iterable, isActiveFn, getChildFn, onSelect) {
 					}
           var button_overlay = model_names[model.path]
     } else {
-					var button_title = "XX"
-          var button_overlay = "Unknown Author"
+					var button_title = "#"+i
+          var button_overlay = model.path
     }
 
     buttons.push(
       <RB.OverlayTrigger
-        overlay={<RB.Tooltip>{button_overlay}</RB.Tooltip>} placement="top">
+        overlay={<RB.Tooltip id={button_overlay}>{button_overlay}</RB.Tooltip>} placement="top">
         <RB.Button bsStyle="primary" key={i} style={{backgroundColor:color, border:"1px solid black", color:"black"}}>
 				{button_title}
         </RB.Button>
@@ -126,7 +124,7 @@ class ButtonToolbar extends React.Component {
     }
     return (
 			<div className="generate-bar">
-				<RB.ButtonToolbar horizontal>
+				<RB.ButtonToolbar>
 					<RB.ButtonGroup style={{width: "200px", display: "inline-flex", margin: "7px 20px"}}>
 						<span>Creativity</span>
 						<Slider
@@ -135,7 +133,7 @@ class ButtonToolbar extends React.Component {
 								onChange={this.props.onSliderChange}
 								title="Creativity"
 								/>
-						<RB.Label style={{padding:"4px 8px"}}>{tempStr}</RB.Label>
+						<RB.Label style={{padding:"4px 8px", width: "60px"}}>{tempStr}</RB.Label>
 					</RB.ButtonGroup>
 					<RB.ButtonGroup style={{width: "200px", display: "inline-flex", margin: "7px 20px"}}>
 						<span>Length</span>
@@ -145,7 +143,7 @@ class ButtonToolbar extends React.Component {
 								onChange={this.props.onSeqLenChange}
 								title="Length"
 								/>
-						<RB.Label style={{padding:"4px 8px"}}>{maxSeqLen}</RB.Label>
+						<RB.Label style={{padding:"4px 8px", width: "60px"}}>{maxSeqLen}</RB.Label>
 					</RB.ButtonGroup>
 			<RB.ButtonGroup style={{float: "right"}} > 
 				{modelButtons}
