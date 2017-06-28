@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ReactDom from 'react-dom';
 import * as RB  from 'react-bootstrap';
@@ -26,10 +27,13 @@ function makeMenuItems(iterable, isActiveFn, getChildFn, onSelect) {
 
 function makeButtons(iterable, isActiveFn, getChildFn, onSelect) {
   let buttons = [];
+	var palette = ["#E39980", "#E3DA80", "#789DA7", "#A2CD74"]
+	// TODO move the palette to a global variable of colours.
   for (var i=0; i<iterable.length; i++) {
     const model = iterable[i];
+		var color = palette[i]
     buttons.push(
-      <RB.Button bsStyle="primary" key={i}>
+      <RB.Button bsStyle="primary" key={i} style={{backgroundColor:color, border:"1px solid black", color:"black"}}>
 				Author Name
 				{/*{model.path}*/}
       </RB.Button>
