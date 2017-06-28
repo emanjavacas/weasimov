@@ -56,7 +56,8 @@ def index():
     if text is None:
         text = "Bieb, bieb!"
     return flask.render_template(
-        'index.html', model_names=app.config['MODEL_NAMES'])
+        'index.html', model_names=app.config['MODEL_NAMES'], 
+        color_codes=app.config['COLOR_CODES'])
 
 
 @app.route('/logout', methods=['POST', 'GET'])
