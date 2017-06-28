@@ -109,11 +109,9 @@ class App extends React.Component {
       EditorUtils.updateHypMetadata(editorState);
       const selection = editorState.getSelection();
       const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
-      if (currentBlock.size == 1) {
-        const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
-        var d = jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS());
-        console.log(JSON.stringify(d));
-      }
+      const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
+      const d = jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS());
+      console.log(JSON.stringify(d));
     }
     this.setState({editorState});
   }
