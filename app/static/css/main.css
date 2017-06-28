@@ -61,26 +61,22 @@ li.list-group-hover.list-group-item:hover {
 }
 
 .RichEditor-editor {
-  border-top: 1px solid #ddd;
   cursor: text;
-  font-size: 18px;
-  margin-top: 10px;
+}
+.RichEditor-editor .public-DraftEditor-content {
+  min-height: 200px;
 }
 
 .RichEditor-editor .public-DraftEditorPlaceholder-root,
 .RichEditor-editor .public-DraftEditor-content {
-  margin: 0 -15px -15px;
-  padding: 15px;
+  padding: 20px;
 }
 
-.RichEditor-editor .public-DraftEditor-content {
-  min-height: 100px;
-}
-
+/* 
 .RichEditor-hidePlaceholder .public-DraftEditorPlaceholder-root {
   display: none;
-}
-
+} */
+/* 
 .RichEditor-editor .RichEditor-blockquote {
   border-left: 5px solid #eee;
   color: #666;
@@ -96,11 +92,8 @@ li.list-group-hover.list-group-item:hover {
   font-size: 16px;
   padding: 20px;
 }
-
+ */
 .RichEditor-controls {
-  font-family: 'Helvetica', sans-serif;
-  font-size: 14px;
-  margin-bottom: 5px;
   user-select: none;
   position: absolute;
   width: 20px;
@@ -108,7 +101,14 @@ li.list-group-hover.list-group-item:hover {
   top: 0px;
 }
 .RichEditor-controls .btn-sm{
+  color: #999;
   margin: 6px;
+  background-color: #f5f5f5;
+  width: 40px;
+}
+.RichEditor-controls .btn-sm:hover{
+  color: #000;
+  background-color: #fff;
 }
 
 .RichEditor-styleButton {
