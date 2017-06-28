@@ -37,7 +37,8 @@ def login():
 def register():
     form = RegisterForm()
     if flask.request.method == 'GET':
-        return flask.render_template('register.html', title='Sign In', form=form)
+        return flask.render_template(
+            'register.html', title='Sign In', form=form)
     if form.validate_on_submit() and form.validate_fields():
         user = User(username=form.username.data,
                     password=form.password.data)
@@ -54,7 +55,8 @@ def index():
     text = Text.query.order_by('timestamp desc').first()
     if text is None:
         text = "Bieb, bieb!"
-    return flask.render_template('index.html', model_names=app.config['MODEL_NAMES'])
+    return flask.render_template(
+        'index.html', model_names=app.config['MODEL_NAMES'])
 
 
 @app.route('/logout', methods=['POST', 'GET'])
