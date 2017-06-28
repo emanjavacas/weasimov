@@ -68,8 +68,9 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
             trainer.log("info", "Temperature at " + "%.2f" % temp)
             scores, hyps = trainer.model.generate(
                 d, seed_texts=seed_texts, max_seq_len=max_seq_len, gpu=gpu,
-                method=method, temperature=temp, width=width)
-            hyps = [format_hyp(score, hyp, s.sub('  ', st)[:25]+'...', d)
+                method=method, temperature=temp, width=width,
+                eos=True, bos=True)
+            hyps = [format_hyp(score, hyp, '...'+s.sub('  ', st)[-25:], d)
                     for hyp_num, (score, st, hyp)
                     in enumerate(zip(scores, seed_texts, hyps))]
             hyps = [ss.sub('', h) for h in hyps]
@@ -204,7 +205,7 @@ if __name__ == '__main__':
                             skip_head_lines=args.skip_head_lines,
                             skip_tail_lines=args.skip_tail_lines))
         print("Transforming data...")
-        print(args.corpus)
+        print(args.filter_file)
         data = d.transform(
             load_data(path=args.corpus, level=args.level,
                       filters=args.filter_file,
