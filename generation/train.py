@@ -66,8 +66,8 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
         trainer.log("info", "Generating text...")
         for temp in temperatures:
             trainer.log("info", "Temperature at " + "%.2f" % temp)
-            scores, hyps = trainer.model.cpu().generate(
-                d, seed_texts=seed_texts, max_seq_len=max_seq_len, gpu=False,
+            scores, hyps = trainer.model.generate(
+                d, seed_texts=seed_texts, max_seq_len=max_seq_len, gpu=gpu,
                 method=method, temperature=temp, width=width)
             hyps = [u.format_hyp(score, hyp, s.sub('  ', st)[:25]+'...', d)
                     for hyp_num, (score, st, hyp)
@@ -85,6 +85,8 @@ def make_lm_save_hook(d, args):
     def hook(trainer, epoch, batch_num, checkpoint):
         trainer.log("info", "Saving model...")
         save_model(d, trainer.model, args, ppl=None)
+        if args.gpu:
+            trainer.model.cuda()
 
     return hook
 
