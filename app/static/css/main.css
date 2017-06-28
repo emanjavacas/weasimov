@@ -14,42 +14,13 @@ li.list-group-hover.list-group-item:hover {
   cursor: pointer;
 }
 
-/* generate bar */
-.generate-bar div.panel:nth-child(1) {
+/* generate Panel */
+.generate-panel  {
     border-left: none;
     border-right: none;
     box-shadow: 0 2px 0px rgba(0,0,0,.05);
+    padding: 0;
 }
-.generate-bar .panel-heading{
-  padding: 0;
-}
-.generate-bar .form-group {
-  margin-bottom: 10px !important;
-  display: inline-flex;
-}
-.generate-bar .form-horizontal .control-label {
-  width: 120px;
-}
-
-
-/* Individual elements on the generate bar*/
-
-.generate-bar .rc-slider {
-  width: 140px !important;
-}
-.generate-bar .panel-heading .form-group:nth-child(2){
-  margin-right: -30px;
-}
-.generate-bar .panel-heading .form-group:nth-child(3){
-  margin-right: 10px;
-}
-.generate-bar .panel-heading .form-group:nth-last-child(1){
-  float: right;
-  margin-top: 15px;
-  margin-right: 20px
-}
-
-
 /* Editor */
 
 .RichEditor-root {
