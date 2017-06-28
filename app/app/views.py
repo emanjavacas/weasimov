@@ -52,11 +52,8 @@ def register():
 @app.route('/index', methods=['GET', 'POST'])
 @flask_login.login_required
 def index():
-    text = Text.query.order_by('timestamp desc').first()
-    if text is None:
-        text = "Bieb, bieb!"
     return flask.render_template(
-        'index.html', model_names=app.config['MODEL_NAMES'], 
+        'index.html', model_names=app.config['MODEL_NAMES'],
         color_codes=app.config['COLOR_CODES'])
 
 
