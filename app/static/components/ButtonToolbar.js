@@ -20,7 +20,7 @@ function padTemperature(temperature) {
     temperature;
 }
 
-// make a set of buttons from models
+
 function makeButtons(models, onClick) {
   let buttons = [];
   for (var i=0; i<models.length; i++) {
@@ -59,7 +59,6 @@ function makeButtons(models, onClick) {
   }
   return buttons;
 }
-
 
 
 const noModelsButton = () => <RB.Button>No available models</RB.Button>;
