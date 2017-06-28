@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import {EditorState, RichUtils, convertToRaw} from 'draft-js';
 import * as RB from 'react-bootstrap';
 import Sticky from 'react-stickynode';
+import diff from 'deep-diff';
 
 import Navbar from './Navbar';
 import ButtonToolbar from './ButtonToolbar';
@@ -106,6 +107,13 @@ class App extends React.Component {
     if (oldContent !== newContent) {
       // console.log(convertToRaw(newContent), convertToRaw(oldContent));
       EditorUtils.updateHypMetadata(editorState);
+      const selection = editorState.getSelection();
+      const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
+      if (currentBlock.size == 1) {
+        const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
+        var d = diff(oldBlock.toJS(), currentBlock.toJS());
+        console.log(JSON.stringify(d));
+      }
     }
     this.setState({editorState});
   }
@@ -122,19 +130,19 @@ class App extends React.Component {
       contentType: 'application/json;charset=UTF-8',
       url: 'generate',
       data: JSON.stringify(
-      {'selection': seed,
-       'temperature': temperature,
-       'model_name': currentModel,
-   'max_seq_len': maxSeqLen,
-   'batch_size': batchSize}),
+	{'selection': seed,
+	 'temperature': temperature,
+	 'model_name': currentModel,
+	 'max_seq_len': maxSeqLen,
+	 'batch_size': batchSize}),
       type: 'POST',
       dataType: 'json',
       success: (response) => {
       this.setState({hyps: response.hyps, lastSeed: seed, loadingHyps: false});
       },
       error: (error) => {
-      console.log(error);
-  this.setState({loadingHyps: false});
+	console.log(error);
+	this.setState({loadingHyps: false});
       }
     });
     this.setState({loadingHyps: true});
