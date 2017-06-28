@@ -1,12 +1,35 @@
-import json
+
 from datetime import datetime
-import unicodedata
 import uuid
+
+from matplotlib import colors
+import matplotlib.pyplot as plt
 import flask
 import flask_login
+
 from app import app, db, lm
 from .models import User, Text, Edit, Generation
 from .forms import LoginForm, RegisterForm
+
+
+def get_colors(palette="Pastel2"):
+    def format_color(r, g, b, a):
+        return {'r': int(r * 256),
+                'g': int(g * 256),
+                'b': int(b * 256),
+                'a': 1}
+    return [format_color(*colors.to_rgba(c))
+            for c in plt.get_cmap(palette).colors]
+
+
+def format_models():
+    models = []
+    model_names = app.config.get("MODEL_NAMES", {})
+    for model, color in zip(app.synthesizer.list_models(), get_colors()):
+        model['color'] = color
+        model['modelName'] = model_names.get(model['path'])
+        models.append(model)
+    return models
 
 
 @lm.user_loader

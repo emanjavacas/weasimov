@@ -1,6 +1,4 @@
 import os
-from matplotlib import colors
-import matplotlib.pyplot as plt
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))

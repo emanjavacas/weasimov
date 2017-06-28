@@ -186,7 +186,7 @@ class App extends React.Component {
     const {eos, bos, par, text, score, generation_id} = hyp;
     const {editorState} = this.state;
     const contentStateWithHyp = EditorUtils.insertGeneratedText(
-      editorState, text, {score: score, source: text});
+      editorState, text, {score: score, source: text, model: this.state.lastModel});
     const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
     const newEditorState = EditorState.push(
       editorState, contentStateWithHyp, 'insert-characters');
@@ -211,26 +211,25 @@ class App extends React.Component {
   }
 
   // generation functions
-  launchGeneration(seed) {
+  launchGeneration(seed, model) {
     console.log(`Generating with seed: [${seed}]`);
-    const {temperature, currentModel, maxSeqLen, batchSize} = this.state;
-    if (!currentModel) {
-      alert('Pick a model first!');
-      return;
-    }
+    const {temperature, maxSeqLen} = this.state;
     $.ajax({
       contentType: 'application/json;charset=UTF-8',
       url: 'generate',
       data: JSON.stringify(
 	{'selection': seed,
 	 'temperature': temperature,
-	 'model_name': currentModel,
-	 'max_seq_len': maxSeqLen,
-	 'batch_size': batchSize}),
+	 'model_path': model.path,
+	 'max_seq_len': maxSeqLen}),
       type: 'POST',
       dataType: 'json',
       success: (response) => {
-      this.setState({hyps: response.hyps, lastSeed: seed, loadingHyps: false});
+	this.setState(
+	  {hyps: response.hyps,
+	   lastSeed: seed,
+	   lastModel: model,
+	   loadingHyps: false}); // todo, update model status if it was loaded
       },
       error: (error) => {
 	console.log(error);
@@ -240,82 +239,93 @@ class App extends React.Component {
     this.setState({loadingHyps: true});
   }
 
-  onGenerate() {
+  onGenerate(model) {
     const {editorState} = this.state;
     const currentContent = editorState.getCurrentContent();
     const selection = editorState.getSelection();
     let seed = EditorUtils.getTextSelection(currentContent, selection);
-    if (seed.trim().length == 0) { seed = currentContent.getPlainText('\n'); }
-    this.launchGeneration(seed);
+    if (seed.trim().length == 0) { seed = currentContent.getPlainText('\n'); } // todo: cap selection
+    this.launchGeneration(seed, model);
   }
 
   onRegenerate() {
-    this.launchGeneration(this.state.lastSeed);
+    this.launchGeneration(this.state.lastSeed, this.state.lastModel);
   }
 
   render() {
-    return (
-      <div>
-	<Navbar/>
-	<RB.Grid fluid={true}>
-	<RB.Row>
-	  <RB.Col md={3} sm={1}></RB.Col>
-	  <RB.Col md={6} sm={10}>
-          <Sticky enabled={true} top={0} innerZ={1001}>
-            <div className="panel panel-default generate-panel">
-              <div className="panel-heading">
-                <ButtonToolbar
-             onGenerate={this.onGenerate}
-             onSliderChange={this.onSliderChange}
-             onModelSelect={this.onModelSelect}
-             temperature={this.state.temperature} 
-             currentModel={this.state.currentModel}
-             maxSeqLen={this.state.maxSeqLen}
-             onSeqLenChange={this.onSeqLenChange}
-             batchSize={this.state.batchSize}
-             onBatchSizeChange={this.onBatchSizeChange}
-             batchSizes={[1, 2, 3, 4, 5, 10, 15]}
-             sizes={[10, 20, 30, 50, 75, 100, 150, 200, 250, 300]}/>
-              </div>
-            </div>
-          </Sticky>
-    </RB.Col>
-    <RB.Col md={3} sm={1}></RB.Col>
-  </RB.Row>
+    if (!this.state.init) {
+      return (
+	<RB.Grid>
+	  <RB.Row>
+	    <RB.Col md={2}/>
+	    <RB.Col md={8}>
+	      <RB.Jumbotron>
+		<h1>Loading...</h1>
+	      </RB.Jumbotron>
+	    </RB.Col>
+	    <RB.Col md={2}/>
+	  </RB.Row>
+	</RB.Grid>
+      );
+    } else {
+      return (
+	<div>
+	  <Navbar/>
+	  <RB.Grid fluid={true}>
+	    <RB.Row>
+	      <RB.Col md={3} sm={1}></RB.Col>
+	      <RB.Col md={6} sm={10}>
+		<Sticky enabled={true} top={0} innerZ={1001}>
+		  <div className="panel panel-default generate-panel">
+		    <div className="panel-heading">
+                      <ButtonToolbar
+			 temperature={this.state.temperature} 
+			 onTemperatureChange={this.onTemperatureChange}
+			 maxSeqLen={this.state.maxSeqLen}
+			 onSeqLenChange={this.onSeqLenChange}
+			 models={this.state.models}
+			 onGenerate={this.onGenerate}/>
+		    </div>
+		  </div>
+		</Sticky>
+	      </RB.Col>
+	      <RB.Col md={3} sm={1}></RB.Col>
+	    </RB.Row>
 
-  <RB.Row>
-    <RB.Col md={3} sm={1}></RB.Col>
-    <RB.Col md={6} sm={10}>
-      <TextEditor
-         editorState={this.state.editorState}
-         onChange={this.onEditorChange}
-         handleKeyCommand={this.handleKeyCommand}
-         onTab={this.onTab}
-         toggleBlockType={this.toggleBlockType}
-         toggleInlineStyle={this.toggleInlineStyle}
-         handleBeforeInput={this.handleBeforeInput}/>
-    </RB.Col>
-    <RB.Col md={3} sm={1}></RB.Col>
-  </RB.Row>
-   
-  <RB.Row>
-    <RB.Col md={3} sm={1}></RB.Col>
-      <RB.Col md={6}>
+	    <RB.Row>
+	      <RB.Col md={3} sm={1}></RB.Col>
+	      <RB.Col md={6} sm={10}>
+		<TextEditor
+		   editorState={this.state.editorState}
+		   onChange={this.onEditorChange}
+		   handleKeyCommand={this.handleKeyCommand}
+		   onTab={this.onTab}
+		   toggleBlockType={this.toggleBlockType}
+		   toggleInlineStyle={this.toggleInlineStyle}
+		   handleBeforeInput={this.handleBeforeInput}/>
+	      </RB.Col>
+	      <RB.Col md={3} sm={1}></RB.Col>
+	    </RB.Row>
+	    
+	    <RB.Row>
+	      <RB.Col md={3} sm={1}></RB.Col>
+	      <RB.Col md={6}>
     		<Utils.Spacer height="25px"/>
     		<Suggestions
     		   hyps={this.state.hyps}
     		   loadingHyps={this.state.loadingHyps}
     		   onRegenerate={this.onRegenerate}
     		   onHypSelect={this.insertHypAtCursor}/>
-      </RB.Col>
+	      </RB.Col>
 
-      <RB.Col md={3} sm={1}>
-      </RB.Col>
-  </RB.Row>
-    
-</RB.Grid>
-      </div>
-    );
+	      <RB.Col md={3} sm={1}>
+	      </RB.Col>
+	    </RB.Row>
+
+	  </RB.Grid>
+	</div>
+      );
+    }
   }
 };
 

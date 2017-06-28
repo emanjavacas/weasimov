@@ -150,13 +150,14 @@ function generalSigmoid(a, b, c) {
 
 function getStyle(data) {
   let alpha = 1;
+  const {r, g, b} = data.model.color;
   // const a = 1, b = 1000, inflection = 0.15;
   // const c = Math.log(b) / inflection;
   if (data.lev) {
     // alpha = 1 - generalSigmoid(a, b, c)(data.lev);
     alpha = 1 - data.lev;
   }
-  return {'background': `rgba(173,216,230,${alpha})`};
+  return {'background': `rgba(${r},${g},${b},${alpha})`};
 }
 
 
