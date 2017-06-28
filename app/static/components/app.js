@@ -244,7 +244,10 @@ class App extends React.Component {
     const currentContent = editorState.getCurrentContent();
     const selection = editorState.getSelection();
     let seed = EditorUtils.getTextSelection(currentContent, selection);
-    if (seed.trim().length == 0) { seed = currentContent.getPlainText('\n'); } // todo: cap selection
+    if (seed.trim().length == 0) {
+      seed = currentContent.getPlainText('\n');
+      if (seed.length > 200) seed = seed.substring(seed.length - 200);
+    }
     this.launchGeneration(seed, model);
   }
 
