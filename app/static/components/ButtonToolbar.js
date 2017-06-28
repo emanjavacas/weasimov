@@ -5,7 +5,6 @@ import * as RB  from 'react-bootstrap';
 import Slider from 'rc-slider';
 
 // Unused function for the addition of dropdown boxes.
-
 function makeMenuItems(iterable, isActiveFn, getChildFn, onSelect) {
   let menuItems = [];
   for (var i=0; i<iterable.length; i++) {
@@ -23,7 +22,7 @@ function makeMenuItems(iterable, isActiveFn, getChildFn, onSelect) {
   return menuItems;
 }
 
-// make a set of buttons from an iterable. 
+// make a set of buttons from an iterable
 
 function makeButtons(iterable, isActiveFn, getChildFn, onSelect) {
   let buttons = [];
@@ -32,16 +31,29 @@ function makeButtons(iterable, isActiveFn, getChildFn, onSelect) {
   for (var i=0; i<iterable.length; i++) {
     const model = iterable[i];
 		var color = palette[i]
+		if (model_names[model.path]) {
+					var names = model_names[model.path].split(" ");
+					var button_title = ""
+					for (var n=0; n<names.length; n++) {
+            button_title += names[n][0]
+					}
+          var button_overlay = model_names[model.path]
+    } else {
+					var button_title = "XX"
+          var button_overlay = "Unknown Author"
+    }
+
     buttons.push(
-      <RB.Button bsStyle="primary" key={i} style={{backgroundColor:color, border:"1px solid black", color:"black"}}>
-				Author Name
-				{/*{model.path}*/}
-      </RB.Button>
+      <RB.OverlayTrigger
+        overlay={<RB.Tooltip>{button_overlay}</RB.Tooltip>} placement="top">
+        <RB.Button bsStyle="primary" key={i} style={{backgroundColor:color, border:"1px solid black", color:"black"}}>
+				{button_title}
+        </RB.Button>
+      </RB.OverlayTrigger>
     );
   }
   return buttons;
 }
-
 
 class ButtonToolbar extends React.Component {
   constructor(props) {
@@ -50,7 +62,7 @@ class ButtonToolbar extends React.Component {
       models: []
     };
     this.updateModels = this.updateModels.bind(this);
-    this.loadModel = this.loadModel.bind(this);
+    this.loadModel = this.loadModel.bind(this);			
   }
 
   componentDidMount() {
