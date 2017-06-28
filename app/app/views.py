@@ -48,20 +48,37 @@ def register():
     return flask.render_template('register.html', title='Sign Up', form=form)
 
 
-@app.route('/')
-@app.route('/index', methods=['GET', 'POST'])
-@flask_login.login_required
-def index():
-    return flask.render_template(
-        'index.html', model_names=app.config['MODEL_NAMES'],
-        color_codes=app.config['COLOR_CODES'])
-
-
 @app.route('/logout', methods=['POST', 'GET'])
 @flask_login.login_required
 def logout():
     flask_login.logout_user()
     return flask.redirect(flask.url_for('login'))
+
+
+@app.route('/')
+@app.route('/index', methods=['GET', 'POST'])
+@flask_login.login_required
+def index():
+    return flask.render_template('index.html')
+
+
+def get_session_value(key, session):
+    return session.get(key) or app.config["DEFAULTS"][key]
+
+
+@app.route('/init', methods=['GET'])
+@flask_login.login_required
+def init():
+    user_id = flask_login.current_user.id
+    user = db.session.query(User).filter(User.id == user_id).first()
+    session = user.session or {}
+    text = db.session.query(Text).order_by(Text.timestamp).first()
+    text = text.text if text is not None else None
+    payload = {"temperature": get_session_value("temperature", session),
+               "maxSeqLen": get_session_value("max_seq_len", session),
+               "contentState": text,
+               "models": format_models()}
+    return flask.jsonify(status="OK", session=payload)
 
 
 @app.route('/savechange', methods=['POST'])
@@ -103,25 +120,25 @@ def savedoc():
 @app.route('/generate', methods=['POST'])
 @flask_login.login_required
 def generate():
+    model_name = flask.request.json['model_path']
+    app.synthesizer.load(model_names=(model_name,))  # maybe load model
     seed = flask.request.json["selection"]
     temperature = float(flask.request.json['temperature'])
     max_seq_len = int(flask.request.json['max_seq_len'])
-    batch_size = int(flask.request.json['batch_size'])
     seed = None if not seed else [seed]
     try:
         hyps = app.synthesizer.sample(
-            model_name=flask.request.json['model_name'],
+            model_name=model_name,
             seed_texts=seed,
             temperature=temperature,
             ignore_eos=True,
             max_seq_len=max_seq_len,
-            batch_size=batch_size,
             max_tries=1)
-        timestamp = datetime.datetime.utcnow()
+        timestamp = datetime.utcnow()
         for hyp in hyps:
             generation_id = str(uuid.uuid4())
             db.session.add(Generation(
-                model=flask.request.json['model_name'],
+                model=model_name,
                 seed=seed[0] if seed is not None else '',
                 temp=temperature,
                 text=hyp['text'],
@@ -132,17 +149,3 @@ def generate():
         return flask.jsonify(status='OK', hyps=hyps)
     except ValueError as e:
         return flask.jsonify(status='Error', message=str(e)), 500
-
-
-@app.route('/models', methods=['GET'])
-def models():
-    return flask.jsonify(status='OK', models=app.synthesizer.list_models())
-
-
-@app.route('/load_model', methods=['POST'])
-def load_model():
-    model_name = flask.request.json['model_name']
-    app.synthesizer.load(model_names=(model_name,))
-    return flask.jsonify(status='OK',
-                         model={'path': model_name,
-                                'loaded': True})

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {EditorState, RichUtils, convertToRaw} from 'draft-js';
+import {EditorState, RichUtils, convertToRaw, convertFromRaw} from 'draft-js';
 import * as RB from 'react-bootstrap';
 import Sticky from 'react-stickynode';
 import jsonpatch from 'fast-json-patch';
@@ -16,6 +16,7 @@ import EditorUtils from './EditorUtils';
 function timestamp() {
   return Date.now() / 1000;
 }
+
 
 // edit: json
 // timestamp: %Y-%m-%d %H:%M:%S.%f
@@ -63,29 +64,26 @@ function saveSuggestion(generation_id, draft_entity_id) {
 }
 
 
+function init(success, error) {
+  $.ajax({
+    contentType: 'application/json;charset=UTF-8',
+    url: 'init',
+    type: 'GET',
+    dataType: 'json',
+    success: (response) => success(response.session),
+    error: error
+  });
+}
+
+
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      // generation variables
-      temperature: 0.35,
-      maxSeqLen: 200,
-      batchSize: 5,
-      currentModel: null,
-      hyps: [],
-      lastSeed: null,		// keep track of last seed for refreshing
-      // loading flags
-      loadingHyps: false,
-      // editor state
-      editorState: EditorState.createEmpty(EditorUtils.hypDecorator),
-      lastEditorState: null	// don't save editor state if there were no changes
-    };
+    this.state = {init: false};
 
     // toolbar functions
-    this.onSliderChange = (value) => this.setState({temperature: value});
-    this.onModelSelect = (model) => this.setState({currentModel: model});
+    this.onTemperatureChange = (value) => this.setState({temperature: value});
     this.onSeqLenChange = (value) => this.setState({maxSeqLen: value});
-    this.onBatchSizeChange = (value) => this.setState({batchSize: value});
     // editor functions
     this.insertHypAtCursor = this.insertHypAtCursor.bind(this);
     this.onEditorChange = this.onEditorChange.bind(this);
@@ -99,18 +97,45 @@ class App extends React.Component {
     this.onGenerate = this.onGenerate.bind(this);
     this.onRegenerate = this.onRegenerate.bind(this);
     // saving functions
+    this.onInit = this.onInit.bind(this);
     this.saveInterval = this.saveInterval.bind(this);
   }
 
-  componentDidMount() {
+  onInit(session) {
+    console.log(session.models);
+    this.setState({
+      // app state
+      init: true,
+      models: session.models,
+      // editor state
+      editorState: session.contentState ?
+	EditorState.createWithContent(
+	  convertFromRaw(session.contentState), EditorUtils.hypDecorator) :
+	EditorState.createEmpty(EditorUtils.hypDecorator),
+      lastEditorState: null,	// check if there were changes
+      // generation variables
+      temperature: session.temperature,
+      maxSeqLen: session.maxSeqLen,
+      batchSize: session.batchSize,
+      hyps: [],
+      lastSeed: null,	     // keep track of last seed for refreshing
+      lastModel: null,	     // keep track of last model for refreshing
+      // loading flags
+      loadingHyps: false
+    });
+    // set interval
     this.saveIntervalId = setInterval(this.saveInterval, 25000);
   }
 
   saveInterval() {
     if (this.state.editorState !== this.state.lastEditorState) {
-      saveDoc(this.state.editorState);
+      saveDoc(convertToRaw(this.state.editorState.getCurrentContent()));
       this.setState({lastEditorState: this.state.editorState});
     }
+  }
+
+  componentDidMount() {
+    init(this.onInit, (error) => console.log("Error"));
   }
 
   // editor functions

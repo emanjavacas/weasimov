@@ -23,6 +23,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True)
     password = db.Column(db.String(64), unique=False)
+    session = db.Column(JSONEncodedDict)
 
     def is_authenticated(self):
         return True
@@ -48,7 +49,7 @@ class Text(db.Model):
 
 class Edit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    edit = db.String(JSONEncodedDict)
+    edit = db.Column(JSONEncodedDict)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 

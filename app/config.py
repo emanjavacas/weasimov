@@ -14,9 +14,14 @@ SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
 # model names
 MODEL_NAMES = {
-    'asimov.pt': 'Isaac Asimov',
-    'giphart.pt': 'Ronald Giphart',
-    'char.LSTM.1l.2546h.46e.200b.2.49.pt.cpu.pt': '5000 romans'
+    'char.LSTM.1l.2546h.46e.200b.2.49.post.3.16.pt': 'Ronald Giphart',
+    'char.LSTM.1l.2546h.46e.200b.2.49.post.2.78.pt': 'Isaac Asimov',
+    'char.LSTM.1l.2546h.46e.200b.2.49.pt': '5000 Romans'
 }
 
-COLOR_CODES = [colors.to_rgba(c) for c in plt.get_cmap('Pastel2').colors]
+# defaults
+DEFAULTS = {
+    "temperature": 0.35,
+    "max_seq_len": 200,
+    "batch_size": 5
+}

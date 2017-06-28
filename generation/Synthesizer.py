@@ -45,7 +45,6 @@ class Synthesizer(object):
         self.model_dir = model_dir
         self.models = {}
         self.dicts = {}
-        self.temperature = temperature
 
     def list_models(self, only_loaded=False):
         return [{'path': f, 'loaded': f in self.models}
@@ -59,25 +58,27 @@ class Synthesizer(object):
         ----------
         model_names : iterable of str
             Names of individual models to load under `self.model_dir`
-            If `None`, all models will be noted.
+            If `None`, all models will be loaded.
 
         Notes
         -----
-        Individual models are assumed to contain
-        (dict, model) tuples, stored after training.
+        Individual models are assumed to be dicts with keys {"model", "dict"}
 
         """
         if not model_names:
-            model_names = [m['path']
-                           for m in self.list_models(only_loaded=True)]
+            model_names = [m['path'] for m in self.list_models()]
 
         for name in model_names:
+            if name in self.models:
+                print("Not loading [%s], already loaded" % name)
+                continue
             try:
                 m = load_model(os.path.join(self.model_dir, name))
                 self.models[name] = m['model']
                 self.dicts[name] = m['dict']
-            except (ValueError, FileNotFoundError):
+            except (ValueError, OSError):
                 print("Couldn't find model [%s]" % name)
+
         if not self.models:
             ValueError('No models were loaded.')
         if not self.dicts:
