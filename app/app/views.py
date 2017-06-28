@@ -1,5 +1,5 @@
 import json
-import datetime
+from datetime import datetime
 import unicodedata
 import uuid
 import flask
@@ -37,7 +37,8 @@ def login():
 def register():
     form = RegisterForm()
     if flask.request.method == 'GET':
-        return flask.render_template('register.html', title='Sign In', form=form)
+        return flask.render_template(
+            'register.html', title='Sign In', form=form)
     if form.validate_on_submit() and form.validate_fields():
         user = User(username=form.username.data,
                     password=form.password.data)
@@ -54,7 +55,8 @@ def index():
     text = Text.query.order_by('timestamp desc').first()
     if text is None:
         text = "Bieb, bieb!"
-    return flask.render_template('index.html', model_names=app.config['MODEL_NAMES'])
+    return flask.render_template(
+        'index.html', model_names=app.config['MODEL_NAMES'])
 
 
 @app.route('/logout', methods=['POST', 'GET'])
@@ -68,8 +70,7 @@ def logout():
 @flask_login.login_required
 def savechange():
     data = flask.request.json
-    timestamp = datetime.datetime.strptime(
-        data['timestamp'], "%Y-%m-%d %H:%M:%S.%f")
+    timestamp = datetime.fromtimestamp(data['timestamp'])
     edit = Edit(edit=data['edit'], timestamp=timestamp)
     db.session.add(edit)
     db.session.commit()
@@ -80,9 +81,9 @@ def savechange():
 @flask_login.login_required
 def savesuggestion():
     data = flask.request.json
-    timestamp = datetime.datetime.strptime(
-        data['timestamp'], "%Y-%m-%d %H:%M:%S.%f")
-    generation = Generation.query.filter_by(generation_id=data['generation_id'])
+    timestamp = datetime.fromtimestamp(data['timestamp'])
+    generation = Generation.query.filter_by(
+        generation_id=data['generation_id'])
     generation.selected = True
     generation.draft_entity_id = data['draft_entity_id']
     generation.selected_timestamp = timestamp
@@ -94,8 +95,7 @@ def savesuggestion():
 @flask_login.login_required
 def savedoc():
     data = flask.request.json
-    timestamp = datetime.datetime.strptime(
-        data['timestamp'], "%Y-%m-%d %H:%M:%S.%f")
+    timestamp = datetime.fromtimestamp(data['timestamp'])
     text = Text(text=data['text'], timestamp=timestamp)
     db.session.add(text)
     db.session.commit()
