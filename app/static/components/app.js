@@ -103,8 +103,8 @@ class App extends React.Component {
   }
 
   saveInterval() {
-    if (this.state.editorState !== this.lastEditorState) {
-      saveDoc(this.editorState);
+    if (this.state.editorState !== this.state.lastEditorState) {
+      saveDoc(this.state.editorState);
       this.setState({lastEditorState: this.state.editorState});
     }
   }
