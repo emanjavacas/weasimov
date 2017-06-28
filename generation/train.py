@@ -85,6 +85,8 @@ def make_lm_save_hook(d, args):
     def hook(trainer, epoch, batch_num, checkpoint):
         trainer.log("info", "Saving model...")
         save_model(d, trainer.model, args, ppl=None)
+        if args.gpu:
+            trainer.model.cuda()
 
     return hook
 
