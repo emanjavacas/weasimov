@@ -15,7 +15,11 @@ li.list-group-hover.list-group-item:hover {
 }
 
 /* generate bar */
-
+.generate-bar div.panel:nth-child(1) {
+    border-left: none;
+    border-right: none;
+    box-shadow: 0 2px 0px rgba(0,0,0,.05);
+}
 .generate-bar .panel-heading{
   padding: 0;
 }
@@ -26,6 +30,7 @@ li.list-group-hover.list-group-item:hover {
 .generate-bar .form-horizontal .control-label {
   width: 120px;
 }
+
 
 /* Individual elements on the generate bar*/
 
@@ -41,7 +46,7 @@ li.list-group-hover.list-group-item:hover {
 .generate-bar .panel-heading .form-group:nth-last-child(1){
   float: right;
   margin-top: 15px;
-  margin-right: 0px
+  margin-right: 20px
 }
 
 
