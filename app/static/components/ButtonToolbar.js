@@ -3,6 +3,7 @@ import ReactDom from 'react-dom';
 import * as RB  from 'react-bootstrap';
 import Slider from 'rc-slider';
 
+// Unused function for the addition of dropdown boxes.
 
 function makeMenuItems(iterable, isActiveFn, getChildFn, onSelect) {
   let menuItems = [];
@@ -19,6 +20,22 @@ function makeMenuItems(iterable, isActiveFn, getChildFn, onSelect) {
     );
   }
   return menuItems;
+}
+
+// make a set of buttons from an iterable. 
+
+function makeButtons(iterable, isActiveFn, getChildFn, onSelect) {
+  let buttons = [];
+  for (var i=0; i<iterable.length; i++) {
+    const model = iterable[i];
+    buttons.push(
+      <RB.Button bsStyle="primary" key={i}>
+				Author Name
+				{/*{model.path}*/}
+      </RB.Button>
+    );
+  }
+  return buttons;
 }
 
 
@@ -75,33 +92,22 @@ class ButtonToolbar extends React.Component {
   render() {
     const {models} = this.state;
     const {temperature, currentModel, sizes, maxSeqLen, batchSizes, batchSize} = this.props;
-    // create dropdown items for models
-    let dropdownModels;
-    if (models.length > 0) {
-      dropdownModels = makeMenuItems(
-	models,
-	(model) => model.loaded,
-	(model) => model.path,
-	this.loadModel);
-    } else {
-      dropdownModels = <RB.MenuItem>No available models</RB.MenuItem>;
-    }
-    // create dropdown items for size
-    const dropdownSizes = makeMenuItems(
-      sizes,
-      (size) => size === maxSeqLen,
-      (size) => size,
-      this.props.onSeqLenChange);
-    // create dropdown items for batchSize
-    const dropdownBatchSizes = makeMenuItems(
-      batchSizes,
-      (selectedBatchSize) => selectedBatchSize === batchSize,
-      (batchSize) => batchSize,
-      this.props.onBatchSizeChange);
+
+		// Show Temperature
     const tempStr = (temperature.toString().length === 3) ?
 	    temperature.toString() + '0' :
 	    temperature;
-
+    // create dropdown items for models
+		let modelButtons;
+    if (models.length > 0) {
+      modelButtons = makeButtons(
+                      models,
+                      (model) => model.loaded,
+                      (model) => model.path,
+                      this.loadModel);
+    } else {
+      modelButtons = <RB.Button>No available models</RB.Button>;
+    }
     return (
 			<div className="generate-bar">
 				<RB.ButtonToolbar horizontal>
@@ -115,35 +121,18 @@ class ButtonToolbar extends React.Component {
 								/>
 						<RB.Label style={{padding:"4px 8px"}}>{tempStr}</RB.Label>
 					</RB.ButtonGroup>
-			<RB.ButtonGroup>
-				<RB.DropdownButton
-					title={currentModel || "Model selection"}
-					id="dropdown-model"
-					title="Model"
-					>
-					{dropdownModels}
-				</RB.DropdownButton>
-				<RB.DropdownButton
-					title={maxSeqLen + " characters"}
-					id="dropdown-size"
-					title="Length"
-					>
-					{dropdownSizes}
-				</RB.DropdownButton>
-				<RB.DropdownButton
-					title={batchSize + " suggestions"}
-					id="dropdown-size"
-					title="Batch Size"
-					>
-					{dropdownBatchSizes}
-				</RB.DropdownButton>
-			</RB.ButtonGroup>
-			<RB.ButtonGroup style={{float: "right"}} >
-					<RB.Button
-									bsStyle="primary"
-									onClick={this.props.onGenerate}>
-									Generate
-								</RB.Button>
+					<RB.ButtonGroup style={{width: "200px", display: "inline-flex", margin: "7px 20px"}}>
+						<span>Length</span>
+						<Slider
+								defaultValue={maxSeqLen} min={10} max={200} step={5}
+								style={{width: "100%",margin: "3px 10px"}}
+								onChange={this.props.onSeqLenChange}
+								title="Length"
+								/>
+						<RB.Label style={{padding:"4px 8px"}}>{maxSeqLen}</RB.Label>
+					</RB.ButtonGroup>
+			<RB.ButtonGroup style={{float: "right"}} > 
+				{modelButtons}
 			</RB.ButtonGroup>
 		</RB.ButtonToolbar>
 		</div>
