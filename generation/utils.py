@@ -116,3 +116,9 @@ def load_data(path='data/bigmama/',
                     yield l.strip().split()
                 elif level == 'char':
                     yield list(l.strip())
+
+
+def format_hyp(score, hyp, hyp_num, d):
+    return '\n* [{hyp}] [Score:{score:.3f}]: {sent}'.format(
+        hyp=hyp_num, score=score/len(hyp),
+        sent=' '.join([d.vocab[c] for c in hyp]))
