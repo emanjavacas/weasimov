@@ -6,6 +6,7 @@ from matplotlib import colors
 import matplotlib.pyplot as plt
 import flask
 import flask_login
+from sqlalchemy import desc
 
 from app import app, db, lm
 from .models import User, Text, Edit, Generation
@@ -95,7 +96,7 @@ def init():
     user_id = flask_login.current_user.id
     user = db.session.query(User).filter(User.id == user_id).first()
     session = user.session or {}
-    text = db.session.query(Text).order_by(Text.timestamp).first()
+    text = db.session.query(Text).order_by(desc(Text.timestamp)).first()
     text = text.text if text is not None else None
     payload = {"temperature": get_session_value("temperature", session),
                "maxSeqLen": get_session_value("max_seq_len", session),

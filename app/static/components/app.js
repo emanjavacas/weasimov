@@ -102,7 +102,6 @@ class App extends React.Component {
   }
 
   onInit(session) {
-    console.log(session.models);
     this.setState({
       // app state
       init: true,
