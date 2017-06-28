@@ -22,7 +22,8 @@ function makeMenuItems(iterable, isActiveFn, getChildFn, onSelect) {
   return menuItems;
 }
 
-// make a set of buttons from an iterable. 
+// make a set of buttons from an iterable
+
 function makeButtons(iterable, isActiveFn, getChildFn, onSelect) {
   let buttons = [];
 	var palette = ["#E39980", "#E3DA80", "#789DA7", "#A2CD74"]
@@ -36,14 +37,19 @@ function makeButtons(iterable, isActiveFn, getChildFn, onSelect) {
 					for (var n=0; n<names.length; n++) {
             button_title += names[n][0]
 					}
+          var button_overlay = model_names[model.path]
     } else {
 					var button_title = "XX"
+          var button_overlay = "Unknown Author"
     }
 
     buttons.push(
-      <RB.Button bsStyle="primary" key={i} style={{backgroundColor:color, border:"1px solid black", color:"black"}}>
+      <RB.OverlayTrigger
+        overlay={<RB.Tooltip>{button_overlay}</RB.Tooltip>} placement="top">
+        <RB.Button bsStyle="primary" key={i} style={{backgroundColor:color, border:"1px solid black", color:"black"}}>
 				{button_title}
-      </RB.Button>
+        </RB.Button>
+      </RB.OverlayTrigger>
     );
   }
   return buttons;
