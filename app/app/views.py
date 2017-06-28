@@ -54,7 +54,7 @@ def index():
     text = Text.query.order_by('timestamp desc').first()
     if text is None:
         text = "Bieb, bieb!"
-    return flask.render_template('index.html')
+    return flask.render_template('index.html', model_names=app.config['MODEL_NAMES'])
 
 
 @app.route('/logout', methods=['POST', 'GET'])
