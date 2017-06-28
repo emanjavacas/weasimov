@@ -93,11 +93,11 @@ class App extends React.Component {
   insertHypAtCursor(hyp) {
     const {eos, bos, par, text, score} = hyp;
     const {editorState} = this.state;
-    const stateWithHyp = EditorUtils.insertGeneratedText(
+    const contentStateWithHyp = EditorUtils.insertGeneratedText(
       editorState, text, {score: score, source: text});
-    this.setState({
-      editorState: EditorState.push(editorState, stateWithHyp, 'insert-characters')
-    });
+    const newEditorState = EditorState.push(
+      editorState, contentStateWithHyp, 'insert-characters');
+    this.setState({editorState: newEditorState});
   }
   
   onEditorChange(editorState) {
