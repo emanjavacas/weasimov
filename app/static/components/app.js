@@ -13,18 +13,68 @@ import Utils from './Utils';
 import EditorUtils from './EditorUtils';
 
 
+// edit: json
+// timestamp: %Y-%m-%d %H:%M:%S.%f
+function saveChange(edit) {
+  $.ajax({
+    contentType: 'application/json;charset=UTF-8',
+    url: 'savechange',
+    data: JSON.stringify({edit: edit, timestamp: Date.now()}),
+    type: 'POST',
+    dataType: 'json',
+    success: (response) => console.log(response),
+    error: (error) => console.log(error)
+  });
+}
+
+
+// text: json
+// timestamp: same
+function saveDoc(text) {
+  $.ajax({
+    contentType: 'application/json;charset=UTF-8',
+    url: 'savedoc',
+    data: JSON.stringify({text: text, timestamp: Date.now()}),
+    type: 'POST',
+    dataType: 'json',
+    success: (response) => console.log(response),
+    error: (error) => console.log(error)
+  });
+}
+
+
+// generation_id: str
+// draft_entity_id: str
+// timestamp: same
+function saveSuggestion(generation_id, draft_entity_id) {
+  $.ajax({
+    contentType: 'application/json;charset=UTF-8',
+    url: 'savesuggestion',
+    data: JSON.stringify({generation_id, draft_entity_id, timestamp: Date.now()}),
+    type: 'POST',
+    dataType: 'json',
+    success: (response) => console.log(response),
+    error: (error) => console.log(error)
+  });
+}
+
+
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      // generation variables
       temperature: 0.35,
       maxSeqLen: 200,
       batchSize: 5,
       currentModel: null,
       hyps: [],
-      lastSeed: null,
+      lastSeed: null,		// keep track of last seed for refreshing
+      // loading flags
       loadingHyps: false,
-      editorState: EditorState.createEmpty(EditorUtils.hypDecorator)
+      // editor state
+      editorState: EditorState.createEmpty(EditorUtils.hypDecorator),
+      lastEditorState: null	// don't save editor state if there were no changes
     };
 
     // toolbar functions
@@ -44,6 +94,19 @@ class App extends React.Component {
     this.launchGeneration = this.launchGeneration.bind(this);
     this.onGenerate = this.onGenerate.bind(this);
     this.onRegenerate = this.onRegenerate.bind(this);
+    // saving functions
+    this.saveInterval = this.saveInterval.bind(this);
+  }
+
+  componentDidMount() {
+    this.saveIntervalId = setInterval(this.saveInterval, 25000);
+  }
+
+  saveInterval() {
+    if (this.state.editorState !== this.lastEditorState) {
+      saveDoc(this.editorState);
+      this.setState({lastEditorState: this.state.editorState});
+    }
   }
 
   // editor functions
@@ -91,15 +154,15 @@ class App extends React.Component {
   }
 
   insertHypAtCursor(hyp) {
-    // TODO: find out new entity id and send it to the db along with "selected"
-    const {eos, bos, par, text, score} = hyp;
+    const {eos, bos, par, text, score, generation_id} = hyp;
     const {editorState} = this.state;
     const contentStateWithHyp = EditorUtils.insertGeneratedText(
       editorState, text, {score: score, source: text});
+    const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
     const newEditorState = EditorState.push(
       editorState, contentStateWithHyp, 'insert-characters');
-    // this.setState({editorState: newEditorState});
     this.onEditorChange(newEditorState);
+    saveSuggestion(generation_id, draftEntityId);
   }
   
   onEditorChange(editorState) {
@@ -113,8 +176,7 @@ class App extends React.Component {
       const selection = editorState.getSelection();
       const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
       const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
-      const blockDiff = jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS());
-      console.log(JSON.stringify(blockDiff));
+      saveChange(jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS()));
     }
     this.setState({editorState});
   }
@@ -166,7 +228,7 @@ class App extends React.Component {
     return (
       <div>
 	<Navbar/>
-<RB.Grid fluid={true}>
+	<RB.Grid fluid={true}>
 	<RB.Row>
 	  <RB.Col md={3} sm={1}></RB.Col>
 	  <RB.Col md={6} sm={10}>
