@@ -73,7 +73,21 @@ def savechange():
     edit = Edit(edit=data['edit'], timestamp=timestamp)
     db.session.add(edit)
     db.session.commit()
-    return flask.jsonify(status='OK', message='changes saved.')
+    return flask.jsonify(status='OK', message='Changes saved.')
+
+
+@app.route('/savesuggestion', methods=['POST'])
+@flask_login.login_required
+def savesuggestion():
+    data = flask.request.json
+    timestamp = datetime.datetime.strptime(
+        data['timestamp'], "%Y-%m-%d %H:%M:%S.%f")
+    generation = Generation.query.filter_by(generation_id=data['generation_id'])
+    generation.selected = True
+    generation.draft_entity_id = data['draft_entity_id']
+    generation.selected_timestamp = timestamp
+    db.session.commit()
+    return flask.jsonify(status='OK', message='Suggestion updated.')
 
 
 @app.route('/savedoc', methods=['POST'])
@@ -85,7 +99,7 @@ def savedoc():
     text = Text(text=data['text'], timestamp=timestamp)
     db.session.add(text)
     db.session.commit()
-    return flask.jsonify(status='OK', message='document saved.')
+    return flask.jsonify(status='OK', message='Document saved.')
 
 
 @app.route('/generate', methods=['POST'])
