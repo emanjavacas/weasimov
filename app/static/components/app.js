@@ -91,13 +91,15 @@ class App extends React.Component {
   }
 
   insertHypAtCursor(hyp) {
+    // TODO: find out new entity id and send it to the db along with "selected"
     const {eos, bos, par, text, score} = hyp;
     const {editorState} = this.state;
     const contentStateWithHyp = EditorUtils.insertGeneratedText(
       editorState, text, {score: score, source: text});
     const newEditorState = EditorState.push(
       editorState, contentStateWithHyp, 'insert-characters');
-    this.setState({editorState: newEditorState});
+    // this.setState({editorState: newEditorState});
+    this.onEditorChange(newEditorState);
   }
   
   onEditorChange(editorState) {
@@ -105,13 +107,14 @@ class App extends React.Component {
     const oldContent = oldState.getCurrentContent();
     const newContent = editorState.getCurrentContent();
     if (oldContent !== newContent) {
-      // console.log(convertToRaw(newContent), convertToRaw(oldContent));
+      // handle new metadata
       EditorUtils.updateHypMetadata(editorState);
+      // block-level diff
       const selection = editorState.getSelection();
       const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
       const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
-      const d = jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS());
-      console.log(JSON.stringify(d));
+      const blockDiff = jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS());
+      console.log(JSON.stringify(blockDiff));
     }
     this.setState({editorState});
   }
