@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {EditorState, RichUtils, convertToRaw} from 'draft-js';
 import * as RB from 'react-bootstrap';
 import Sticky from 'react-stickynode';
-import diff from 'deep-diff';
+import jsonpatch from 'fast-json-patch';
 
 import Navbar from './Navbar';
 import ButtonToolbar from './ButtonToolbar';
@@ -109,11 +109,9 @@ class App extends React.Component {
       EditorUtils.updateHypMetadata(editorState);
       const selection = editorState.getSelection();
       const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
-      if (currentBlock.size == 1) {
-        const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
-        var d = diff(oldBlock.toJS(), currentBlock.toJS());
-        console.log(JSON.stringify(d));
-      }
+      const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
+      const d = jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS());
+      console.log(JSON.stringify(d));
     }
     this.setState({editorState});
   }
