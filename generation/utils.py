@@ -10,7 +10,7 @@ random.seed(12101985)
 
 
 def load_metadata(fn):
-    df = pd.read_csv(fn, header=0, sep=',', dtype={'author:id': str})
+    df = pd.read_csv(fn, header=0, sep=',', dtype=str)
     df = df.set_index('filepath').fillna('')
     return df
 
@@ -56,15 +56,16 @@ def load_data(path='data/bigmama/',
 
     """
 
-    meta = load_metadata(fn=metapath)
-
+    meta = load_metadata(fn=metapath)    
     if filter_file:
         filters = parse_filter_file(filter_file)
+        print(filters)
 
     if filters:
         filenames = []
         for fn in glob.glob(path+'/*.txt'):
-            me = meta.loc[os.path.basename(fn)]
+            fs = os.path.splitext(os.path.basename(fn))[0]
+            me = meta.loc[fs]
             if me.empty:
                 continue
             if 'authors' in filters and \
@@ -81,7 +82,7 @@ def load_data(path='data/bigmama/',
                         continue
                 if not match:
                     continue
-
+            print(fn)
             filenames.append(fn)
     else:
         filenames = glob.glob(path + '/*.txt')

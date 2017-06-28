@@ -28,7 +28,8 @@ from seqmod.misc.dataset import Dict, BlockDataset
 from seqmod.misc.early_stopping import EarlyStopping
 
 from utils import load_data
-from train import make_lm_check_hook, make_lm_save_hook, save_model
+from train import (make_lm_check_hook, make_lm_save_hook,
+    save_model, load_from_file)
 
 
 if __name__ == '__main__':
@@ -88,7 +89,6 @@ if __name__ == '__main__':
     parser.add_argument('--note', type=str, default=" ", nargs='+')
 
     args = parser.parse_args()
-
     model, d, data = None, None, None
 
     assert args.model_path, "MODEL_PATH required"
@@ -113,10 +113,10 @@ if __name__ == '__main__':
         data = load_from_file(args.data_path, filter_file=args.filter_file)
     else:
         print("Transforming data...")
-        print(args.corpus)
+        print(args.filter_file)
         data = d.transform(
             load_data(path=args.corpus, level=args.level,
-                      filters=args.filter_file,
+                      filter_file=args.filter_file,
                       skip_head_lines=args.skip_head_lines,
                       skip_tail_lines=args.skip_tail_lines))
         data = np.array([c for s in data for c in s], dtype=np.int32)
