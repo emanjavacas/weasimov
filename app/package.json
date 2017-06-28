@@ -18,6 +18,7 @@
     "webpack": "^1.12.12"
   },
   "dependencies": {
+    "deep-diff": "^0.3.8",
     "draft-js": "^0.10.1",
     "fast-json-patch": "^2.0.2",
     "fast-levenshtein": "^2.0.6",

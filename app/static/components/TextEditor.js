@@ -75,7 +75,7 @@ class StyleButton extends React.Component {
     }
 
     return (
-      <RB.Button bsSize="xsmall">
+      <RB.Button bsSize="small">
 	<span className={className} onMouseDown={this.onToggle}>
 	  { this.props.icon ? <i className={"fa fa-" + this.props.icon}/> : this.props.label }
 	</span>
@@ -85,15 +85,15 @@ class StyleButton extends React.Component {
 }
 
 const BLOCK_TYPES = [
-  {label: 'H1', style: 'header-one'},
-  {label: 'H2', style: 'header-two'},
-  {label: 'H3', style: 'header-three'},
-  {label: 'H4', style: 'header-four'},
-  {label: 'H5', style: 'header-five'},
-  {label: 'Blockquote', style: 'blockquote', icon: 'quote-right'},
-  {label: 'UL', style: 'unordered-list-item', icon: 'list-ul'},
-  {label: 'OL', style: 'ordered-list-item', icon: 'list-ol'},
-  {label: 'Code Block', style: 'code-block', icon: 'code'},
+  // {label: 'H1', style: 'header-one'},
+  // {label: 'H2', style: 'header-two'},
+  // {label: 'H3', style: 'header-three'},
+  // {label: 'H4', style: 'header-four'},
+  // {label: 'H5', style: 'header-five'},
+  // {label: 'Blockquote', style: 'blockquote', icon: 'quote-right'},
+  // {label: 'UL', style: 'unordered-list-item', icon: 'list-ul'},
+  // {label: 'OL', style: 'ordered-list-item', icon: 'list-ol'},
+  // {label: 'Code Block', style: 'code-block', icon: 'code'},
 ];
 
 const BlockStyleControls = (props) => {
@@ -124,7 +124,7 @@ var INLINE_STYLES = [
   {label: 'Bold', style: 'BOLD', icon: 'bold'},
   {label: 'Italic', style: 'ITALIC', icon: 'italic'},
   {label: 'Underline', style: 'UNDERLINE', icon: 'underline'},
-  {label: 'Monospace', style: 'CODE', icon: 'font'},
+//  {label: 'Monospace', style: 'CODE', icon: 'font'},
 ];
 
 const InlineStyleControls = (props) => {

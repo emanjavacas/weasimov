@@ -7,3 +7,10 @@ MODEL_DIR = os.path.join(basedir, 'models')
 # database
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'weasimov.db') + '?check_same_thread=False'
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
+
+# model names
+MODEL_NAMES = {
+    'asimov.pt': 'Isaac Asimov',
+    'giphart.pt': 'Ronald Giphart',
+    'char.LSTM.1l.2546h.46e.200b.2.49.pt.cpu.pt': '5000 romans'
+}
