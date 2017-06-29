@@ -9,12 +9,11 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
   let hypItems = [];
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
-    const key = i;
     const {r, g, b} = Utils.getModelData(models, hyp.model).color;
     const backgroundColor = `rgb(${r},${g},${b})`;
     hypItems.push(
       <RB.ListGroupItem
-	 key={key}
+	 key={hyp.generation_id}
 	 className="list-group-hover"
 	 onClick={() => onHypSelect(hyp)}
          style={{backgroundColor: backgroundColor}}
@@ -25,7 +24,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
 	      <td>
 		<RB.Button
 		   style={{border: "none", padding: "0", background: "none"}}
-		   onClick={(e) => {e.stopPropagation(); onHypDismiss(key);}}>
+		   onClick={(e) => {e.stopPropagation(); onHypDismiss(hyp.generation_id);}}>
 		  <i className="fa fa-close fa-fw" style={{color:"#666666"}}></i>
 		</RB.Button>
 	      </td>
@@ -45,39 +44,52 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
 }
 
 
-class Suggestions extends React.Component {
-
+class ButtonRight extends React.Component {
   render() {
-    const hasHyps = (this.props.hyps.length > 0);
-    const isCollapsed = this.props.isCollapsed || !hasHyps;
+    let buttonRight;
     if (this.props.loadingHyps) {
-      return <Utils.Spinner/>;
+      // show spinner
+      buttonRight = <Utils.Spinner/>;
     } else {
-      return (
-	<div className="panel panel-default suggestions-panel" style={{visibility: hasHyps ? "visible" : "hidden"}}>
-	  <div className="panel-heading">
-            <RB.Button bsSize="sm">
-              <i className="fa fa-caret-down"></i>
-            </RB.Button>
-	    <span className="pull-right">
-              <RB.Button
-		 onClick={this.props.onRegenerate}
-		 bsSize="sm">
-		<i className="fa fa-refresh"/>
-      	      </RB.Button>
-	    </span>
-	  </div>
-	  <RB.ListGroup>
-	    <CSSTransitionGroup
-	       transitionName="dismiss"
-	       transitionEnterTimeout={500}
-	       transitionLeaveTimeout={300}>
- 	      {makeHypItems(this.props.hyps, this.props.models, this.props.onHypSelect, this.props.onHypDismiss)}
-	    </CSSTransitionGroup>
-	  </RB.ListGroup>
-	</div>
+      // show refresh button
+      buttonRight = (
+	<RB.Button
+	   onClick={this.props.onRegenerate}
+	   bsSize="sm">
+	  <i className="fa fa-refresh"/>
+      	</RB.Button>
       );
     }
+    return buttonRight;
+  }
+}
+
+
+class Suggestions extends React.Component {
+  render() {
+    const hasHyps = (this.props.hyps.length > 0) || this.props.loadingHyps;
+    const collapsedClass = this.props.isCollapsed ? 'suggestion-panel-down' : 'suggestion-panel-up';
+    return (
+      <div className={`panel panel-default suggestions-panel ${collapsedClass}`}
+	   style={{visibility: hasHyps ? "visible" : "hidden"}}>
+	<div className="panel-heading">
+          <RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
+            <i className="fa fa-caret-down"></i>
+          </RB.Button>
+	  <span className="pull-right">
+	    <ButtonRight loadingHyps={this.props.loadingHyps} onRegenerate={this.props.onRegenerate}/>
+	  </span>
+	</div>
+	<RB.ListGroup>
+	  <CSSTransitionGroup
+	     transitionName="dismiss"
+	     transitionEnterTimeout={500}
+	     transitionLeaveTimeout={300}>
+ 	    {makeHypItems(this.props.hyps, this.props.models, this.props.onHypSelect, this.props.onHypDismiss)}
+	  </CSSTransitionGroup>
+	</RB.ListGroup>
+      </div>
+    );
   }
 }
 

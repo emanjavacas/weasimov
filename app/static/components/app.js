@@ -17,7 +17,6 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {init: false};
-
     // toolbar functions
     this.onTemperatureChange = (value) => this.setState({temperature: value});
     this.onSeqLenChange = (value) => this.setState({maxSeqLen: value});
@@ -25,6 +24,7 @@ class App extends React.Component {
     this.insertHypAtCursor = this.insertHypAtCursor.bind(this);
     this.onEditorChange = this.onEditorChange.bind(this);
     this.dismissHyp = this.dismissHyp.bind(this);
+    this.toggleSuggestions = this.toggleSuggestions.bind(this);
     this.handleKeyCommand = (command) => this._handleKeyCommand(command);
     this.onTab = (e) => this._onTab(e);
     this.toggleInlineStyle = (style) => this._toggleInlineStyle(style);
@@ -71,8 +71,9 @@ class App extends React.Component {
       hyps: [],
       lastSeed: null,	     // keep track of last seed for refreshing
       lastModel: null,	     // keep track of last model for refreshing
-      // loading flags
-      loadingHyps: false
+      // component flags
+      loadingHyps: false,
+      suggestionsCollapsed: true
     });
     // set interval
     this.saveIntervalId = setInterval(this.saveInterval, 25000);
@@ -156,13 +157,16 @@ class App extends React.Component {
     this.setState({editorState});
   }
 
-  dismissHyp(key) {
-    let newHyps = this.state.hyps.slice();
-    console.log(key);
-    console.log(newHyps);
-    newHyps.splice(key, 1);
-    console.log(newHyps);
-    this.setState({hyps: newHyps});
+  dismissHyp(hypId) {
+    this.setState({hyps: this.state.hyps.filter((hyp) => hyp.generation_id !== hypId)});
+  }
+
+  toggleSuggestions(newState) {
+    if (newState) {
+      this.setState({suggestionsCollapsed: true});
+    } else {
+      this.setState({suggestionsCollapsed: !this.state.suggestionsCollapsed});
+    }
   }
  
   _handleKeyCommand(command) {
@@ -254,6 +258,8 @@ class App extends React.Component {
     		  <Suggestions
     		     hyps={this.state.hyps}
 		     models={this.state.models}
+		     isCollapsed={this.state.suggestionsCollapsed}
+		     onCollapse={this.toggleSuggestions}
     		     loadingHyps={this.state.loadingHyps}
     		     onRegenerate={this.regenerate}
     		     onHypSelect={this.insertHypAtCursor}
