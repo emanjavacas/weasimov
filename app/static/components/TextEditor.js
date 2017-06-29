@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Editor, EditorState, RichUtils} from 'draft-js';
 import * as RB from 'react-bootstrap';
-
+import Sticky from 'react-stickynode';
 
 class TextEditor extends React.Component {
   constructor(props) {
@@ -26,10 +26,12 @@ class TextEditor extends React.Component {
 
     return (
       <div className="RichEditor-root">
+      <Sticky enabled={true} top={70} innerZ={1001}>
         <InlineStyleControls
            editorState={editorState}
            onToggle={this.props.toggleInlineStyle}
            />
+      </Sticky>
         <div className={className} onClick={this.focus}>
           <Editor
             editorState={editorState}
@@ -83,7 +85,7 @@ const InlineStyleControls = (props) => {
   return (
     <div className="RichEditor-controls">
       {INLINE_STYLES.map(type =>
-			 <StyleButton
+       <StyleButton
 			      key={type.label}
 			      active={currentStyle.has(type.style)}
 			      label={type.label}
