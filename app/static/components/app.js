@@ -89,7 +89,6 @@ class App extends React.Component {
     this.onEditorChange = this.onEditorChange.bind(this);
     this.handleKeyCommand = (command) => this._handleKeyCommand(command);
     this.onTab = (e) => this._onTab(e);
-    this.toggleBlockType = (type) => this._toggleBlockType(type);
     this.toggleInlineStyle = (style) => this._toggleInlineStyle(style);
     this.handleBeforeInput = (char) => this._handleBeforeInput(char);
     // generation functions
@@ -151,15 +150,6 @@ class App extends React.Component {
   _onTab(e) {
     const maxDepth = 4;
     this.onEditorChange(RichUtils.onTab(e, this.state.editorState, maxDepth));
-  }
-
-  _toggleBlockType(blockType) {
-    this.onEditorChange(
-      RichUtils.toggleBlockType(
-        this.state.editorState,
-        blockType
-      )
-    );
   }
 
   _toggleInlineStyle(inlineStyle) {
@@ -300,7 +290,6 @@ class App extends React.Component {
 		     onChange={this.onEditorChange}
 		     handleKeyCommand={this.handleKeyCommand}
 		     onTab={this.onTab}
-		     toggleBlockType={this.toggleBlockType}
 		     toggleInlineStyle={this.toggleInlineStyle}
 		     handleBeforeInput={this.handleBeforeInput}/>
 		</RB.Row>
