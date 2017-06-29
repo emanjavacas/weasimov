@@ -74,13 +74,14 @@ class ButtonRight extends React.Component {
 class Suggestions extends React.Component {
   render() {
     const hasHyps = (this.props.hyps.length > 0) || this.props.loadingHyps;
-    const collapsedClass = this.props.isCollapsed ? 'suggestion-panel-down' : 'suggestion-panel-up';
+    const collapsedClass = this.props.isCollapsed ? 'suggestions-panel-down' : 'suggestions-panel-up';
+    const caretClass = this.props.isCollapsed ? 'fa fa-caret-down' : 'fa fa-caret-up';
     return (
       <div className={`panel panel-default suggestions-panel ${collapsedClass}`}
 	   style={{visibility: hasHyps ? "visible" : "hidden"}}>
 	<div className="panel-heading">
           <RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
-            <i className="fa fa-caret-down"></i>
+            <i className={caretClass}></i>
           </RB.Button>
 	  <span className="pull-right">
 	    <ButtonRight loadingHyps={this.props.loadingHyps} onRegenerate={this.props.onRegenerate}/>
