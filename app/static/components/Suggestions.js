@@ -28,7 +28,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
 		</RB.Button>
 	      </td>
 	      <td style={{padding:"0px 10px 0px 20px"}}>
-					<p>{hyp.text}</p>
+		<p>{hyp.text}</p>
 	      </td>
 	      <td>
 		<RB.Label className="pull-right">{hyp.score}</RB.Label>
