@@ -94,7 +94,7 @@ class App extends React.Component {
   // generation functions
   onGenerationSuccess(response) {
     this.setState(
-      {hyps: this.state.hyps.concat(response.hyps),
+      {hyps: response.hyps.concat(this.state.hyps.concat()),
        lastSeed: response.seed,
        lastModel: response.model,
        loadingHyps: false});
@@ -163,8 +163,8 @@ class App extends React.Component {
   }
 
   toggleSuggestions(newState) {
-    if (newState) {
-      this.setState({suggestionsCollapsed: true});
+    if (newState !== undefined) {
+      this.setState({suggestionsCollapsed: newState});
     } else {
       this.setState({suggestionsCollapsed: !this.state.suggestionsCollapsed});
     }
@@ -252,10 +252,10 @@ class App extends React.Component {
 		     onTab={this.onTab}
 		     toggleInlineStyle={this.toggleInlineStyle}
 		     handleBeforeInput={this.handleBeforeInput}/>
+		  <Utils.Spacer height="50px"/>
 		</RB.Row>
 
 		<RB.Row>
-    		  <Utils.Spacer height="25px"/>
     		  <Suggestions
     		     hyps={this.state.hyps}
 		     models={this.state.models}
