@@ -65,8 +65,8 @@ class StyleButton extends React.Component {
     }
 
     return (
-      <RB.Button bsSize="small">
-	<span className={className} onMouseDown={this.onToggle}>
+      <RB.Button bsSize="small" onMouseDown={this.onToggle}>
+	<span className={className}>
 	  { this.props.icon ? <i className={"fa fa-" + this.props.icon}/> : this.props.label }
 	</span>
       </RB.Button>
