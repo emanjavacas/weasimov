@@ -94,7 +94,7 @@ class App extends React.Component {
   // generation functions
   onGenerationSuccess(response) {
     this.setState(
-      {hyps: this.state.hyps.concat(response.hyps),
+      {hyps: response.hyps.concat(this.state.hyps.concat()),
        lastSeed: response.seed,
        lastModel: response.model,
        loadingHyps: false});
