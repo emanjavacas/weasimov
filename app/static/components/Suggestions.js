@@ -9,12 +9,12 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
   let hypItems = [];
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
+    const key = i;
     const {r, g, b} = Utils.getModelData(models, hyp.model).color;
     const backgroundColor = `rgb(${r},${g},${b})`;
-    // const backgroundColor = 'gray';
     hypItems.push(
       <RB.ListGroupItem
-	 key={i}
+	 key={key}
 	 className="list-group-hover"
 	 onClick={() => onHypSelect(hyp)}
          style={{backgroundColor: backgroundColor}}
@@ -25,7 +25,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
 	      <td>
 		<RB.Button
 		   style={{border: "none", padding: "0", background: "none"}}
-		   onClick={(e) => {e.stopPropagation(); onHypDismiss(hyp.generation_id);}}>
+		   onClick={(e) => {e.stopPropagation(); onHypDismiss(key);}}>
 		  <i className="fa fa-close fa-fw" style={{color:"#666666"}}></i>
 		</RB.Button>
 	      </td>
@@ -68,7 +68,12 @@ class Suggestions extends React.Component {
 	    </span>
 	  </div>
 	  <RB.ListGroup>
- 	    {makeHypItems(this.props.hyps, this.props.models, this.props.onHypSelect, this.props.onHypDismiss)}
+	    <CSSTransitionGroup
+	       transitionName="dismiss"
+	       transitionEnterTimeout={500}
+	       transitionLeaveTimeout={300}>
+ 	      {makeHypItems(this.props.hyps, this.props.models, this.props.onHypSelect, this.props.onHypDismiss)}
+	    </CSSTransitionGroup>
 	  </RB.ListGroup>
 	</div>
       );

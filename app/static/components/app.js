@@ -156,8 +156,13 @@ class App extends React.Component {
     this.setState({editorState});
   }
 
-  dismissHyp(hypId) {
-    this.setState({hyps: this.state.hyps.filter((hyp) => hyp.generation_id !== hypId)});
+  dismissHyp(key) {
+    let newHyps = this.state.hyps.slice();
+    console.log(key);
+    console.log(newHyps);
+    newHyps.splice(key, 1);
+    console.log(newHyps);
+    this.setState({hyps: newHyps});
   }
  
   _handleKeyCommand(command) {
