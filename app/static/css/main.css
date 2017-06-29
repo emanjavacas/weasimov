@@ -73,7 +73,10 @@ li.list-group-hover.list-group-item:hover {
 .RichEditor-activeButton {
   color: #5890ff;
 }
-
+/* Suggestions */
+.suggestions-panel .table, tbody tr, td {
+  border: none !important;
+}
 /* Forms */
 .etc-login-form {
   color: #919191;
