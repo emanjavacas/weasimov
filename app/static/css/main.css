@@ -35,6 +35,15 @@ li.list-group-hover.list-group-item:hover {
   bottom: 0;
   z-index: 9;
   margin-bottom: 0;
+  height: 40%;
+  overflow-x: scroll;
+}
+
+.suggestions-panel-up{
+  top: 94%;
+}
+.suggestions-panel-down{
+  top: 60%;
 }
 
 @media only screen and (max-width: 1200px) {
@@ -129,6 +138,7 @@ li.list-group-hover.list-group-item:hover {
   width: 50%; 
   bottom: 0; 
   z-index: 9; 
+  height: 40%;
 } 
 
 @media only screen and (max-width: 1200px) { 
