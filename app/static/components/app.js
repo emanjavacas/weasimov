@@ -244,7 +244,7 @@ class App extends React.Component {
       dataType: 'json',
       success: (response) => {
 	this.setState(
-	  {hyps: response.hyps,
+	  {hyps: hyps.concat(response.hyps),
 	   lastSeed: seed,
 	   lastModel: model,
 	   loadingHyps: false}); // todo, update model status if it was loaded
