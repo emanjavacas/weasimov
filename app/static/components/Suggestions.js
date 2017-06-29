@@ -10,12 +10,11 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
     const {r, g, b} = Utils.getModelData(models, hyp.model).color;
-    const backgroundColor = `rgb(${r},${g},${b})`;
+    const backgroundColor = `rgba(${r},${g},${b}, 0.5)`;
     hypItems.push(
       <RB.ListGroupItem
 	 key={hyp.generation_id}
 	 className="list-group-hover"
-	 onClick={() => onHypSelect(hyp)}
          style={{backgroundColor: backgroundColor}}
 	>
         <RB.Table style={{marginBottom:"0"}} responsive>
@@ -25,7 +24,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
 		<RB.Button
 		   style={{border: "none", padding: "0", background: "none"}}
 		   onClick={(e) => {e.stopPropagation(); onHypDismiss(hyp.generation_id);}}>
-		  <i className="fa fa-close fa-fw" style={{color:"#666666"}}></i>
+		  <i className="fa fa-close fa-fw" style={{color:"#666666", fontSize: "20px"}}></i>
 		</RB.Button>
 	      </td>
 	      <td style={{padding:"0px 10px 0px 20px"}}>
@@ -33,6 +32,13 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
 	      </td>
 	      <td>
 		<RB.Label className="pull-right">{hyp.score}</RB.Label>
+	      </td>
+	      <td>
+		<RB.Button onClick={() => onHypSelect(hyp)} 
+		  className="pull-right" 
+		  style={{border: "none", padding: "0", background: "none"}}>
+		  <i className="fa fa-check" style={{fontSize: "20px"}}></i>
+		</RB.Button> 
 	      </td>
 	    </tr>
 	  </tbody>

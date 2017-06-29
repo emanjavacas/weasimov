@@ -78,9 +78,9 @@ class ButtonToolbar extends React.Component {
 	       title="Length"/>
 	    <RB.Label style={{padding:"4px 8px", width:"75px", margin: "0px 8px"}}>{maxSeqLen}</RB.Label>
 	  </RB.ButtonGroup>
-	  <RB.ButtonGroup style={{float: "right"}} > 
-	    {(models.length > 0) ? makeButtons(models, this.props.onGenerate) : noModelsButton}
-	  </RB.ButtonGroup>
+      <RB.ButtonGroup className="pull-right" style={{backgroundColor: "none"}}> 
+        {(models.length > 0) ? makeButtons(models, this.props.onGenerate) : noModelsButton}
+      </RB.ButtonGroup>
 	</RB.ButtonToolbar>
       </div>
     );
