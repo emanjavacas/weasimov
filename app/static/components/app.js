@@ -311,7 +311,7 @@ class App extends React.Component {
 	    
 	    <RB.Row>
 	      <RB.Col md={3} sm={1}></RB.Col>
-	      <RB.Col md={6}>
+	      <RB.Col md={6} sm={10}>
     		<Utils.Spacer height="25px"/>
     		<Suggestions
     		   hyps={this.state.hyps}
