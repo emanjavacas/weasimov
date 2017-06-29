@@ -93,15 +93,22 @@ def get_session_value(key, session):
 @app.route('/init', methods=['GET'])
 @flask_login.login_required
 def init():
-    user_id = flask_login.current_user.id
-    user = db.session.query(User).filter(User.id == user_id).first()
-    session = user.session or {}
-    text = db.session.query(Text).order_by(desc(Text.timestamp)).first()
-    text = text.text if text is not None else None
-    payload = {"temperature": get_session_value("temperature", session),
-               "maxSeqLen": get_session_value("max_seq_len", session),
-               "contentState": text,
-               "models": format_models()}
+    user_id = int(flask_login.current_user.id)
+    session = User.query.get(user_id).session or {}
+    text = db.session.query(Text) \
+                     .filter(Text.user_id == user_id) \
+                     .order_by(desc(Text.timestamp)) \
+                     .first()
+    content_state = text.text if text is not None else None
+    payload = {
+        # user session data
+        "temperature": get_session_value("temperature", session),
+        "maxSeqLen": get_session_value("max_seq_len", session),
+        "hyps": session.get("hyps", []),
+        # last editor state
+        "contentState": content_state,
+        # models data
+        "models": format_models()}
     return flask.jsonify(status="OK", session=payload)
 
 
@@ -110,7 +117,8 @@ def init():
 def savechange():
     data = flask.request.json
     timestamp = datetime.fromtimestamp(data['timestamp'])
-    edit = Edit(edit=data['edit'], timestamp=timestamp)
+    user_id = int(flask_login.current_user.id)
+    edit = Edit(edit=data['edit'], timestamp=timestamp, user_id=user_id)
     db.session.add(edit)
     db.session.commit()
     return flask.jsonify(status='OK', message='Changes saved.')
@@ -135,15 +143,26 @@ def savesuggestion():
 def savedoc():
     data = flask.request.json
     timestamp = datetime.fromtimestamp(data['timestamp'])
-    text = Text(text=data['text'], timestamp=timestamp)
+    user_id = int(flask_login.current_user.id)
+    text = Text(text=data['text'], timestamp=timestamp, user_id=user_id)
     db.session.add(text)
     db.session.commit()
     return flask.jsonify(status='OK', message='Document saved.')
 
 
+@app.route('/savesession', methods=['POST'])
+@flask_login.login_required
+def savesession():
+    user = User.query.get(int(flask_login.current_user.id))
+    user.session = flask.request.json['session']
+    db.session.commit()
+    return flask.jsonify(status="OK", message='Session saved.')
+
+
 @app.route('/generate', methods=['POST'])
 @flask_login.login_required
 def generate():
+    user_id = int(flask_login.current_user.id)
     model_name = flask.request.json['model_path']
     app.synthesizer.load(model_names=(model_name,))  # maybe load model
     seed = flask.request.json["selection"]
@@ -151,6 +170,7 @@ def generate():
     max_seq_len = int(flask.request.json['max_seq_len'])
     seed = None if not seed else [seed]
     try:
+        timestamp = datetime.utcnow()
         hyps = app.synthesizer.sample(
             model_name=model_name,
             seed_texts=seed,
@@ -158,7 +178,6 @@ def generate():
             ignore_eos=True,
             max_seq_len=max_seq_len,
             max_tries=1)
-        timestamp = datetime.utcnow()
         for hyp in hyps:
             generation_id = str(uuid.uuid4())
             db.session.add(Generation(
@@ -167,8 +186,10 @@ def generate():
                 temp=temperature,
                 text=hyp['text'],
                 generation_id=generation_id,
-                timestamp=timestamp))
+                timestamp=timestamp,
+                user_id=user_id))
             hyp['generation_id'] = generation_id
+            hyp["timestamp"] = timestamp
         db.session.commit()
         return flask.jsonify(status='OK', hyps=hyps)
     except ValueError as e:

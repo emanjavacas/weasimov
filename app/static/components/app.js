@@ -63,6 +63,23 @@ function saveSuggestion(generation_id, draft_entity_id) {
   });
 }
 
+// session: {max_seq_len, temperature, hyps}
+function saveSession(state) {
+  const {temperature, maxSeqLen, hyps} = state;
+  const session = {"temperature": temperature,
+		   "max_seq_len": maxSeqLen,
+		   "hyps": hyps};
+  $.ajax({
+    contentType: 'application/json;charset=UTF-8',
+    url: '/savesession',
+    type: 'POST',
+    dataType: 'json',
+    data: JSON.stringify({session}),
+    success: (response) => console.log(response.message),
+    error: (error) => console.log("Couldn't save session")
+  });
+}
+
 
 function init(success, error) {
   $.ajax({
@@ -98,6 +115,7 @@ class App extends React.Component {
     // saving functions
     this.onInit = this.onInit.bind(this);
     this.saveInterval = this.saveInterval.bind(this);
+    this.saveUnload = this.saveUnload.bind(this);
   }
 
   onInit(session) {
@@ -114,8 +132,7 @@ class App extends React.Component {
       // generation variables
       temperature: session.temperature,
       maxSeqLen: session.maxSeqLen,
-      batchSize: session.batchSize,
-      hyps: [],
+      hyps: session.hyps,
       lastSeed: null,	     // keep track of last seed for refreshing
       lastModel: null,	     // keep track of last model for refreshing
       // loading flags
@@ -132,8 +149,20 @@ class App extends React.Component {
     }
   }
 
+  saveUnload() {
+    saveSession(this.state);
+    saveDoc(convertToRaw(this.state.editorState.getCurrentContent()));
+  }
+
   componentDidMount() {
+    // init session
     init(this.onInit, (error) => console.log("Error"));
+    // add unload event
+    window.addEventListener("beforeunload", this.saveUnload);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("beforeunload", this.saveUnload);
   }
 
   // editor functions
@@ -202,7 +231,7 @@ class App extends React.Component {
   // generation functions
   launchGeneration(seed, model) {
     console.log(`Generating with seed: [${seed}]`);
-    const {temperature, maxSeqLen} = this.state;
+    const {temperature, maxSeqLen, hyps} = this.state;
     $.ajax({
       contentType: 'application/json;charset=UTF-8',
       url: 'generate',
