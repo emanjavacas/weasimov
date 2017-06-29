@@ -163,8 +163,8 @@ class App extends React.Component {
   }
 
   toggleSuggestions(newState) {
-    if (newState) {
-      this.setState({suggestionsCollapsed: true});
+    if (newState !== undefined) {
+      this.setState({suggestionsCollapsed: newState});
     } else {
       this.setState({suggestionsCollapsed: !this.state.suggestionsCollapsed});
     }
