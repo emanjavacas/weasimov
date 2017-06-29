@@ -73,7 +73,8 @@ class App extends React.Component {
       lastModel: null,	     // keep track of last model for refreshing
       // component flags
       loadingHyps: false,
-      suggestionsCollapsed: true
+      suggestionsCollapsed: true,
+      hasHadHyps: false
     });
     // set interval
     this.saveIntervalId = setInterval(this.saveInterval, 25000);
@@ -97,7 +98,8 @@ class App extends React.Component {
       {hyps: response.hyps.concat(this.state.hyps.concat()),
        lastSeed: response.seed,
        lastModel: response.model,
-       loadingHyps: false});
+       loadingHyps: false,
+       hasHadHyps: true});
     this.toggleSuggestions(false);
   }
 
@@ -264,7 +266,8 @@ class App extends React.Component {
     		     loadingHyps={this.state.loadingHyps}
     		     onRegenerate={this.regenerate}
     		     onHypSelect={this.insertHypAtCursor}
-		     onHypDismiss={this.dismissHyp}/>
+		     onHypDismiss={this.dismissHyp}
+		     hasHadHyps={this.state.hasHadHyps}/>
 		</RB.Row>
 		
 	      </RB.Col>
