@@ -10,14 +10,14 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
     const {r, g, b} = Utils.getModelData(models, hyp.model).color;
-    const backgroundColor = `rgba(${r},${g},${b}, 0.5)`;
+    const backgroundColor = `rgba(${r},${g},${b}, 0.2)`;
     hypItems.push(
       <RB.ListGroupItem
 	 key={hyp.generation_id}
 	 className="list-group-hover"
          style={{backgroundColor: backgroundColor}}
 	>
-        <RB.Table style={{marginBottom:"0"}} responsive>
+        <RB.Table style={{marginBottom: "0"}} responsive>
 	  <tbody>
 	    <tr>
 	      <td>
@@ -55,7 +55,9 @@ class ButtonRight extends React.Component {
     let buttonRight;
     if (this.props.loadingHyps) {
       // show spinner
-      buttonRight = <Utils.Spinner/>;
+      buttonRight = (
+	  <Utils.Spinner/>
+      );
     } else {
       // show refresh button
       buttonRight = (
