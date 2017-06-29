@@ -261,8 +261,8 @@ class App extends React.Component {
 	  <RB.Row>
 	    <RB.Col md={2}/>
 	    <RB.Col md={8}>
-	      <RB.Jumbotron>
-		<h1>Loading...</h1>
+	      <RB.Jumbotron style={{backgroundColor:"#f5f5f5"}}>
+		      <h2>Loading...</h2>
 	      </RB.Jumbotron>
 	    </RB.Col>
 	    <RB.Col md={2}/>
