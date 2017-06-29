@@ -13,6 +13,7 @@ class Navbar extends React.Component {
             <a href="#">Ik, Asimov</a>
 	  </RB.Navbar.Brand>
 	</RB.Navbar.Header>
+	<RB.Navbar.Text>{this.props.username || "loading"}</RB.Navbar.Text>
 	<RB.Nav className="pull-right">
 	  <RB.NavItem eventKey={1} href="logout">
 	    <i className="fa fa-sign-out" style={{"fontSize": "25px"}}/>

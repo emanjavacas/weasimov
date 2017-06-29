@@ -57,6 +57,7 @@ class App extends React.Component {
     this.setState({
       // app state
       init: true,
+      username: session.username,
       models: session.models,
       // editor state
       editorState: session.contentState ?
@@ -211,7 +212,7 @@ class App extends React.Component {
     } else {
       return (
 	<div>
-	  <Navbar/>
+	  <Navbar username={this.state.username}/>
 	  <RB.Grid fluid={true}>
 	    <RB.Row>
 	      <RB.Col lg={3} md={2} sm={1}></RB.Col>

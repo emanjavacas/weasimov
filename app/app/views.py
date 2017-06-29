@@ -94,21 +94,23 @@ def get_session_value(key, session):
 @flask_login.login_required
 def init():
     user_id = int(flask_login.current_user.id)
-    session = User.query.get(user_id).session or {}
+    user = User.query.get(user_id)
+    session = user.session or {}
     text = db.session.query(Text) \
                      .filter(Text.user_id == user_id) \
                      .order_by(desc(Text.timestamp)) \
                      .first()
     content_state = text.text if text is not None else None
     payload = {
+        # app state data
+        "username": user.username,
+        "models": format_models(),
         # user session data
         "temperature": get_session_value("temperature", session),
         "maxSeqLen": get_session_value("max_seq_len", session),
         "hyps": session.get("hyps", []),
         # last editor state
-        "contentState": content_state,
-        # models data
-        "models": format_models()}
+        "contentState": content_state}
     return flask.jsonify(status="OK", session=payload)
 
 
