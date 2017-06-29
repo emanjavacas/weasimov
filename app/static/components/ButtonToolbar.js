@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ReactDom from 'react-dom';
 import * as RB  from 'react-bootstrap';
@@ -77,7 +76,7 @@ class ButtonToolbar extends React.Component {
 	       style={{width: "100%", margin: "3px 10px"}}
 	       onChange={this.props.onTemperatureChange}
 	       title="Creativity"/>
-	    <RB.Label style={{padding:"4px 8px"}}>{padTemperature(temperature)}</RB.Label>
+	    <RB.Label style={{padding:"4px 8px", width:"75px", margin: "0px 8px"}}>{temperature}</RB.Label>
 	  </RB.ButtonGroup>
 	  <RB.ButtonGroup style={{width: "200px", display: "inline-flex", margin: "7px 20px"}}>
 	    <span>Length</span>
@@ -86,7 +85,7 @@ class ButtonToolbar extends React.Component {
 	       style={{width: "100%", margin: "3px 10px"}}
 	       onChange={this.props.onSeqLenChange}
 	       title="Length"/>
-	    <RB.Label style={{padding:"4px 8px"}}>{maxSeqLen}</RB.Label>
+	    <RB.Label style={{padding:"4px 8px", width:"75px", margin: "0px 8px"}}>{maxSeqLen}</RB.Label>
 	  </RB.ButtonGroup>
 	  <RB.ButtonGroup style={{float: "right"}} > 
 	    {(models.length > 0) ? makeButtons(models, this.props.onGenerate) : noModelsButton}
