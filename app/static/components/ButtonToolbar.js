@@ -42,7 +42,7 @@ function makeButtons(models, onClick) {
       <RB.OverlayTrigger
          key={i}
 	 overlay={<RB.Tooltip id="tooltip">{overlay}</RB.Tooltip>}
-	 placement="top">
+	 placement="bottom">
         <RB.Button
 	   bsStyle="primary"
 	   style={{backgroundColor: backgroundColor,
