@@ -89,7 +89,6 @@ class App extends React.Component {
     this.onEditorChange = this.onEditorChange.bind(this);
     this.handleKeyCommand = (command) => this._handleKeyCommand(command);
     this.onTab = (e) => this._onTab(e);
-    this.toggleBlockType = (type) => this._toggleBlockType(type);
     this.toggleInlineStyle = (style) => this._toggleInlineStyle(style);
     this.handleBeforeInput = (char) => this._handleBeforeInput(char);
     // generation functions
@@ -151,15 +150,6 @@ class App extends React.Component {
   _onTab(e) {
     const maxDepth = 4;
     this.onEditorChange(RichUtils.onTab(e, this.state.editorState, maxDepth));
-  }
-
-  _toggleBlockType(blockType) {
-    this.onEditorChange(
-      RichUtils.toggleBlockType(
-        this.state.editorState,
-        blockType
-      )
-    );
   }
 
   _toggleInlineStyle(inlineStyle) {
@@ -277,51 +267,44 @@ class App extends React.Component {
 	    <RB.Row>
 	      <RB.Col md={3} sm={1}></RB.Col>
 	      <RB.Col md={6} sm={10}>
-		<Sticky enabled={true} top={0} innerZ={1001}>
-		  <div className="panel panel-default generate-panel">
-		    <div className="panel-heading">
-                      <ButtonToolbar
-			 temperature={this.state.temperature} 
-			 onTemperatureChange={this.onTemperatureChange}
-			 maxSeqLen={this.state.maxSeqLen}
-			 onSeqLenChange={this.onSeqLenChange}
-			 models={this.state.models}
-			 onGenerate={this.onGenerate}/>
+
+		<RB.Row>
+		  <Sticky enabled={true} top={0} innerZ={1001}>
+		    <div className="panel panel-default generate-panel">
+		      <div className="panel-heading">
+			<ButtonToolbar
+			   temperature={this.state.temperature} 
+			   onTemperatureChange={this.onTemperatureChange}
+			   maxSeqLen={this.state.maxSeqLen}
+			   onSeqLenChange={this.onSeqLenChange}
+			   models={this.state.models}
+			   onGenerate={this.onGenerate}/>
+		      </div>
 		    </div>
-		  </div>
-		</Sticky>
-	      </RB.Col>
-	      <RB.Col md={3} sm={1}></RB.Col>
-	    </RB.Row>
+		  </Sticky>
+		</RB.Row>
 
-	    <RB.Row>
-	      <RB.Col md={3} sm={1}></RB.Col>
-	      <RB.Col md={6} sm={10}>
-		<TextEditor
-		   editorState={this.state.editorState}
-		   onChange={this.onEditorChange}
-		   handleKeyCommand={this.handleKeyCommand}
-		   onTab={this.onTab}
-		   toggleBlockType={this.toggleBlockType}
-		   toggleInlineStyle={this.toggleInlineStyle}
-		   handleBeforeInput={this.handleBeforeInput}/>
-	      </RB.Col>
-	      <RB.Col md={3} sm={1}></RB.Col>
-	    </RB.Row>
-	    
-	    <RB.Row>
-	      <RB.Col md={3} sm={1}></RB.Col>
-	      <RB.Col md={6}>
-    		<Utils.Spacer height="25px"/>
-    		<Suggestions
-    		   hyps={this.state.hyps}
-    		   loadingHyps={this.state.loadingHyps}
-    		   onRegenerate={this.onRegenerate}
-    		   onHypSelect={this.insertHypAtCursor}/>
-	      </RB.Col>
+		<RB.Row>
+		  <TextEditor
+		     editorState={this.state.editorState}
+		     onChange={this.onEditorChange}
+		     handleKeyCommand={this.handleKeyCommand}
+		     onTab={this.onTab}
+		     toggleInlineStyle={this.toggleInlineStyle}
+		     handleBeforeInput={this.handleBeforeInput}/>
+		</RB.Row>
 
-	      <RB.Col md={3} sm={1}>
+		<RB.Row>
+    		  <Utils.Spacer height="25px"/>
+    		  <Suggestions
+    		     hyps={this.state.hyps}
+    		     loadingHyps={this.state.loadingHyps}
+    		     onRegenerate={this.onRegenerate}
+    		     onHypSelect={this.insertHypAtCursor}/>
+		</RB.Row>
+		
 	      </RB.Col>
+	      <RB.Col md={3} sm={1}></RB.Col>
 	    </RB.Row>
 
 	  </RB.Grid>

@@ -13,13 +13,6 @@ function getInitials(name) {
 }
 
 
-function padTemperature(temperature) {
-  return (temperature.toString().length === 3) ?
-    temperature.toString() + '0' :
-    temperature;
-}
-
-
 function makeButtons(models, onClick) {
   let buttons = [];
   for (var i=0; i<models.length; i++) {
