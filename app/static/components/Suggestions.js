@@ -93,7 +93,7 @@ class Suggestions extends React.Component {
 	  <CSSTransitionGroup
 	     transitionName="dismiss"
 	     transitionEnterTimeout={500}
-	     transitionLeaveTimeout={300}>
+	     transitionLeaveTimeout={150}>
  	    {makeHypItems(this.props.hyps, this.props.models, this.props.onHypSelect, this.props.onHypDismiss)}
 	  </CSSTransitionGroup>
 	</RB.ListGroup>
