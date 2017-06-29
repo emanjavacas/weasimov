@@ -6,6 +6,8 @@ import functools
 
 from seqmod.utils import load_model
 
+from utils import random_sentence
+
 
 def detokenizer(s):
     post_punc = {';', '.', ',',
@@ -129,6 +131,9 @@ class Synthesizer(object):
         """
         if not self.models:
             raise ValueError('Models have not been set yet.')
+
+        if not seed_texts:
+            seed_texts = [random_sentence(min_len=25, filters=None)]
 
         def normalize_hyp(hyp):
             bos, eos, par, found = [], [], [], 0
