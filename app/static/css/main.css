@@ -40,8 +40,8 @@ li.list-group-hover.list-group-item:hover {
 }
 
 .suggestions-panel .list-group { 
-  height: 100%; 
-  overflow-y: auto; 
+  height: 80%;
+  overflow-y: auto;
 } 
 .suggestions-panel-down{
   top: 94%;
