@@ -252,10 +252,10 @@ class App extends React.Component {
 		     onTab={this.onTab}
 		     toggleInlineStyle={this.toggleInlineStyle}
 		     handleBeforeInput={this.handleBeforeInput}/>
+		  <Utils.Spacer height="50px"/>
 		</RB.Row>
 
 		<RB.Row>
-    		  <Utils.Spacer height="25px"/>
     		  <Suggestions
     		     hyps={this.state.hyps}
 		     models={this.state.models}
