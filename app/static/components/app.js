@@ -24,6 +24,7 @@ class App extends React.Component {
     // editor functions
     this.insertHypAtCursor = this.insertHypAtCursor.bind(this);
     this.onEditorChange = this.onEditorChange.bind(this);
+    this.dismissHyp = this.dismissHyp.bind(this);
     this.handleKeyCommand = (command) => this._handleKeyCommand(command);
     this.onTab = (e) => this._onTab(e);
     this.toggleInlineStyle = (style) => this._toggleInlineStyle(style);
@@ -117,7 +118,7 @@ class App extends React.Component {
       seed = currentContent.getPlainText('\n');
       if (seed.length > 200) seed = seed.substring(seed.length - 200);
     }
-    this.launchGeneration(seed, model, this.state, );
+    this.launchGeneration(seed, model);
   }
 
   regenerate() {
@@ -125,6 +126,39 @@ class App extends React.Component {
   }
 
   // editor functions
+  insertHypAtCursor(hyp) {
+    const {eos, bos, par, text, score, generation_id, model} = hyp;
+    const modelData = Utils.getModelData(this.state.models, model);
+    const {editorState} = this.state;
+    const contentStateWithHyp = EditorUtils.insertGeneratedText(
+      editorState, text, {score: score, source: text, model: modelData});
+    const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
+    const newEditorState = EditorState.push(
+      editorState, contentStateWithHyp, 'insert-characters');
+    this.onEditorChange(newEditorState);
+    Utils.saveSuggestion(generation_id, draftEntityId);
+  }
+  
+  onEditorChange(editorState) {
+    const oldState = this.state.editorState;
+    const oldContent = oldState.getCurrentContent();
+    const newContent = editorState.getCurrentContent();
+    if (oldContent !== newContent) {
+      // handle new metadata
+      EditorUtils.updateHypMetadata(editorState);
+      // block-level diff
+      const selection = editorState.getSelection();
+      const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
+      const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
+      Utils.saveChange(jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS()));
+    }
+    this.setState({editorState});
+  }
+
+  dismissHyp(hypId) {
+    this.setState({hyps: this.state.hyps.filter((hyp) => hyp.generation_id !== hypId)});
+  }
+ 
   _handleKeyCommand(command) {
     const {editorState} = this.state;
     const newState = RichUtils.handleKeyCommand(editorState, command);
@@ -159,35 +193,6 @@ class App extends React.Component {
     return false;
   }
 
-  insertHypAtCursor(hyp) {
-    const {eos, bos, par, text, score, generation_id, model} = hyp;
-    const modelData = Utils.getModelData(this.state.models, model);
-    const {editorState} = this.state;
-    const contentStateWithHyp = EditorUtils.insertGeneratedText(
-      editorState, text, {score: score, source: text, model: modelData});
-    const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
-    const newEditorState = EditorState.push(
-      editorState, contentStateWithHyp, 'insert-characters');
-    this.onEditorChange(newEditorState);
-    Utils.saveSuggestion(generation_id, draftEntityId);
-  }
-  
-  onEditorChange(editorState) {
-    const oldState = this.state.editorState;
-    const oldContent = oldState.getCurrentContent();
-    const newContent = editorState.getCurrentContent();
-    if (oldContent !== newContent) {
-      // handle new metadata
-      EditorUtils.updateHypMetadata(editorState);
-      // block-level diff
-      const selection = editorState.getSelection();
-      const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
-      const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
-      Utils.saveChange(jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS()));
-    }
-    this.setState({editorState});
-  }
-
   render() {
     if (!this.state.init) {
       return (
@@ -209,8 +214,8 @@ class App extends React.Component {
 	  <Navbar/>
 	  <RB.Grid fluid={true}>
 	    <RB.Row>
-	      <RB.Col md={3} sm={1}></RB.Col>
-	      <RB.Col md={6} sm={10}>
+	      <RB.Col lg={3} md={2} sm={1}></RB.Col>
+	      <RB.Col lg={6} md={8} sm={10}>
 
 		<RB.Row>
 		  <Sticky enabled={true} top={0} innerZ={1001}>
@@ -245,11 +250,12 @@ class App extends React.Component {
 		     models={this.state.models}
     		     loadingHyps={this.state.loadingHyps}
     		     onRegenerate={this.regenerate}
-    		     onHypSelect={this.insertHypAtCursor}/>
+    		     onHypSelect={this.insertHypAtCursor}
+		     onHypDismiss={this.dismissHyp}/>
 		</RB.Row>
 		
 	      </RB.Col>
-	      <RB.Col md={3} sm={1}></RB.Col>
+	      <RB.Col lg={3} md={2} sm={1}></RB.Col>
 	    </RB.Row>
 
 	  </RB.Grid>

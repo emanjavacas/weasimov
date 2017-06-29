@@ -32,7 +32,7 @@ function launchGeneration(seed, model, appState, success, error) {
     data: JSON.stringify(
       {'selection': seed,
        'temperature': temperature,
-       'model_path': model.path,
+       'model_path': model,
        'max_seq_len': maxSeqLen}),
     type: 'POST',
     dataType: 'json',

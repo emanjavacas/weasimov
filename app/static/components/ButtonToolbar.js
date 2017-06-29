@@ -39,11 +39,9 @@ function makeButtons(models, onClick) {
         <RB.Button
 	   bsStyle="primary"
 	   style={{backgroundColor: backgroundColor,
-	           // borderWidth: borderWidth,
-	           // border: "solid black",
 		   borderColor: backgroundColor,
 	           color: "black"}}
-	   onClick={() => onClick(model)}>
+	   onClick={() => onClick(model.path)}>
 	 {title}
         </RB.Button>
       </RB.OverlayTrigger>
