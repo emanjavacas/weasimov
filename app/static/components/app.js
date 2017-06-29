@@ -97,7 +97,8 @@ class App extends React.Component {
       {hyps: this.state.hyps.concat(response.hyps),
        lastSeed: response.seed,
        lastModel: response.model,
-       loadingHyps: false}); // todo, update model status if it was loaded
+       loadingHyps: false});
+    this.toggleSuggestions(false);
   }
 
   onGenerationError(error) {

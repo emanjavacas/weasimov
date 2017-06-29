@@ -39,10 +39,10 @@ li.list-group-hover.list-group-item:hover {
   overflow-x: scroll;
 }
 
-.suggestions-panel-up{
+.suggestions-panel-down{
   top: 94%;
 }
-.suggestions-panel-down{
+.suggestions-panel-up{
   top: 60%;
 }
 

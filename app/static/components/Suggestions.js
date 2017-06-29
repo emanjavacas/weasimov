@@ -75,7 +75,7 @@ class Suggestions extends React.Component {
   render() {
     const hasHyps = (this.props.hyps.length > 0) || this.props.loadingHyps;
     const collapsedClass = this.props.isCollapsed ? 'suggestions-panel-down' : 'suggestions-panel-up';
-    const caretClass = this.props.isCollapsed ? 'fa fa-caret-down' : 'fa fa-caret-up';
+    const caretClass = this.props.isCollapsed ? 'fa fa-caret-up' : 'fa fa-caret-down';
     return (
       <div className={`panel panel-default suggestions-panel ${collapsedClass}`}
 	   style={{visibility: hasHyps ? "visible" : "hidden"}}>
