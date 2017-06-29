@@ -24,6 +24,56 @@ li.list-group-hover.list-group-item:hover {
   padding: 0;
 }
 
+/* Suggestions Panel */
+.suggestions-panel .table, tbody tr, td {
+  border: none !important;
+}
+
+.suggestions-panel {
+  position: fixed;
+  width: 50%;
+  bottom: 0;
+  z-index: 9;
+  margin-bottom: 0;
+}
+
+@media only screen and (max-width: 1170px) {
+  .suggestions-panel {
+    width: 66.66%;
+  }
+}
+
+@media only screen and (max-width 970px) {
+  .suggestions-panel {
+    width: 83.3%;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .suggestions-panel {
+    width: 100%;
+  }
+}
+
+/* Suggestion dismiss transition */
+.dismiss-enter {
+  opacity: 0.01;
+}
+
+.dismiss-enter.dismiss-enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+.dismiss-leave {
+  opacity: 1;
+}
+
+.dismiss-leave.dismiss-leave-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
+}
+
 /* Editor */
 .RichEditor-root {
   background: #fff;
@@ -73,10 +123,7 @@ li.list-group-hover.list-group-item:hover {
 .RichEditor-activeButton {
   color: #5890ff;
 }
-/* Suggestions */
-.suggestions-panel .table, tbody tr, td {
-  border: none !important;
-}
+
 /* Forms */
 .etc-login-form {
   color: #919191;
