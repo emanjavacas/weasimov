@@ -124,6 +124,32 @@ li.list-group-hover.list-group-item:hover {
   color: #5890ff;
 }
 
+.suggestions-panel { 
+  position: fixed; 
+  width: 50%; 
+  bottom: 0; 
+  z-index: 9; 
+} 
+
+@media only screen and (max-width: 1200px) { 
+    .suggestions-panel { 
+        width: 66.66%; 
+    } 
+}
+@media only screen and (max-width: 992px) { 
+    .suggestions-panel { 
+        width: 83.3%; 
+    } 
+} 
+@media only screen and (max-width: 768px) { 
+    .suggestions-panel { 
+        width: 100%; 
+    } 
+} 
+
+.suggestions-panel .table, tbody tr, td {
+  border: none !important;
+}
 /* Forms */
 .etc-login-form {
   color: #919191;
