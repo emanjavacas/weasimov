@@ -5,6 +5,7 @@ import Utils from './Utils';
 
 
 class Suggestions extends React.Component {
+
   render() {
     const hasHyps = (this.props.hyps.length > 0);
     let hyps = [];

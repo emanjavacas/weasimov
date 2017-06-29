@@ -13,86 +13,6 @@ import Utils from './Utils';
 import EditorUtils from './EditorUtils';
 
 
-function timestamp() {
-  return Date.now() / 1000;
-}
-
-
-// edit: json
-// timestamp: %Y-%m-%d %H:%M:%S.%f
-function saveChange(edit) {
-  $.ajax({
-    contentType: 'application/json;charset=UTF-8',
-    url: 'savechange',
-    data: JSON.stringify({edit: edit, timestamp: timestamp()}),
-    type: 'POST',
-    dataType: 'json',
-    success: (response) => console.log(response),
-    error: (error) => console.log(error)
-  });
-}
-
-
-// text: json
-// timestamp: same
-function saveDoc(text) {
-  $.ajax({
-    contentType: 'application/json;charset=UTF-8',
-    url: 'savedoc',
-    data: JSON.stringify({text: text, timestamp: timestamp()}),
-    type: 'POST',
-    dataType: 'json',
-    success: (response) => console.log(response),
-    error: (error) => console.log(error)
-  });
-}
-
-
-// generation_id: str
-// draft_entity_id: str
-// timestamp: same
-function saveSuggestion(generation_id, draft_entity_id) {
-  $.ajax({
-    contentType: 'application/json;charset=UTF-8',
-    url: 'savesuggestion',
-    data: JSON.stringify({generation_id, draft_entity_id, timestamp: timestamp()}),
-    type: 'POST',
-    dataType: 'json',
-    success: (response) => console.log(response),
-    error: (error) => console.log(error)
-  });
-}
-
-// session: {max_seq_len, temperature, hyps}
-function saveSession(state) {
-  const {temperature, maxSeqLen, hyps} = state;
-  const session = {"temperature": temperature,
-		   "max_seq_len": maxSeqLen,
-		   "hyps": hyps};
-  $.ajax({
-    contentType: 'application/json;charset=UTF-8',
-    url: '/savesession',
-    type: 'POST',
-    dataType: 'json',
-    data: JSON.stringify({session}),
-    success: (response) => console.log(response.message),
-    error: (error) => console.log("Couldn't save session")
-  });
-}
-
-
-function init(success, error) {
-  $.ajax({
-    contentType: 'application/json;charset=UTF-8',
-    url: 'init',
-    type: 'GET',
-    dataType: 'json',
-    success: (response) => success(response.session),
-    error: error
-  });
-}
-
-
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -110,14 +30,28 @@ class App extends React.Component {
     this.handleBeforeInput = (char) => this._handleBeforeInput(char);
     // generation functions
     this.launchGeneration = this.launchGeneration.bind(this);
-    this.onGenerate = this.onGenerate.bind(this);
-    this.onRegenerate = this.onRegenerate.bind(this);
+    this.onGenerationSuccess = this.onGenerationSuccess.bind(this);
+    this.onGenerationError = this.onGenerationError.bind(this);
+    this.generate = this.generate.bind(this);
+    this.regenerate = this.regenerate.bind(this);
     // saving functions
     this.onInit = this.onInit.bind(this);
     this.saveInterval = this.saveInterval.bind(this);
     this.saveUnload = this.saveUnload.bind(this);
   }
 
+  componentDidMount() {
+    // init session
+    Utils.init(this.onInit, (error) => console.log("Error"));
+    // add unload event
+    window.addEventListener("beforeunload", this.saveUnload);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("beforeunload", this.saveUnload);
+  }
+
+  // server interaction
   onInit(session) {
     this.setState({
       // app state
@@ -132,7 +66,7 @@ class App extends React.Component {
       // generation variables
       temperature: session.temperature,
       maxSeqLen: session.maxSeqLen,
-      hyps: session.hyps,
+      hyps: [],
       lastSeed: null,	     // keep track of last seed for refreshing
       lastModel: null,	     // keep track of last model for refreshing
       // loading flags
@@ -144,25 +78,50 @@ class App extends React.Component {
 
   saveInterval() {
     if (this.state.editorState !== this.state.lastEditorState) {
-      saveDoc(convertToRaw(this.state.editorState.getCurrentContent()));
+      Utils.saveDoc(convertToRaw(this.state.editorState.getCurrentContent()));
       this.setState({lastEditorState: this.state.editorState});
     }
   }
 
   saveUnload() {
-    saveSession(this.state);
-    saveDoc(convertToRaw(this.state.editorState.getCurrentContent()));
+    Utils.saveSession(this.state);
+    Utils.saveDoc(convertToRaw(this.state.editorState.getCurrentContent()));
   }
 
-  componentDidMount() {
-    // init session
-    init(this.onInit, (error) => console.log("Error"));
-    // add unload event
-    window.addEventListener("beforeunload", this.saveUnload);
+  // generation functions
+  onGenerationSuccess(response) {
+    this.setState(
+      {hyps: this.state.hyps.concat(response.hyps),
+       lastSeed: response.seed,
+       lastModel: response.model,
+       loadingHyps: false}); // todo, update model status if it was loaded
   }
 
-  componentWillUnmount() {
-    window.removeEventListener("beforeunload", this.saveUnload);
+  onGenerationError(error) {
+    console.log(error);
+    this.setState({loadingHyps: false});
+  }
+  
+  launchGeneration(seed, model) {
+    console.log(`Generating with seed: [${seed}]`);
+    Utils.launchGeneration(seed, model, this.state, this.onGenerationSuccess, this.onGenerationError);
+    this.setState({loadingHyps: true});
+  }
+
+  generate(model) {
+    const {editorState} = this.state;
+    const currentContent = editorState.getCurrentContent();
+    const selection = editorState.getSelection();
+    let seed = EditorUtils.getTextSelection(currentContent, selection);
+    if (seed.trim().length == 0) {
+      seed = currentContent.getPlainText('\n');
+      if (seed.length > 200) seed = seed.substring(seed.length - 200);
+    }
+    this.launchGeneration(seed, model, this.state, );
+  }
+
+  regenerate() {
+    this.launchGeneration(this.state.lastSeed, this.state.lastModel);
   }
 
   // editor functions
@@ -194,22 +153,23 @@ class App extends React.Component {
     const {editorState} = this.state;
     const newState = EditorUtils.handleContiguousEntity(char, editorState);
     if (newState) {
-      this.setState({editorState: newState});
+      this.onEditorChange(newState);
       return true;
     }
     return false;
   }
 
   insertHypAtCursor(hyp) {
-    const {eos, bos, par, text, score, generation_id} = hyp;
+    const {eos, bos, par, text, score, generation_id, model} = hyp;
+    const modelData = Utils.getModelData(this.state.models, model);
     const {editorState} = this.state;
     const contentStateWithHyp = EditorUtils.insertGeneratedText(
-      editorState, text, {score: score, source: text, model: this.state.lastModel});
+      editorState, text, {score: score, source: text, model: modelData});
     const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
     const newEditorState = EditorState.push(
       editorState, contentStateWithHyp, 'insert-characters');
     this.onEditorChange(newEditorState);
-    saveSuggestion(generation_id, draftEntityId);
+    Utils.saveSuggestion(generation_id, draftEntityId);
   }
   
   onEditorChange(editorState) {
@@ -223,54 +183,9 @@ class App extends React.Component {
       const selection = editorState.getSelection();
       const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
       const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
-      saveChange(jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS()));
+      Utils.saveChange(jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS()));
     }
     this.setState({editorState});
-  }
-
-  // generation functions
-  launchGeneration(seed, model) {
-    console.log(`Generating with seed: [${seed}]`);
-    const {temperature, maxSeqLen, hyps} = this.state;
-    $.ajax({
-      contentType: 'application/json;charset=UTF-8',
-      url: 'generate',
-      data: JSON.stringify(
-	{'selection': seed,
-	 'temperature': temperature,
-	 'model_path': model.path,
-	 'max_seq_len': maxSeqLen}),
-      type: 'POST',
-      dataType: 'json',
-      success: (response) => {
-	this.setState(
-	  {hyps: hyps.concat(response.hyps),
-	   lastSeed: seed,
-	   lastModel: model,
-	   loadingHyps: false}); // todo, update model status if it was loaded
-      },
-      error: (error) => {
-	console.log(error);
-	this.setState({loadingHyps: false});
-      }
-    });
-    this.setState({loadingHyps: true});
-  }
-
-  onGenerate(model) {
-    const {editorState} = this.state;
-    const currentContent = editorState.getCurrentContent();
-    const selection = editorState.getSelection();
-    let seed = EditorUtils.getTextSelection(currentContent, selection);
-    if (seed.trim().length == 0) {
-      seed = currentContent.getPlainText('\n');
-      if (seed.length > 200) seed = seed.substring(seed.length - 200);
-    }
-    this.launchGeneration(seed, model);
-  }
-
-  onRegenerate() {
-    this.launchGeneration(this.state.lastSeed, this.state.lastModel);
   }
 
   render() {
@@ -307,7 +222,7 @@ class App extends React.Component {
 			   maxSeqLen={this.state.maxSeqLen}
 			   onSeqLenChange={this.onSeqLenChange}
 			   models={this.state.models}
-			   onGenerate={this.onGenerate}/>
+			   onGenerate={this.generate}/>
 		      </div>
 		    </div>
 		  </Sticky>
@@ -327,8 +242,9 @@ class App extends React.Component {
     		  <Utils.Spacer height="25px"/>
     		  <Suggestions
     		     hyps={this.state.hyps}
+		     models={this.state.models}
     		     loadingHyps={this.state.loadingHyps}
-    		     onRegenerate={this.onRegenerate}
+    		     onRegenerate={this.regenerate}
     		     onHypSelect={this.insertHypAtCursor}/>
 		</RB.Row>
 		
