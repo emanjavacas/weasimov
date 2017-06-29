@@ -36,9 +36,13 @@ li.list-group-hover.list-group-item:hover {
   z-index: 9;
   margin-bottom: 0;
   height: 40%;
-  overflow-x: scroll;
+  overflow: hidden;
 }
 
+.suggestions-panel .list-group { 
+  height: 100%; 
+  overflow-y: auto; 
+} 
 .suggestions-panel-down{
   top: 94%;
 }
