@@ -2,7 +2,10 @@
 
 import os
 import random
+import subprocess
 import glob
+import linecache
+import random
 
 import pandas as pd
 
@@ -10,7 +13,7 @@ random.seed(12101985)
 
 
 def load_metadata(fn):
-    df = pd.read_csv(fn, header=0, sep=',', dtype=str)
+    df = pd.read_csv(fn, header=0, sep=',', dtype={'author:id': str})
     df = df.set_index('filepath').fillna('')
     return df
 
@@ -26,6 +29,31 @@ def parse_filter_file(fn):
         except:
             pass
     return filters
+
+
+def filter_filenames(meta, path, filters):
+    filenames = []
+    for fn in glob.glob(path+'/*.txt'):
+        me = meta.loc[os.path.basename(fn)]
+        if me.empty:
+            continue
+        if 'authors' in filters and \
+                me['author:id'] not in filters['authors']:
+            continue
+        if 'titles' in filters and \
+                str(me['title:detail']).strip() not in filters['titles']:
+            continue
+        if 'genres' in filters:
+            match = False
+            for f in filters['genres']:
+                if f in me['categories'].lower():
+                    match = True
+                    continue
+            if not match:
+                continue
+        filenames.append(fn)
+
+    return filenames
 
 
 def load_data(path='data/bigmama/',
@@ -56,34 +84,13 @@ def load_data(path='data/bigmama/',
 
     """
 
-    meta = load_metadata(fn=metapath)    
+    meta = load_metadata(fn=metapath)
+
     if filter_file:
         filters = parse_filter_file(filter_file)
-        print(filters)
 
     if filters:
-        filenames = []
-        for fn in glob.glob(path+'/*.txt'):
-            fs = os.path.splitext(os.path.basename(fn))[0]
-            me = meta.loc[fs]
-            if me.empty:
-                continue
-            if 'authors' in filters and \
-                    me['author:id'] not in filters['authors']:
-                continue
-            if 'titles' in filters and \
-                    str(me['title:detail']).strip() not in filters['titles']:
-                continue
-            if 'genres' in filters:
-                match = False
-                for f in filters['genres']:
-                    if f in me['categories'].lower():
-                        match = True
-                        continue
-                if not match:
-                    continue
-            print(fn)
-            filenames.append(fn)
+        filenames = filter_filenames(meta, path, filters)
     else:
         filenames = glob.glob(path + '/*.txt')
 
@@ -123,3 +130,39 @@ def format_hyp(score, hyp, hyp_num, d):
     return '\n* [{hyp}] [Score:{score:.3f}]: {sent}'.format(
         hyp=hyp_num, score=score/len(hyp),
         sent=' '.join([d.vocab[c] for c in hyp]))
+
+
+def file_len(fname):
+    """
+    Unix-only, but much fast than reading the entire file.
+    """
+    p = subprocess.Popen(['wc', '-l', fname], stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    result, err = p.communicate()
+    if p.returncode != 0:
+        raise IOError(err)
+    return int(result.strip().split()[0])
+
+
+def random_sentence(filedir='/home/karsdorp/weasimov/data/' +
+                            'weasimov-novels-tokenized-cleaned',
+                    metapath='metainfo.csv',
+                    min_len=25,
+                    filters=None):
+    random.seed()
+
+    if filters:
+        meta = load_metadata(fn=metapath)
+        filter_filenames(meta, filedir, filters)
+    else:
+        filenames = glob.glob(filedir + '/*.txt')
+
+    rnd_sent = None
+    while not rnd_sent:
+        fname = random.choice(filenames)
+        max_idx = file_len(fname)
+        rnd_idx = random.randint(0, max_idx)
+        pick = linecache.getline(fname, rnd_idx).strip()
+        if pick and len(pick) >= min_len:
+            rnd_sent = pick
+    return rnd_sent
