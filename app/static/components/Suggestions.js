@@ -16,7 +16,6 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
       <RB.ListGroupItem
 	 key={key}
 	 className="list-group-hover"
-	 onClick={() => onHypSelect(hyp)}
          style={{backgroundColor: backgroundColor}}
 	>
         <RB.Table style={{marginBottom:"0"}} responsive>
@@ -26,7 +25,8 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
 		<RB.Button
 		   style={{border: "none", padding: "0", background: "none"}}
 		   onClick={(e) => {e.stopPropagation(); onHypDismiss(key);}}>
-		  <i className="fa fa-close fa-fw" style={{color:"#666666"}}></i>
+		  <i className="fa fa-close fa-fw" 
+			style={{color:"#666666", fontSize: "20px"}}></i>
 		</RB.Button>
 	      </td>
 	      <td style={{padding:"0px 10px 0px 20px"}}>
@@ -35,6 +35,13 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
 	      <td>
 		<RB.Label className="pull-right">{hyp.score}</RB.Label>
 	      </td>
+				<td>
+					<RB.Button onClick={() => onHypSelect(hyp)} 
+						className="pull-right" 
+						style={{border: "none", padding: "0", background: "none"}}>
+						<i className="fa fa-check" style={{fontSize: "20px"}}></i>
+					</RB.Button> 
+				</td>
 	    </tr>
 	  </tbody>
 	</RB.Table>
