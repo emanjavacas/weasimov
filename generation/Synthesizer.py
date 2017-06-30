@@ -6,8 +6,6 @@ import functools
 
 from seqmod.utils import load_model
 
-from utils import random_sentence
-
 
 def detokenizer(s):
     post_punc = {';', '.', ',',
@@ -34,7 +32,7 @@ def detokenizer(s):
 
 
 class Synthesizer(object):
-    def __init__(self, model_dir, gpu=False):
+    def __init__(self, model_dir, gpu=False, sentence_sampler=None):
         """Constructor
 
         Parameters
@@ -46,6 +44,7 @@ class Synthesizer(object):
 
         self.gpu = gpu
         self.model_dir = model_dir
+        self.sentence_sampler = sentence_sampler
         self.models = {}
         self.dicts = {}
 
@@ -135,9 +134,12 @@ class Synthesizer(object):
         if not self.models:
             raise ValueError('Models have not been set yet.')
 
-        if not seed_texts:
+        bos, eos = False, False  # default to not prefix <bos> suffix <eos>
+        if not seed_texts and self.sentence_sampler is not None:
             try:
-                seed_texts = [random_sentence(min_len=25, filters=None)]
+                sent = self.sentence_sampler.sample(min_len=25, filters=None)
+                seed_texts = [sent]
+                bos, eos = True, True
             except:
                 print("Couldn't load default seed")
             ignore_eos = True
@@ -180,6 +182,7 @@ class Synthesizer(object):
             method=method,
             seed_texts=seed_texts,
             gpu=self.gpu,
+            eos=eos, bos=bos,
             **kwargs)
 
         if not ignore_eos:
@@ -194,6 +197,7 @@ class Synthesizer(object):
                     method=method,
                     seed_texts=seed_texts,
                     gpu=self.gpu,
+                    eos=eos, bos=bos,
                     **kwargs)
                 scores.extend(new_scores), hyps.extend(new_hyps)
                 scores, hyps = filter_valid_hyps(scores, hyps)
