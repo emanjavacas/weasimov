@@ -29,7 +29,7 @@ from seqmod.misc.early_stopping import EarlyStopping
 
 from utils import load_data
 from train import (make_lm_check_hook, make_lm_save_hook,
-    save_model, load_from_file)
+                  save_model, load_from_file)
 
 
 if __name__ == '__main__':
