@@ -1,8 +1,6 @@
 
 import os
-import sys; sys.path.append(os.path.abspath("../generation"))
-from Synthesizer import Synthesizer
-
+from .synthesizer import Synthesizer
 from .sentence_sampler import RandomSentenceSampler
 
 import flask

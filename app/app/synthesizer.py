@@ -157,19 +157,19 @@ class Synthesizer(object):
                     par.append(idx - found)
                     found += 1
 
-            text = detokenizer(
-                ''.join(d.vocab[c] for c in hyp)
-                .replace(d.bos_token, '')
-                .replace(d.eos_token, '\n')
-                .replace('<par>', '\n'))
+            text = ''.join(d.vocab[c] for c in hyp) \
+                     .replace(d.bos_token, '') \
+                     .replace(d.eos_token, '\n') \
+                     .replace('<par>', '\n')
             return {'text': text, 'bos': bos, 'eos': eos, 'par': par}
 
         def normalize_score(score):
             return round(math.exp(score), 3)
 
         def filter_valid_hyps(scores, hyps):
-            return zip(*[(s, h) for s, h in zip(scores, hyps)
-                         if h[-1] == d.get_eos()])
+            scores, hyps = zip(*[(s, h) for s, h in zip(scores, hyps)
+                                 if h[-1] == d.get_eos()])
+            return list(scores), list(hyps)
 
         d, m = self.dicts[model_name], self.models[model_name]
         result = []
