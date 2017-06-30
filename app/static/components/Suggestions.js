@@ -5,78 +5,90 @@ import Utils from './Utils';
 import { CSSTransitionGroup } from 'react-transition-group';
 
 
+const HypItem = (props) => {
+  const {hyp, backgroundColor, onHypSelect, onHypDismiss} = props;
+  return (
+    <RB.ListGroupItem
+       className="list-group-hover"
+       style={{backgroundColor: backgroundColor}}>
+      <RB.Table style={{marginBottom: "0"}} responsive>
+	<tbody>
+	  <tr>
+	    <td>
+	      <RB.Button
+		 style={{border: "none", padding: "0", background: "none"}}
+		 onClick={(e) => onHypDismiss(hyp.generation_id)}>
+                <i className="fa fa-close fa-fw" style={{color:"#666666", fontSize: "20px"}}/>
+              </RB.Button>
+            </td>
+            <td style={{padding:"0px 10px 0px 20px"}}>
+	      <p>{hyp.text}</p>
+	    </td>
+	    <td>
+	      <RB.Label className="pull-right">{hyp.score}</RB.Label>
+	    </td>
+	    <td>
+	      <RB.Button onClick={() => onHypSelect(hyp)} 
+		className="pull-right" 
+		style={{border: "none", padding: "0", background: "none"}}>
+		<i className="fa fa-check" style={{color:"#666666", fontSize: "20px"}}/>
+	      </RB.Button> 
+	    </td>
+          </tr>
+        </tbody>
+      </RB.Table>
+    </RB.ListGroupItem>
+  );
+};
+
+
 function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
   let hypItems = [];
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
     const {r, g, b} = Utils.getModelData(models, hyp.model).color;
-    const backgroundColor = `rgba(${r},${g},${b}, 0.5)`;
     hypItems.push(
-      <RB.ListGroupItem
+      <HypItem
 	 key={hyp.generation_id}
-	 className="list-group-hover"
-         style={{backgroundColor: backgroundColor}}
-	>
-        <RB.Table style={{marginBottom: "0"}} responsive>
-	  <tbody>
-	    <tr>
-	      <td>
-		<RB.Button
-		   style={{border: "none", padding: "0", background: "none"}}
-		   onClick={(e) => {e.stopPropagation(); onHypDismiss(hyp.generation_id);}}>
-		  <i className="fa fa-close fa-fw" style={{color:"#666666", fontSize: "20px"}}></i>
-		</RB.Button>
-	      </td>
-	      <td style={{padding:"0px 10px 0px 20px"}}>
-		<p>{hyp.text}</p>
-	      </td>
-	      <td>
-		<RB.Label className="pull-right">{hyp.score}</RB.Label>
-	      </td>
-	      <td>
-		<RB.Button onClick={() => onHypSelect(hyp)} 
-		  className="pull-right" 
-		  style={{border: "none", padding: "0", background: "none"}}>
-		  <i className="fa fa-check" style={{color:"#666666", fontSize: "20px"}}></i> 
-		</RB.Button> 
-	      </td>
-	    </tr>
-	  </tbody>
-	</RB.Table>
-      </RB.ListGroupItem>
+	 hyp={hyp}
+	 backgroundColor={`rgba(${r},${g},${b}, 0.5)`}
+	 onHypSelect={onHypSelect}
+	 onHypDismiss={onHypDismiss}/>
     );
   }
   return hypItems;
 }
 
 
-class ButtonRight extends React.Component {
+class RegenerateButton extends React.Component {
   render() {
-    let buttonRight;
+    let button;
     if (this.props.loadingHyps) {
       // show spinner
-      buttonRight = (
+      button = (
+	<RB.Button disabled style={{cursor: "default"}}>
 	  <Utils.Spinner/>
+	</RB.Button>
       );
     } else {
       // show refresh button
-      buttonRight = (
-		<RB.Button
+      button = (
+	<RB.Button
 	   onClick={this.props.onRegenerate}
 	   bsSize="sm"
-     className="pull-right" >
+	   className="pull-right" >
 	  <i className="fa fa-refresh"/>
       	</RB.Button>
       );
     }
-    return buttonRight;
+    return button;
   }
 }
 
 
 class Suggestions extends React.Component {
 
-	render() {
+  render() {
     const hasHyps = (this.props.hyps.length > 0) || this.props.loadingHyps || this.props.hasHadHyps;
     const collapsedClass = this.props.isCollapsed ? 'suggestions-panel-down' : 'suggestions-panel-up';
     const caretClass = this.props.isCollapsed ? 'fa fa-caret-up' : 'fa fa-caret-down';
@@ -84,23 +96,26 @@ class Suggestions extends React.Component {
       <div className={`panel panel-default suggestions-panel ${collapsedClass}`}
 	   style={{visibility: hasHyps ? "visible" : "hidden"}}>
 	<div className="panel-heading">
-          <RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
-            <i className={caretClass}></i>
-          </RB.Button>
-        <RB.Button  
-        bsSize="sm"  
-        onClick={ () => {this.props.resetHyps(); 
-                        this.props.onCollapse();}} 
-        style={{margin:"0 20px"}} 
-        className="pull-right" > 
-          Clear All 
-        </RB.Button> 
-       
-        <ButtonRight  
-        loadingHyps={this.props.loadingHyps}  
-        onRegenerate={this.props.onRegenerate} 
-        className="pull-right"  
-        /> 
+	  <RB.Row>
+	    <RB.Col md={6}>
+	      <RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
+		<i className={caretClass}></i>
+              </RB.Button>
+	    </RB.Col>
+	    <RB.Col md={6} className="pull-right">
+	      <RB.ButtonGroup className="pull-right">
+		<RB.Button
+		   bsSize="sm"
+		   style={{margin:"0 20px"}}
+		   onClick={() => {this.props.resetHyps(); this.props.onCollapse();}}>
+		  Clear All
+		</RB.Button>
+		<RegenerateButton
+		   loadingHyps={this.props.loadingHyps}  
+		   onRegenerate={this.props.onRegenerate}/> 
+	      </RB.ButtonGroup>
+	    </RB.Col>
+	  </RB.Row>
 	</div>
 	<RB.ListGroup>
 	  <CSSTransitionGroup
