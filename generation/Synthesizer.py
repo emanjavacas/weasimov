@@ -136,7 +136,11 @@ class Synthesizer(object):
             raise ValueError('Models have not been set yet.')
 
         if not seed_texts:
-            seed_texts = [random_sentence(min_len=25, filters=None)]
+            try:
+                seed_texts = [random_sentence(min_len=25, filters=None)]
+            except:
+                print("Couldn't load default seed")
+            ignore_eos = True
 
         def normalize_hyp(hyp):
             bos, eos, par, found = [], [], [], 0
