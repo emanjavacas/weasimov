@@ -35,24 +35,21 @@ li.list-group-hover.list-group-item:hover {
   bottom: 0;
   z-index: 9;
   margin-bottom: 0;
-  height: 30%;
+  height: 40%;
   overflow: hidden;
 }
 
 .suggestions-panel .list-group { 
-  height: 80%; 
+  height: 100%; 
   overflow-y: auto; 
-} 
+}
 .suggestions-panel-down{
   top: 94%;
 }
 .suggestions-panel-up{
-  top: 70%;
+  top: 60%;
 }
-.suggestions-panel p {
-  font-family: 'Cousine', monospace;
-  font-size: 18px;
-}
+
 @media only screen and (max-width: 1200px) {
   .suggestions-panel {
     width: 66.66%;
@@ -115,8 +112,8 @@ li.list-group-hover.list-group-item:hover {
   user-select: none;
   position: absolute;
   width: 20px;
-  left: -80px;
-  top: 0px;
+  left: -60px;
+  top: 70px;
 }
 .RichEditor-controls .btn-sm{
   color: #999;
