@@ -66,7 +66,7 @@ class RegenerateButton extends React.Component {
     if (this.props.loadingHyps) {
       // show spinner
       button = (
-	<RB.Button disabled style={{cursor: "default"}}>
+	<RB.Button disabled style={{cursor: "default", padding:"4px 10px"}}>
 	  <Utils.Spinner/>
 	</RB.Button>
       );
