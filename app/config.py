@@ -11,8 +11,8 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'weasimov.db') + 
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
 # Sentence sampler
-FILEDIR = os.path.join(basedir, 'novels')
-METAPATH = os.path.join(basedir, 'metainfo.csv')
+FILEDIR = os.path.join(basedir, 'data/weasimov-novels-tokenized-cleaned')
+METAPATH = os.path.join(basedir, 'data/metainfo.csv')
 
 # Model names
 MODEL_NAMES = {
