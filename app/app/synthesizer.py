@@ -167,8 +167,9 @@ class Synthesizer(object):
             return round(math.exp(score), 3)
 
         def filter_valid_hyps(scores, hyps):
-            return zip(*[(s, h) for s, h in zip(scores, hyps)
-                         if h[-1] == d.get_eos()])
+            scores, hyps = zip(*[(s, h) for s, h in zip(scores, hyps)
+                                 if h[-1] == d.get_eos()])
+            return list(scores), list(hyps)
 
         d, m = self.dicts[model_name], self.models[model_name]
         result = []
