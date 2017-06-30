@@ -12,13 +12,13 @@ from .models import User, Text, Edit, Generation
 from .forms import LoginForm, RegisterForm
 
 
-def get_colors(palette="Pastel2"):
+def get_colors():
     def format_color(r, g, b):
-        return {'r': int(r * 256),
-                'g': int(g * 256),
-                'b': int(b * 256),
+        return {'r': r,
+                'g': g,
+                'b': b,
                 'a': 1}
-    return [format_color(*c) for c in Pastel2_8.colors]
+    return (format_color(*c) for c in Pastel2_8.colors)
 
 
 def format_models():
