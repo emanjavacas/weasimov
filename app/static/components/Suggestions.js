@@ -21,7 +21,7 @@ const HypItem = (props) => {
                 <i className="fa fa-close fa-fw" style={{color:"#666666", fontSize: "20px"}}/>
               </RB.Button>
             </td>
-            <td style={{padding:"0px 10px 0px 20px"}}>
+            <td style={{padding:"0px 10px 0px 20px", width:"100%"}}>
 	      <p>{hyp.text}</p>
 	    </td>
 	    <td>
