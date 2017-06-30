@@ -34,7 +34,7 @@ def parse_filter_file(fn):
 def filter_filenames(meta, path, filters):
     filenames = []
     for fn in glob.glob(path+'/*.txt'):
-        me = meta.loc[os.path.basename(fn)]
+        me = meta.loc[os.path.splitext(os.path.basename(fn))[0]]
         if me.empty:
             continue
         if 'authors' in filters and \
@@ -57,7 +57,7 @@ def filter_filenames(meta, path, filters):
 
 
 def load_data(path='data/bigmama/',
-              metapath='metainfo.csv',
+              metapath='/home/mike/GitRepos/weasimov/metainfo.csv',
               filter_file=None,
               include_paragraphs=False,
               paragraph='<par>',
