@@ -74,7 +74,9 @@ class ButtonRight extends React.Component {
 
 
 class Suggestions extends React.Component {
-  render() {
+
+	render() {
+	  const collapseClear = () => this.props.resetHyps(); () => this.props.onCollapse();
     const hasHyps = (this.props.hyps.length > 0) || this.props.loadingHyps || this.props.hasHadHyps;
     const collapsedClass = this.props.isCollapsed ? 'suggestions-panel-down' : 'suggestions-panel-up';
     const caretClass = this.props.isCollapsed ? 'fa fa-caret-up' : 'fa fa-caret-down';
@@ -82,12 +84,28 @@ class Suggestions extends React.Component {
       <div className={`panel panel-default suggestions-panel ${collapsedClass}`}
 	   style={{visibility: hasHyps ? "visible" : "hidden"}}>
 	<div className="panel-heading">
-          <RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
-            <i className={caretClass}></i>
-          </RB.Button>
-	  <span className="pull-right">
-	    <ButtonRight loadingHyps={this.props.loadingHyps} onRegenerate={this.props.onRegenerate}/>
-	  </span>
+			<RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
+				<i className={caretClass}></i>
+			</RB.Button>
+			<RB.ButtonGroup 
+			className="pull-right" >
+
+				<RB.Button 
+				bsSize="sm" 
+				onClick={ () => {this.props.resetHyps();
+												this.props.onCollapse();} }
+				style={{margin:"0 20px"}}
+				className="pull-right" >
+					Clear All
+				</RB.Button>
+			
+				<ButtonRight 
+				loadingHyps={this.props.loadingHyps} 
+				onRegenerate={this.props.onRegenerate}
+				className="pull-right" 
+				/>
+			
+			</RB.ButtonGroup>
 	</div>
 	<RB.ListGroup>
 	  <CSSTransitionGroup
