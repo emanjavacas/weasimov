@@ -1,7 +1,9 @@
+
 import os
 import sys; sys.path.append(os.path.abspath("../generation"))
-
 from Synthesizer import Synthesizer
+
+from .sentence_sampler import RandomSentenceSampler
 
 import flask
 from flask_sqlalchemy import SQLAlchemy
@@ -29,6 +31,12 @@ lm.login_view = 'login'
 # Services
 model_dir = app.config['MODEL_DIR']
 gpu = app.config.get('DEFAULTS', {}).get('gpu', False)
-app.synthesizer = Synthesizer(model_dir=model_dir, gpu=gpu)
+sentence_sampler = RandomSentenceSampler(
+    app.config['FILEDIR'],
+    app.config['METAPATH'])
+app.synthesizer = Synthesizer(
+    model_dir=model_dir,
+    gpu=gpu,
+    sentence_sampler=sentence_sampler)
 
 from app import views, models

@@ -2,14 +2,11 @@
 
 import os
 import random
-import subprocess
 import glob
-import linecache
-import random
 
 import pandas as pd
 
-random.seed(12101985)
+random.seed(1001)
 
 
 def load_metadata(fn):
@@ -38,10 +35,10 @@ def filter_filenames(meta, path, filters):
         if me.empty:
             continue
         if 'authors' in filters and \
-                me['author:id'] not in filters['authors']:
+           me['author:id'] not in filters['authors']:
             continue
         if 'titles' in filters and \
-                str(me['title:detail']).strip() not in filters['titles']:
+           str(me['title:detail']).strip() not in filters['titles']:
             continue
         if 'genres' in filters:
             match = False
@@ -127,42 +124,14 @@ def load_data(path='data/bigmama/',
 
 
 def format_hyp(score, hyp, hyp_num, d):
+    """
+    Transform a hypothesis into a string for visualization purposes
+
+    score: float, normalized probability
+    hyp: list of integers
+    hyp_num: int, index of the hypothesis
+    d: Dict, dictionary used for fitting the vocabulary
+    """
     return '\n* [{hyp}] [Score:{score:.3f}]: {sent}'.format(
         hyp=hyp_num, score=score/len(hyp),
         sent=' '.join([d.vocab[c] for c in hyp]))
-
-
-def file_len(fname):
-    """
-    Unix-only, but much fast than reading the entire file.
-    """
-    p = subprocess.Popen(['wc', '-l', fname], stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    result, err = p.communicate()
-    if p.returncode != 0:
-        raise IOError(err)
-    return int(result.strip().split()[0])
-
-
-def random_sentence(filedir='/home/karsdorp/weasimov/data/' +
-                            'weasimov-novels-tokenized-cleaned',
-                    metapath='metainfo.csv',
-                    min_len=25,
-                    filters=None):
-    random.seed()
-
-    if filters:
-        meta = load_metadata(fn=metapath)
-        filter_filenames(meta, filedir, filters)
-    else:
-        filenames = glob.glob(filedir + '/*.txt')
-
-    rnd_sent = None
-    while not rnd_sent:
-        fname = random.choice(filenames)
-        max_idx = file_len(fname)
-        rnd_idx = random.randint(0, max_idx)
-        pick = linecache.getline(fname, rnd_idx).strip()
-        if pick and len(pick) >= min_len:
-            rnd_sent = pick
-    return rnd_sent
