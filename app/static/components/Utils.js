@@ -2,7 +2,7 @@ import React from 'react';
 
 // Components
 const Spinner = (props) => (
-  <div className="text-center" style={{"fontSize": "18px"}}>
+  <div style={{"fontSize": "18px"}}>
     <span className="loading dots"></span>
   </div>);
 

@@ -28,6 +28,10 @@ li.list-group-hover.list-group-item:hover {
 .suggestions-panel .table, tbody tr, td {
   border: none !important;
 }
+.suggestions-panel p { 
+  font-family: 'Cousine', monospace; 
+  font-size: 18px; 
+} 
 
 .suggestions-panel {
   position: fixed;
@@ -42,17 +46,14 @@ li.list-group-hover.list-group-item:hover {
 .suggestions-panel .list-group { 
   height: 80%; 
   overflow-y: auto; 
-} 
+}
 .suggestions-panel-down{
   top: 94%;
 }
 .suggestions-panel-up{
   top: 70%;
 }
-.suggestions-panel p {
-  font-family: 'Cousine', monospace;
-  font-size: 18px;
-}
+
 @media only screen and (max-width: 1200px) {
   .suggestions-panel {
     width: 66.66%;
@@ -115,8 +116,8 @@ li.list-group-hover.list-group-item:hover {
   user-select: none;
   position: absolute;
   width: 20px;
-  left: -80px;
-  top: 0px;
+  left: -80px; 
+  top: 0px; 
 }
 .RichEditor-controls .btn-sm{
   color: #999;
