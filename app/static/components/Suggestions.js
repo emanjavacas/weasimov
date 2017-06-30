@@ -37,7 +37,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
 		<RB.Button onClick={() => onHypSelect(hyp)} 
 		  className="pull-right" 
 		  style={{border: "none", padding: "0", background: "none"}}>
-		  <i className="fa fa-check" style={{fontSize: "20px"}}></i>
+		  <i className="fa fa-check" style={{color:"#666666", fontSize: "20px"}}></i> 
 		</RB.Button> 
 	      </td>
 	    </tr>
