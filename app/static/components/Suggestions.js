@@ -76,7 +76,6 @@ class ButtonRight extends React.Component {
 class Suggestions extends React.Component {
 
 	render() {
-	  const collapseClear = () => this.props.resetHyps(); () => this.props.onCollapse();
     const hasHyps = (this.props.hyps.length > 0) || this.props.loadingHyps || this.props.hasHadHyps;
     const collapsedClass = this.props.isCollapsed ? 'suggestions-panel-down' : 'suggestions-panel-up';
     const caretClass = this.props.isCollapsed ? 'fa fa-caret-up' : 'fa fa-caret-down';
