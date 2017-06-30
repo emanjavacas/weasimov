@@ -16,10 +16,10 @@ METAPATH = os.path.join(basedir, 'data/metainfo.csv')
 
 # Model names
 MODEL_NAMES = {
-    'fine_asi_giph.LSTM.1l.2048h.64e.256b.pt': 'Asimov Giphart',
-    'fine_asi.LSTM.1l.2048h.64e.256b.pt': 'Asimov',
-    'fine_asi_hem.LSTM.1l.2048h.64e.256b.pt': 'Asimov Hem',
-    'MEDIUM.pt': 'Medium'
+    'fine_asi_giph.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov & Ronald Giphart',
+    'fine_asi.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov',
+    'fine_asi_hem.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov & Kristien Hemmerechts',
+    'MEDIUM.pt  ': 'Alles'
 }
 
 # Defaults
