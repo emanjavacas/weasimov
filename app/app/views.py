@@ -2,8 +2,7 @@
 from datetime import datetime
 import uuid
 
-from matplotlib import colors
-import matplotlib.pyplot as plt
+from palettable.colorbrewer.qualitative import Pastel2_8
 import flask
 import flask_login
 from sqlalchemy import desc
@@ -14,13 +13,12 @@ from .forms import LoginForm, RegisterForm
 
 
 def get_colors(palette="Pastel2"):
-    def format_color(r, g, b, a):
+    def format_color(r, g, b):
         return {'r': int(r * 256),
                 'g': int(g * 256),
                 'b': int(b * 256),
                 'a': 1}
-    return [format_color(*colors.to_rgba(c))
-            for c in plt.get_cmap(palette).colors]
+    return [format_color(*c) for c in Pastel2_8.colors]
 
 
 def format_models():

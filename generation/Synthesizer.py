@@ -34,7 +34,7 @@ def detokenizer(s):
 
 
 class Synthesizer(object):
-    def __init__(self, model_dir, temperature=0.35):
+    def __init__(self, model_dir, gpu=False):
         """Constructor
 
         Parameters
@@ -44,6 +44,7 @@ class Synthesizer(object):
         """
         super(Synthesizer, self).__init__()
 
+        self.gpu = gpu
         self.model_dir = model_dir
         self.models = {}
         self.dicts = {}
@@ -76,6 +77,8 @@ class Synthesizer(object):
                 continue
             try:
                 m = load_model(os.path.join(self.model_dir, name))
+                if self.gpu:
+                    m.cuda()
                 self.models[name] = m['model']
                 self.dicts[name] = m['dict']
             except (ValueError, OSError):
@@ -90,7 +93,7 @@ class Synthesizer(object):
 
     def sample(self, model_name, seed_texts=None,
                max_seq_len=100, max_tries=1, temperature=1.0,
-               method='sample', batch_size=5, ignore_eos=True):
+               method='sample', batch_size=5, ignore_eos=True, **kwargs):
         """Samples a sentence.
 
         Samples a single sentence from a single model.
@@ -158,37 +161,39 @@ class Synthesizer(object):
         def normalize_score(score):
             return round(math.exp(score), 3)
 
-        def has_valid_hyp(hyps):
-            for hyp in hyps:
-                if hyp[-1] == d.get_eos():
-                    return True
-            return False
+        def filter_valid_hyps(scores, hyps):
+            return zip(*[(s, h) for s, h in zip(scores, hyps)
+                         if h[-1] == d.get_eos()])
 
         d, m = self.dicts[model_name], self.models[model_name]
         result = []
 
-        if ignore_eos:
-            scores, hyps = m.generate(
-                d, max_seq_len=max_seq_len,
-                temperature=temperature,
-                batch_size=batch_size,
-                ignore_eos=ignore_eos,
-                method=method,
-                bos=True,       # TODO: only add this when necessary
-                seed_texts=seed_texts)
+        scores, hyps = m.generate(
+            d, max_seq_len=max_seq_len,
+            temperature=temperature,
+            batch_size=batch_size,
+            ignore_eos=ignore_eos,
+            method=method,
+            seed_texts=seed_texts,
+            gpu=self.gpu,
+            **kwargs)
 
-        else:
-            hyps, tries = [], 0
-            while (hyps and not has_valid_hyp(hyps)) and tries < max_tries:
-                scores, hyps = m.generate(
+        if not ignore_eos:
+            scores, hyps = filter_valid_hyps(scores, hyps)
+            left, tries = batch_size - len(hyps), 0
+            while left > 0 and tries < max_tries:
+                new_scores, new_hyps = m.generate(
                     d, max_seq_len=max_seq_len,
                     temperature=temperature,
-                    batch_size=batch_size,
+                    batch_size=left,
                     ignore_eos=ignore_eos,
                     method=method,
-                    bos=True,       # TODO: only add this when necessary
-                    seed_texts=seed_texts)
-                tries += 1
+                    seed_texts=seed_texts,
+                    gpu=self.gpu,
+                    **kwargs)
+                scores.extend(new_scores), hyps.extend(new_hyps)
+                scores, hyps = filter_valid_hyps(scores, hyps)
+                left, tries = len(hyps), tries + 1
 
         sort_hyps = sorted(zip(scores, hyps), key=lambda p: p[0], reverse=True)
         for score, hyp in sort_hyps:
