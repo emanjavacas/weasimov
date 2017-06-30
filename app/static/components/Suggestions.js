@@ -10,7 +10,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
     const {r, g, b} = Utils.getModelData(models, hyp.model).color;
-    const backgroundColor = `rgba(${r},${g},${b}, 0.2)`;
+    const backgroundColor = `rgba(${r},${g},${b}, 0.5)`;
     hypItems.push(
       <RB.ListGroupItem
 	 key={hyp.generation_id}
@@ -37,7 +37,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
 		<RB.Button onClick={() => onHypSelect(hyp)} 
 		  className="pull-right" 
 		  style={{border: "none", padding: "0", background: "none"}}>
-		  <i className="fa fa-check" style={{fontSize: "20px"}}></i>
+		  <i className="fa fa-check" style={{color:"#666666", fontSize: "20px"}}></i> 
 		</RB.Button> 
 	      </td>
 	    </tr>
@@ -61,9 +61,10 @@ class ButtonRight extends React.Component {
     } else {
       // show refresh button
       buttonRight = (
-	<RB.Button
+		<RB.Button
 	   onClick={this.props.onRegenerate}
-	   bsSize="sm">
+	   bsSize="sm"
+     className="pull-right" >
 	  <i className="fa fa-refresh"/>
       	</RB.Button>
       );
@@ -83,28 +84,23 @@ class Suggestions extends React.Component {
       <div className={`panel panel-default suggestions-panel ${collapsedClass}`}
 	   style={{visibility: hasHyps ? "visible" : "hidden"}}>
 	<div className="panel-heading">
-			<RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
-				<i className={caretClass}></i>
-			</RB.Button>
-			<RB.ButtonGroup 
-			className="pull-right" >
-
-				<RB.Button 
-				bsSize="sm" 
-				onClick={ () => {this.props.resetHyps();
-												this.props.onCollapse();} }
-				style={{margin:"0 20px"}}
-				className="pull-right" >
-					Clear All
-				</RB.Button>
-			
-				<ButtonRight 
-				loadingHyps={this.props.loadingHyps} 
-				onRegenerate={this.props.onRegenerate}
-				className="pull-right" 
-				/>
-			
-			</RB.ButtonGroup>
+          <RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
+            <i className={caretClass}></i>
+          </RB.Button>
+        <RB.Button  
+        bsSize="sm"  
+        onClick={ () => {this.props.resetHyps(); 
+                        this.props.onCollapse();}} 
+        style={{margin:"0 20px"}} 
+        className="pull-right" > 
+          Clear All 
+        </RB.Button> 
+       
+        <ButtonRight  
+        loadingHyps={this.props.loadingHyps}  
+        onRegenerate={this.props.onRegenerate} 
+        className="pull-right"  
+        /> 
 	</div>
 	<RB.ListGroup>
 	  <CSSTransitionGroup
