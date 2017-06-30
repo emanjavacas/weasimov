@@ -23,7 +23,11 @@ class App extends React.Component {
     // editor functions
     this.insertHypAtCursor = this.insertHypAtCursor.bind(this);
     this.onEditorChange = this.onEditorChange.bind(this);
-    this.dismissHyp = this.dismissHyp.bind(this);
+    //suggestions 
+    this.dismissHyp = this.dismissHyp.bind(this); 
+    this.resetHyps = () => this.setState({hyps: []}) 
+    this.toggleSuggestions = this.toggleSuggestions.bind(this); 
+    // Editor 
     this.toggleSuggestions = this.toggleSuggestions.bind(this);
     this.handleKeyCommand = (command) => this._handleKeyCommand(command);
     this.onTab = (e) => this._onTab(e);
@@ -94,8 +98,8 @@ class App extends React.Component {
 
   // generation functions
   onGenerationSuccess(response) {
-    this.setState(
-      {hyps: response.hyps.concat(this.state.hyps.concat()),
+    this.setState( 
+      {hyps: response.hyps.concat(this.state.hyps),
        lastSeed: response.seed,
        lastModel: response.model,
        loadingHyps: false,
@@ -267,6 +271,7 @@ class App extends React.Component {
     		     onRegenerate={this.regenerate}
     		     onHypSelect={this.insertHypAtCursor}
 		     onHypDismiss={this.dismissHyp}
+         resetHyps={this.resetHyps}
 		     hasHadHyps={this.state.hasHadHyps}/>
 		</RB.Row>
 		
