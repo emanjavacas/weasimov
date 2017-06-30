@@ -10,7 +10,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
     const {r, g, b} = Utils.getModelData(models, hyp.model).color;
-    const backgroundColor = `rgba(${r},${g},${b}, 0.2)`;
+    const backgroundColor = `rgba(${r},${g},${b}, 0.5)`;
     hypItems.push(
       <RB.ListGroupItem
 	 key={hyp.generation_id}
