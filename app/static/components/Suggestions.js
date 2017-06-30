@@ -63,7 +63,8 @@ class ButtonRight extends React.Component {
       buttonRight = (
 		<RB.Button
 	   onClick={this.props.onRegenerate}
-	   bsSize="sm">
+	   bsSize="sm"
+     className="pull-right" >
 	  <i className="fa fa-refresh"/>
       	</RB.Button>
       );
@@ -85,9 +86,6 @@ class Suggestions extends React.Component {
           <RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
             <i className={caretClass}></i>
           </RB.Button>
-					      <RB.ButtonGroup  
-      className="pull-right" > 
- 
         <RB.Button  
         bsSize="sm"  
         onClick={ () => {this.props.resetHyps(); 
@@ -102,8 +100,6 @@ class Suggestions extends React.Component {
         onRegenerate={this.props.onRegenerate} 
         className="pull-right"  
         /> 
-       
-      </RB.ButtonGroup> 
 	</div>
 	<RB.ListGroup>
 	  <CSSTransitionGroup
