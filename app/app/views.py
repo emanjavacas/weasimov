@@ -176,7 +176,8 @@ def generate():
             model_name=model,
             seed_texts=None if not seed else [seed],
             temperature=temperature,
-            ignore_eos=True,
+            batch_size=app.config.get('DEFAULTS', {}).get('batch_size', 3),
+            ignore_eos=app.config.get('DEFAULTS', {}).get('ignore_eos', False),
             max_seq_len=max_seq_len,
             max_tries=1)
         for hyp in hyps:
