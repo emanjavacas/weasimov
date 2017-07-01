@@ -61,21 +61,21 @@ class ButtonToolbar extends React.Component {
       <div className="generate-bar">
 	<RB.ButtonToolbar>
 	  <RB.ButtonGroup style={{width: "200px", display: "inline-flex", margin: "7px 20px"}}>
-	    <span>Creativity</span>
+	    <span>Creativiteit</span>
 	    <Slider
 	       defaultValue={temperature} min={0.05} max={1.0} step={0.05}
 	       style={{width: "100%", margin: "3px 10px"}}
 	       onChange={this.props.onTemperatureChange}
-	       title="Creativity"/>
+	       title="Creativiteit"/>
 	    <RB.Label style={{padding:"4px 8px", width:"75px", margin: "0px 8px"}}>{temperature}</RB.Label>
 	  </RB.ButtonGroup>
 	  <RB.ButtonGroup style={{width: "200px", display: "inline-flex", margin: "7px 20px"}}>
-	    <span>Length</span>
+	    <span>Lengte</span>
 	    <Slider
 	       defaultValue={maxSeqLen} min={10} max={200} step={5}
 	       style={{width: "100%", margin: "3px 10px"}}
 	       onChange={this.props.onSeqLenChange}
-	       title="Length"/>
+	       title="Lengte"/>
 	    <RB.Label style={{padding:"4px 8px", width:"75px", margin: "0px 8px"}}>{maxSeqLen}</RB.Label>
 	  </RB.ButtonGroup>
       <RB.ButtonGroup className="pull-right" style={{backgroundColor: "none"}}> 

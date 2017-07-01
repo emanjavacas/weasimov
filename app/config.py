@@ -14,13 +14,12 @@ SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 FILEDIR = '/home/asibot/resources/novels/'
 METAPATH = '/home/asibot/prod/weasimov/metainfo.csv'
 
-
 # Model names
 MODEL_NAMES = {
-    'fine_asi_giph.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov & Giphart',
+    'fine_asi_giph.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov & Ronald Giphart',
     'fine_asi.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov',
     'fine_asi_hem.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov & Kristien Hemmerechts',
-    'MEDIUM.pt': '5000 Romans'
+    'MEDIUM.pt  ': 'Alles'
 }
 
 # Defaults
