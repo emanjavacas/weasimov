@@ -102,9 +102,14 @@ class Suggestions extends React.Component {
 		<RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
 		  <i className={caretClass}></i>
 		</RB.Button>
-		<RB.Button disabled style={{cursor: "default", padding: "4px 10px"}}>
-		  <span>{(this.props.hyps.length > 0) ? this.props.hyps.length : ""}</span>
-		</RB.Button>
+		{(this.props.hyps.length > 0)
+		  ?
+		  <RB.Button disabled style={{cursor: "default", padding: "4px 10px"}}>
+		      <span>{this.props.hyps.length}</span>
+		    </RB.Button>
+		    :
+		    <span></span>
+		    }
 	      </RB.ButtonGroup>
 	    </RB.Col>
 	    <RB.Col md={6} className="pull-right">
