@@ -4,9 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
-    "start": "python app.py"
+    "build": "webpack -p --env=prod --progress --profile --colors",
   },
   "author": "",
   "license": "ISC",
