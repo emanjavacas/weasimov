@@ -27,6 +27,6 @@ DEFAULTS = {
     "temperature": 0.35,
     "max_seq_len": 100,
     "batch_size": 3,
-    "ignore_eos": False,
+    "ignore_eos": True,
     "gpu": False
 }
