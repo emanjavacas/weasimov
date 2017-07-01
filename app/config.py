@@ -4,21 +4,23 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # Model
-MODEL_DIR = os.path.join(basedir, 'models')
+MODEL_DIR = '/home/asibot/resources/models/'
 
 # Database
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'weasimov.db') + '?check_same_thread=False'
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
 # Sentence sampler
-FILEDIR = os.path.join(basedir, 'data/weasimov-novels-tokenized-cleaned')
-METAPATH = os.path.join(basedir, 'data/metainfo.csv')
+FILEDIR = '/home/asibot/resources/novels/'
+METAPATH = '/home/asibot/prod/weasimov/metainfo.csv'
+
 
 # Model names
 MODEL_NAMES = {
-    'char.LSTM.1l.2546h.46e.200b.2.49.post.3.16.pt': 'Ronald Giphart',
-    'char.LSTM.1l.2546h.46e.200b.2.49.post.2.78.pt': 'Isaac Asimov',
-    'char.LSTM.1l.2546h.46e.200b.2.49.pt': '5000 Romans'
+    'fine_asi_giph.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov & Giphart',
+    'fine_asi.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov',
+    'fine_asi_hem.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov & Kristien Hemmerechts',
+    'MEDIUM.pt': '5000 Romans'
 }
 
 # Defaults
