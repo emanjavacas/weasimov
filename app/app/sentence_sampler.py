@@ -1,13 +1,44 @@
 
 import os
-import sys; sys.path.append(os.path.abspath("../generation"))
-from utils import load_metadata, filter_filenames
 import linecache
 import glob
 import subprocess
 import random
 
+import pandas as pd
+
 random.seed(1001)
+
+
+def filter_filenames(meta, path, filters):
+    filenames = []
+    for fn in glob.glob(path+'/*.txt'):
+        me = meta.loc[os.path.splitext(os.path.basename(fn))[0]]
+        if me.empty:
+            continue
+        if 'authors' in filters and \
+           me['author:id'] not in filters['authors']:
+            continue
+        if 'titles' in filters and \
+           str(me['title:detail']).strip() not in filters['titles']:
+            continue
+        if 'genres' in filters:
+            match = False
+            for f in filters['genres']:
+                if f in me['categories'].lower():
+                    match = True
+                    continue
+            if not match:
+                continue
+        filenames.append(fn)
+
+    return filenames
+
+
+def load_metadata(fn):
+    df = pd.read_csv(fn, header=0, sep=',', dtype={'author:id': str})
+    df = df.set_index('filepath').fillna('')
+    return df
 
 
 def file_len(fname):
