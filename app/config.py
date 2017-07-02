@@ -4,15 +4,15 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # Model
-MODEL_DIR = '/home/asibot/resources/models/'
+MODEL_DIR = os.path.join(basedir, 'models')
 
 # Database
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'weasimov.db') + '?check_same_thread=False'
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
 # Sentence sampler
-FILEDIR = '/home/asibot/resources/novels/'
-METAPATH = '/home/asibot/prod/weasimov/metainfo.csv'
+FILEDIR = os.path.join(basedir, 'data/novels/')
+METAPATH = os.path.join(basedir, 'metainfo.csv')
 
 # Model names
 MODEL_NAMES = {
