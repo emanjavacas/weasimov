@@ -271,7 +271,7 @@ class App extends React.Component {
     		     onHypSelect={this.insertHypAtCursor}
 		     onHypDismiss={this.dismissHyp}
 		     hasHadHyps={this.state.hasHadHyps}
-         resetHyps={this.resetHyps}/>
+		     resetHyps={this.resetHyps}/>
 		</RB.Row>
 		
 	      </RB.Col>
