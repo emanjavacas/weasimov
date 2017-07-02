@@ -22,6 +22,8 @@ MODEL_NAMES = {
     'MEDIUM.pt': 'Alles'
 }
 
+IGNORE_UNNAMED = True  # ignore models if not listed in MODEL_NAMES?
+
 # Defaults
 DEFAULTS = {
     "temperature": 0.35,

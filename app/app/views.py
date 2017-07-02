@@ -24,7 +24,10 @@ def get_colors():
 def format_models():
     models = []
     model_names = app.config.get("MODEL_NAMES", {})
+    ignore_unnamed = app.config.get('IGNORE_UNNAMED', False)
     for model, color in zip(app.synthesizer.list_models(), get_colors()):
+        if ignore_unnamed and model['path'] not in model_names:
+            continue
         model['color'] = color
         model['modelName'] = model_names.get(model['path'])
         models.append(model)
