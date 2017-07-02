@@ -5,40 +5,42 @@ import Utils from './Utils';
 import { CSSTransitionGroup } from 'react-transition-group';
 
 
-const HypItem = (props) => {
-  const {hyp, backgroundColor, onHypSelect, onHypDismiss} = props;
-  return (
-    <RB.ListGroupItem
-       className="list-group-hover"
-       style={{backgroundColor: backgroundColor}}>
-      <RB.Table style={{marginBottom: "0"}} responsive>
-	<tbody>
-	  <tr>
-	    <td>
-	      <RB.Button
-		 style={{border: "none", padding: "0", background: "none"}}
-		 onClick={(e) => onHypDismiss(hyp.generation_id)}>
-                <i className="fa fa-close fa-fw" style={{color:"#666666", fontSize: "20px"}}/>
-              </RB.Button>
-            </td>
-            <td style={{padding:"0px 10px 0px 20px", width:"100%"}}>
-	      <p>{hyp.text}</p>
-	    </td>
-	    <td>
-	      <RB.Label className="pull-right">{hyp.score}</RB.Label>
-	    </td>
-	    <td>
-	      <RB.Button onClick={() => onHypSelect(hyp)} 
-		className="pull-right" 
-		style={{border: "none", padding: "0", background: "none"}}>
-		<i className="fa fa-check" style={{color:"#666666", fontSize: "20px"}}/>
-	      </RB.Button> 
-	    </td>
-          </tr>
-        </tbody>
-      </RB.Table>
-    </RB.ListGroupItem>
-  );
+class HypItem extends React.Component {
+  render() {
+    const {hyp, backgroundColor, onHypSelect, onHypDismiss} = this.props;
+    return (
+      <RB.ListGroupItem
+	 className="list-group-hover"
+	 style={{backgroundColor: backgroundColor}}>
+	<RB.Table style={{marginBottom: "0"}} responsive>
+	  <tbody>
+	    <tr>
+	      <td>
+		<RB.Button
+		   style={{border: "none", padding: "0", background: "none"}}
+		   onClick={(e) => onHypDismiss(hyp.generation_id)}>
+                  <i className="fa fa-close fa-fw" style={{color:"#666666", fontSize: "20px"}}/>
+		</RB.Button>
+              </td>
+              <td style={{padding:"0px 10px 0px 20px", width:"100%"}}>
+		<p>{hyp.text}</p>
+	      </td>
+	      <td>
+		<RB.Label className="pull-right">{hyp.score}</RB.Label>
+	      </td>
+	      <td>
+		<RB.Button onClick={() => onHypSelect(hyp)} 
+		  className="pull-right" 
+		  style={{border: "none", padding: "0", background: "none"}}>
+		  <i className="fa fa-check" style={{color:"#666666", fontSize: "20px"}}/>
+		</RB.Button> 
+	      </td>
+            </tr>
+          </tbody>
+	</RB.Table>
+      </RB.ListGroupItem>
+    );
+  }
 };
 
 
@@ -86,6 +88,27 @@ class RegenerateButton extends React.Component {
 }
 
 
+class SuggestionList extends React.Component {
+  componentDidUpdate() {
+    ReactDOM.findDOMNode(this).scrollTop = 0;
+  }
+
+  render () {
+    const {hyps, models, onHypSelect, onHypDismiss} = this.props;
+    return (
+      <RB.ListGroup>
+	<CSSTransitionGroup
+	   transitionName="dismiss"
+	   transitionEnterTimeout={500}
+	   transitionLeaveTimeout={150}>
+ 	  {makeHypItems(hyps, models, onHypSelect, onHypDismiss)}
+	</CSSTransitionGroup>
+      </RB.ListGroup>
+    );
+  }
+}
+
+
 class Suggestions extends React.Component {
 
   render() {
@@ -127,14 +150,11 @@ class Suggestions extends React.Component {
 	    </RB.Col>
 	  </RB.Row>
 	</div>
-	<RB.ListGroup>
-	  <CSSTransitionGroup
-	     transitionName="dismiss"
-	     transitionEnterTimeout={500}
-	     transitionLeaveTimeout={150}>
- 	    {makeHypItems(this.props.hyps, this.props.models, this.props.onHypSelect, this.props.onHypDismiss)}
-	  </CSSTransitionGroup>
-	</RB.ListGroup>
+	<SuggestionList
+	   hyps={this.props.hyps}
+	   models={this.props.models}
+	   onHypSelect={this.props.onHypSelect}
+	   onHypDismiss={this.props.onHypDismiss}/>
       </div>
     );
   }
