@@ -25,7 +25,7 @@ class App extends React.Component {
     this.onEditorChange = this.onEditorChange.bind(this);
     //suggestions
     this.dismissHyp = this.dismissHyp.bind(this);
-    this.resetHyps = () => this.setState({hyps: []})
+    this.resetHyps = () => this.setState({hyps: []});
     this.toggleSuggestions = this.toggleSuggestions.bind(this);
     // Editor
     this.handleKeyCommand = (command) => this._handleKeyCommand(command);
@@ -217,7 +217,7 @@ class App extends React.Component {
 	    <RB.Col md={2}/>
 	    <RB.Col md={8}>
 	      <RB.Jumbotron style={{backgroundColor:"#f5f5f5"}}>
-		      <h2>Loading...</h2>
+		<h2>Loading...</h2>
 	      </RB.Jumbotron>
 	    </RB.Col>
 	    <RB.Col md={2}/>
