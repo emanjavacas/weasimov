@@ -97,7 +97,7 @@ class Suggestions extends React.Component {
 	   style={{visibility: hasHyps ? "visible" : "hidden"}}>
 	<div className="panel-heading">
 	  <RB.Row>
-	    <RB.Col md={6}>
+	    <RB.Col md={6} sm={4} xs={3}>
 	      <RB.ButtonGroup>
 		<RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
 		  <i className={caretClass}></i>
@@ -112,7 +112,7 @@ class Suggestions extends React.Component {
 		    }
 	      </RB.ButtonGroup>
 	    </RB.Col>
-	    <RB.Col md={6} className="pull-right">
+	    <RB.Col md={6} sm={8} xs={9} className="pull-right">
 	      <RB.ButtonGroup className="pull-right">
 		<RB.Button
 		   bsSize="sm"

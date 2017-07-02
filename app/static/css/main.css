@@ -54,6 +54,12 @@ li.list-group-hover.list-group-item:hover {
   top: 70%;
 }
 
+@media only screen and (min-width: 1200px) {
+  .suggestions-panel {
+    width: 66.66%;
+  }
+}
+
 @media only screen and (max-width: 1200px) {
   .suggestions-panel {
     width: 66.66%;

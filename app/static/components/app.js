@@ -230,8 +230,8 @@ class App extends React.Component {
 	  <Navbar username={this.state.username}/>
 	  <RB.Grid fluid={true}>
 	    <RB.Row>
-	      <RB.Col lg={3} md={2} sm={1}></RB.Col>
-	      <RB.Col lg={6} md={8} sm={10}>
+	      <RB.Col lg={2} md={2} sm={1}></RB.Col>
+	      <RB.Col lg={8} md={8} sm={10}>
 
 		<RB.Row>
 		  <Sticky enabled={true} top={0} innerZ={1001}>
@@ -275,7 +275,7 @@ class App extends React.Component {
 		</RB.Row>
 		
 	      </RB.Col>
-	      <RB.Col lg={3} md={2} sm={1}></RB.Col>
+	      <RB.Col lg={2} md={2} sm={1}></RB.Col>
 	    </RB.Row>
 
 	  </RB.Grid>
