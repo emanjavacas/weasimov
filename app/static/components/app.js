@@ -97,8 +97,10 @@ class App extends React.Component {
 
   // generation functions
   onGenerationSuccess(response) {
+    const separator = [{seed: response.seed, isSeparator: true,	model: response.model}];
+    const incomingHyps = separator.concat(response.hyps);
     this.setState(
-      {hyps: response.hyps.concat(this.state.hyps),
+      {hyps: incomingHyps.concat(this.state.hyps),
        lastSeed: response.seed,
        lastModel: response.model,
        loadingHyps: false,

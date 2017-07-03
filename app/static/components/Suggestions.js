@@ -44,19 +44,31 @@ class HypItem extends React.Component {
 };
 
 
+function Separator(props) {
+  return (
+    <RB.ListGroupItem>
+      <span>Separator</span>
+    </RB.ListGroupItem>);
+}
+
+
 function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
   let hypItems = [];
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
     const {r, g, b} = Utils.getModelData(models, hyp.model).color;
-    hypItems.push(
-      <HypItem
-	 key={hyp.generation_id}
-	 hyp={hyp}
-	 backgroundColor={`rgba(${r},${g},${b}, 0.5)`}
-	 onHypSelect={onHypSelect}
-	 onHypDismiss={onHypDismiss}/>
-    );
+    if (!hyp.isSeparator) {
+      hypItems.push(
+	<HypItem
+	   key={hyp.generation_id}
+	   hyp={hyp}
+	   backgroundColor={`rgba(${r},${g},${b}, 0.5)`}
+	   onHypSelect={onHypSelect}
+	   onHypDismiss={onHypDismiss}/>
+      );
+    } else {
+      hypItems.push(<Separator key={i} seed={hyp.seed} model={hyp.model}/>);
+    }
   }
   return hypItems;
 }
