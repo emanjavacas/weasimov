@@ -181,7 +181,18 @@ class Synthesizer(object):
             except:
                 print("Couldn't load default seed")
             ignore_eos = True
-        seed_texts = [format_seed(standardize_seed(s)) for s in seed_texts]
+        else:
+            seed_texts = [format_seed(standardize_seed(s)) for s in seed_texts]
+
+        def clean_hyp(hyp):
+            text = ''.join(d.vocab[c] for c in hyp) \
+                     .replace(d.bos_token, '') \
+                     .replace(d.eos_token, ' ') \
+                     .replace('<par>', '')
+            # Remove quote artifacts at beginning of lines.
+            if text.strip().startswith("' '"):
+                text = text[2:]
+            return text
 
         def normalize_hyp(hyp):
             bos, eos, par, found = [], [], [], 0
@@ -196,10 +207,7 @@ class Synthesizer(object):
                     par.append(idx - found)
                     found += 1
 
-            text = ''.join(d.vocab[c] for c in hyp) \
-                     .replace(d.bos_token, '') \
-                     .replace(d.eos_token, ' ') \
-                     .replace('<par>', '')
+            text = clean_hyp(hyp)
             return {'text': text, 'bos': bos, 'eos': eos, 'par': par}
 
         def normalize_score(score):
