@@ -48,7 +48,7 @@ def standardize_seed(seed):
     return ''.join(c for c in seed.translate(REPLACER) if c in VOCAB)
 
 
-def format_seed(seed, artificial_break='<Art-break>'):
+def format_seed(seed, artificial_break='<Art-break>', bos='<bos>', eos='<eos>'):
     _seed = f'{seed} {artificial_break}'  # TODO BOS
     seed_with_final_stop = False
     sents = nltk.sent_tokenize(_seed, language='dutch')
@@ -59,11 +59,13 @@ def format_seed(seed, artificial_break='<Art-break>'):
         sents[-1] = sents[-1].replace(f' {artificial_break}', '')
     output = []
     for sent in sents[:-1]:
-        output += ['<bos>'] + list(sent.strip()) + ['<eos>']
+        output += [bos] + list(sent.strip()) + [eos]
     if seed_with_final_stop:
-        output += ['<bos>'] + list(sents[-1].strip()) + ['<eos>']
+        output += [bos] + list(sents[-1].strip()) + [eos]
     else:
-        output += ['<bos>'] + list(sents[-1].strip())
+        output += [bos] + list(sents[-1].strip())
+    if seed.endswith(' ') and not seed_with_final_stop:
+        output += [' ']
     return output
 
 
