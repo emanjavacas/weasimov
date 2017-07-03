@@ -159,7 +159,7 @@ class Synthesizer(object):
 
             text = ''.join(d.vocab[c] for c in hyp) \
                      .replace(d.bos_token, '') \
-                     .replace(d.eos_token, '') \
+                     .replace(d.eos_token, ' ') \
                      .replace('<par>', '')
             return {'text': text, 'bos': bos, 'eos': eos, 'par': par}
 
