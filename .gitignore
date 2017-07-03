@@ -136,3 +136,5 @@ output/*
 # App data
 app/package-lock\.json
 app/config.py
+app/data/*
+app/resources/*
