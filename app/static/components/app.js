@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {EditorState, RichUtils, convertToRaw, convertFromRaw} from 'draft-js';
+import {EditorState, RichUtils, convertToRaw, convertFromRaw, SelectionState} from 'draft-js';
 import * as RB from 'react-bootstrap';
 import Sticky from 'react-stickynode';
+import NotificationSystem from 'react-notification-system';
 import jsonpatch from 'fast-json-patch';
 
 import Navbar from './Navbar';
@@ -14,9 +15,12 @@ import EditorUtils from './EditorUtils';
 
 
 class App extends React.Component {
+
   constructor(props) {
     super(props);
     this.state = {init: false};
+    // notification system
+    this._notificationSystem = null;
     // toolbar functions
     this.onTemperatureChange = (value) => this.setState({temperature: value});
     this.onSeqLenChange = (value) => this.setState({maxSeqLen: value});
@@ -137,11 +141,20 @@ class App extends React.Component {
 
   // editor functions
   insertHypAtCursor(hyp) {
+    const {editorState, models} = this.state;
+    let selection = editorState.getSelection();
+    if (!selection.isCollapsed()) {
+      selection = new SelectionState(
+	{anchorKey: selection.getAnchorKey(),
+	 anchorOffset: selection.getEndOffset(),
+	 focusKey: selection.getAnchorKey(),
+	 focusOffset: selection.getEndOffset()}
+      );
+    }
     const {eos, bos, par, text, score, generation_id, model} = hyp;
-    const modelData = Utils.getModelData(this.state.models, model);
-    const {editorState} = this.state;
+    const modelData = Utils.getModelData(models, model);
     const contentStateWithHyp = EditorUtils.insertGeneratedText(
-      editorState, text, {score: score, source: text, model: modelData});
+      editorState, text, {score: score, source: text, model: modelData}, selection);
     const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
     const newEditorState = EditorState.push(
       editorState, contentStateWithHyp, 'insert-characters');
@@ -230,6 +243,7 @@ class App extends React.Component {
       return (
 	<div>
 	  <Navbar username={this.state.username}/>
+	  <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
 	  <RB.Grid fluid={true}>
 	    <RB.Row>
 	      <RB.Col lg={2} md={2} sm={1}></RB.Col>
