@@ -20,13 +20,13 @@ class Navbar extends React.Component {
 	  </RB.Navbar.Brand>
 	  <RB.Navbar.Toggle/>
 	</RB.Navbar.Header>
-	<RB.Collapse>
+	<RB.Navbar.Collapse>
 	  <RB.Nav className="pull-right">
 	    <RB.NavItem eventKey={1} href="logout">
 	      <i className="fa fa-sign-out" style={{"fontSize": "25px"}}/>
 	    </RB.NavItem>
 	  </RB.Nav>
-	</RB.Collapse>
+	</RB.Navbar.Collapse>
       </RB.Navbar>
     );
   }

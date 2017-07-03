@@ -12,6 +12,23 @@ from .models import User, Text, Edit, Generation
 from .forms import LoginForm, RegisterForm
 
 
+def _standardize_seed():
+    VOCAB = "\n !%&'()*+,-./0123456789:;=?ABCDEFGHIJKLMNOPQRSTUVWXYZ[]_abcdefghijklmnopqrstuvwxyzÁÅÇÈÉËÍÓÖÜàáâãäåçèéêëìíîïñòóôöøùúûü…⁄"
+    HYPHENS = '-–‐—−‑‒', '-'
+    QUOTES = "'′’”\"‚“„ʼ`ʻ‟«¨'´»‘˝″", "'"
+    SPACES = "\x94\x92\x9a\x96\u200b\x9c\x8e\x9d\x9e\x88", " "
+    STARS = "∗✷★", "*"
+    LIGATURES = 'ﬁ', 'fi'
+    GARBAGE = '�•·€¬©™', ''
+    MAPPINGS = HYPHENS, QUOTES, SPACES, STARS, LIGATURES, GARBAGE
+    CHAR_MAPPINGS = {c: r for chars, r in MAPPINGS for c in chars}
+    replacer = str.maketrans(CHAR_MAPPINGS)
+    return lambda seed: ''.join(c for c in seed.translate(replacer) if c in VOCAB)
+
+
+standardize_seed = _standardize_seed()
+
+
 def get_colors():
     def format_color(r, g, b):
         return {'r': r,
@@ -169,6 +186,8 @@ def generate():
     model = flask.request.json['model_path']
     app.synthesizer.load(model_names=(model,))  # maybe load model
     seed = flask.request.json["selection"]
+    if seed:
+        seed = standardize_seed(seed)
     temperature = float(flask.request.json['temperature'])
     max_seq_len = int(flask.request.json['max_seq_len'])
     try:

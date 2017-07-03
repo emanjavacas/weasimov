@@ -11,7 +11,6 @@ const Spacer = (props) => <div className="row" style={{height: props.height}}></
 function NBSP(props) {
   let nbsp = '&nbsp;';
   for (var i=0; i<props.size; i++) nbsp = nbsp + '&nbsp;';
-  console.log(nbsp);
   return <span dangerouslySetInnerHTML={{__html: nbsp}}></span>;
 }
 
