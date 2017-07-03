@@ -3,6 +3,7 @@
 import os
 import math
 import functools
+import nltk.data
 
 from seqmod.utils import load_model
 
@@ -29,6 +30,41 @@ def detokenizer(s):
     if s.startswith(' '):
         result = ' ' + result
     return result
+
+
+VOCAB = "\n !%&'()*+,-./0123456789:;=?ABCDEFGHIJKLMNOPQRSTUVWXYZ[]_abcdefghijklmnopqrstuvwxyzÁÅÇÈÉËÍÓÖÜàáâãäåçèéêëìíîïñòóôöøùúûü…⁄"
+HYPHENS = '-–‐—−‑‒', '-'
+QUOTES = "'′’”\"‚“„ʼ`ʻ‟«¨'´»‘˝″", "'"
+SPACES = "\x94\x92\x9a\x96\u200b\x9c\x8e\x9d\x9e\x88", " "
+STARS = "∗✷★", "*"
+LIGATURES = 'ﬁ', 'fi'
+GARBAGE = '�•·€¬©™', ''
+MAPPINGS = HYPHENS, QUOTES, SPACES, STARS, LIGATURES, GARBAGE
+CHAR_MAPPINGS = {c: r for chars, r in MAPPINGS for c in chars}
+REPLACER = str.maketrans(CHAR_MAPPINGS)
+
+
+def standardize_seed(seed):
+    return ''.join(c for c in seed.translate(REPLACER) if c in VOCAB)
+
+
+def format_seed(seed, artificial_break='<Art-break>'):
+    _seed = f'{seed} {artificial_break}'  # TODO BOS
+    seed_with_final_stop = False
+    sents = nltk.sent_tokenize(_seed, language='dutch')
+    if sents[-1].strip() == artificial_break:
+        seed_with_final_stop = True
+        sents = sents[:-1]
+    else:
+        sents[-1] = sents[-1].replace(f' {artificial_break}', '')
+    output = []
+    for sent in sents[:-1]:
+        output += ['<bos>'] + list(sent.strip()) + ['<eos>']
+    if seed_with_final_stop:
+        output += ['<bos>'] + list(sents[-1].strip()) + ['<eos>']
+    else:
+        output += ['<bos>'] + list(sents[-1].strip())
+    return output
 
 
 class Synthesizer(object):
@@ -143,6 +179,7 @@ class Synthesizer(object):
             except:
                 print("Couldn't load default seed")
             ignore_eos = True
+        seed_texts = [format_seed(standardize_seed(s)) for s in seed_texts]
 
         def normalize_hyp(hyp):
             bos, eos, par, found = [], [], [], 0
