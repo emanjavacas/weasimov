@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import {EditorState, RichUtils, convertToRaw, convertFromRaw, SelectionState} from 'draft-js';
 import * as RB from 'react-bootstrap';
 import Sticky from 'react-stickynode';
+import NotificationSystem from 'react-notification-system';
 import jsonpatch from 'fast-json-patch';
 
 import Navbar from './Navbar';
@@ -14,9 +15,12 @@ import EditorUtils from './EditorUtils';
 
 
 class App extends React.Component {
+
   constructor(props) {
     super(props);
     this.state = {init: false};
+    // notification system
+    this._notificationSystem = null;
     // toolbar functions
     this.onTemperatureChange = (value) => this.setState({temperature: value});
     this.onSeqLenChange = (value) => this.setState({maxSeqLen: value});
@@ -239,6 +243,7 @@ class App extends React.Component {
       return (
 	<div>
 	  <Navbar username={this.state.username}/>
+	  <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
 	  <RB.Grid fluid={true}>
 	    <RB.Row>
 	      <RB.Col lg={2} md={2} sm={1}></RB.Col>
