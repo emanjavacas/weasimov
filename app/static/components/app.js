@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {EditorState, RichUtils, convertToRaw, convertFromRaw} from 'draft-js';
+import {EditorState, RichUtils, convertToRaw, convertFromRaw, SelectionState} from 'draft-js';
 import * as RB from 'react-bootstrap';
 import Sticky from 'react-stickynode';
 import jsonpatch from 'fast-json-patch';
@@ -137,11 +137,20 @@ class App extends React.Component {
 
   // editor functions
   insertHypAtCursor(hyp) {
+    const {editorState, models} = this.state;
+    let selection = editorState.getSelection();
+    if (!selection.isCollapsed()) {
+      selection = new SelectionState(
+	{anchorKey: selection.getAnchorKey(),
+	 anchorOffset: selection.getEndOffset(),
+	 focusKey: selection.getAnchorKey(),
+	 focusOffset: selection.getEndOffset()}
+      );
+    }
     const {eos, bos, par, text, score, generation_id, model} = hyp;
-    const modelData = Utils.getModelData(this.state.models, model);
-    const {editorState} = this.state;
+    const modelData = Utils.getModelData(models, model);
     const contentStateWithHyp = EditorUtils.insertGeneratedText(
-      editorState, text, {score: score, source: text, model: modelData});
+      editorState, text, {score: score, source: text, model: modelData}, selection);
     const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
     const newEditorState = EditorState.push(
       editorState, contentStateWithHyp, 'insert-characters');

@@ -36,11 +36,11 @@ function findHyps(contentBlock, callback, contentState) {
 };
 
 
-function insertGeneratedText(editorState, text, data) {
+function insertGeneratedText(editorState, text, data, newSelection) {
   data['contiguous'] = false;	// HYP entities are not contiguous
   data['skips'] = 0;
   data['prevText'] = null;
-  const selection = editorState.getSelection();
+  const selection = newSelection || editorState.getSelection();
   const currentContent = editorState.getCurrentContent().createEntity('HYP', 'MUTABLE', data);
   const entityKey = currentContent.getLastCreatedEntityKey();
   return Modifier.insertText(currentContent, selection, text, null, entityKey);
