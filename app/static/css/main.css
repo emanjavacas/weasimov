@@ -78,6 +78,15 @@ li.list-group-hover.list-group-item:hover {
   }
 }
 
+.suggestions-panel .seed {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    position: absolute;
+    left: 7%;
+    width: 77%;
+    overflow: hidden;
+}
+
 /* Suggestion dismiss transition */
 .dismiss-enter {
   opacity: 0.01;
