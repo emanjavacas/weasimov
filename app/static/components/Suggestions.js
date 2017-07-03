@@ -45,18 +45,34 @@ class HypItem extends React.Component {
 
 
 function Separator(props) {
+	const {r,g,b} = props.modelData.color;
   return (
     <RB.ListGroupItem>
-      <span>Separator</span>
+			<RB.Table style={{marginBottom: "0"}}>
+			<tbody>
+				<tr>
+					<td>
+			<RB.Button disabled style={{cursor: "default", padding: "10px 15px 0px 15px", backgroundColor:`rgba(${r},${g},${b}, 0.5)`}}>
+				<span><p>{Utils.getInitials(props.modelData.modelName)}</p></span>
+		  </RB.Button>
+				</td>
+					<td style={{padding:"20px 0 0 0"}}>
+						<p style={{color:"grey",fontSize:"14px"}}>
+							{Utils.shortenSeed(props.seed, 70)},
+						</p>
+					</td>
+				</tr>
+				</tbody>
+				</RB.Table>
     </RB.ListGroupItem>);
 }
-
 
 function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
   let hypItems = [];
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
-    const {r, g, b} = Utils.getModelData(models, hyp.model).color;
+    const modelData = Utils.getModelData(models, hyp.model);
+		const {r,g,b} = modelData.color
     if (!hyp.isSeparator) {
       hypItems.push(
 	<HypItem
@@ -67,7 +83,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
 	   onHypDismiss={onHypDismiss}/>
       );
     } else {
-      hypItems.push(<Separator key={i} seed={hyp.seed} model={hyp.model}/>);
+			hypItems.push(<Separator key={i} seed={hyp.seed} modelData={modelData} />);
     }
   }
   return hypItems;
