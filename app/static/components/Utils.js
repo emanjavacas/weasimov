@@ -128,6 +128,22 @@ function init(success, error) {
   });
 }
 
+/* Turn model author names into their initials */
+
+function getInitials(name) {
+  let names = name.split(" "), title = "";
+  for (var n=0; n<names.length; n++) {
+    title += names[n][0];
+  }
+  return title;
+}
+
+function shortenSeed(seed, n){
+  if (seed.length > 40) {
+    var seed = seed.substring(-1, n); + " ...";
+  }
+  return (seed)
+}
 
 const Utils = {
   Spinner: Spinner,
@@ -140,7 +156,9 @@ const Utils = {
   saveDoc: saveDoc,
   saveSuggestion: saveSuggestion,
   saveSession: saveSession,
-  init: init
+  init: init,
+  getInitials: getInitials,
+  shortenSeed: shortenSeed
 };
 
 export default Utils;

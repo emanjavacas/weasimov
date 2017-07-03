@@ -2,15 +2,7 @@ import React from 'react';
 import ReactDom from 'react-dom';
 import * as RB  from 'react-bootstrap';
 import Slider from 'rc-slider';
-
-
-function getInitials(name) {
-  let names = name.split(" "), title = "";
-  for (var n=0; n<names.length; n++) {
-    title += names[n][0];
-  }
-  return title;
-}
+import Utils from './Utils';
 
 
 function makeButtons(models, onClick) {
@@ -20,7 +12,7 @@ function makeButtons(models, onClick) {
 
     let overlay, title;
     if (model.modelName) {
-      title = getInitials(model.modelName);
+      title = Utils.getInitials(model.modelName);
       overlay = model.modelName;
     } else {
       title = "Unk";
