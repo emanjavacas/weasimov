@@ -31,6 +31,7 @@ function timestamp() { return Date.now() / 1000; }
 function getInitials(name) {
   let title = "Unk";
   if (name) {
+    title = "";
     let names = name.split(" ");
     for (var n=0; n<names.length; n++) title += names[n][0];
   }
