@@ -122,7 +122,6 @@ class RegenerateButton extends React.Component {
 class SuggestionList extends React.Component {
 
 	scrollUp() {
-		console.log("refocus");
 		ReactDOM.findDOMNode(this).scrollTop = 0;
 	}		
 
