@@ -24,8 +24,24 @@ function getModelData(models, modelName) {
 };
 
 
-function timestamp() {
-  return Date.now() / 1000;
+function timestamp() { return Date.now() / 1000; }
+
+
+/* Turn model author names into their initials */
+function getInitials(name) {
+  let title = "Unk";
+  if (name) {
+    let names = name.split(" ");
+    for (var n=0; n<names.length; n++) title += names[n][0];
+  }
+  return title;
+}
+
+function shortenSeed(seed, n){
+  if (seed.length > 40) {
+    return seed.substring(-1, n) + " ...";
+  }
+  return seed;
 }
 
 
@@ -128,37 +144,23 @@ function init(success, error) {
   });
 }
 
-/* Turn model author names into their initials */
-
-function getInitials(name) {
-  let names = name.split(" "), title = "";
-  for (var n=0; n<names.length; n++) {
-    title += names[n][0];
-  }
-  return title;
-}
-
-function shortenSeed(seed, n){
-  if (seed.length > 40) {
-    var seed = seed.substring(-1, n); + " ...";
-  }
-  return (seed)
-}
-
 const Utils = {
+  // components
   Spinner: Spinner,
   Spacer: Spacer,
   NBSP: NBSP,
+  // utility functions
   getModelData: getModelData,
   timestamp: timestamp,
+  getInitials: getInitials,
+  shortenSeed: shortenSeed,
+  // ajax
   launchGeneration: launchGeneration,
   saveChange: saveChange,
   saveDoc: saveDoc,
   saveSuggestion: saveSuggestion,
   saveSession: saveSession,
-  init: init,
-  getInitials: getInitials,
-  shortenSeed: shortenSeed
+  init: init
 };
 
 export default Utils;

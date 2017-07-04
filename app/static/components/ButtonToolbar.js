@@ -9,15 +9,8 @@ function makeButtons(models, onClick) {
   let buttons = [];
   for (var i=0; i<models.length; i++) {
     const model = models[i];
-
-    let overlay, title;
-    if (model.modelName) {
-      title = Utils.getInitials(model.modelName);
-      overlay = model.modelName;
-    } else {
-      title = "Unk";
-      overlay = model.path;
-    }
+    const title = Utils.getInitials(model.modelName);
+    const overlay = model.modelName ? model.modelName : model.path;
 
     const borderWidth = model.loaded ? "1.5px" : "0.5px";
     const {r, g, b} = model.color;

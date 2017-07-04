@@ -45,25 +45,28 @@ class HypItem extends React.Component {
 
 
 function Separator(props) {
-	const {r,g,b} = props.modelData.color;
+  const {r,g,b} = props.modelData.color;
+  const style = {cursor: "default",
+           	 padding: "10px 15px 0px 15px",
+		 backgroundColor:`rgba(${r},${g},${b}, 0.5)`};
   return (
     <RB.ListGroupItem>
-			<RB.Table style={{marginBottom: "0"}}>
-			<tbody>
-				<tr>
-					<td>
-			<RB.Button disabled style={{cursor: "default", padding: "10px 15px 0px 15px", backgroundColor:`rgba(${r},${g},${b}, 0.5)`}}>
-				<span><p>{Utils.getInitials(props.modelData.modelName)}</p></span>
-		  </RB.Button>
-				</td>
-					<td style={{padding:"20px 0 0 0"}}>
-						<p style={{color:"grey",fontSize:"14px"}}>
-							{Utils.shortenSeed(props.seed, 70)},
-						</p>
-					</td>
-				</tr>
-				</tbody>
-				</RB.Table>
+      <RB.Table style={{marginBottom: "0"}}>
+	<tbody>
+	  <tr>
+	    <td>
+	      <RB.Button disabled style={style}>
+		<span><p>{Utils.getInitials(props.modelData.modelName)}</p></span>
+	      </RB.Button>
+	    </td>
+	    <td style={{padding:"20px 0 0 0"}}>
+	      <p style={{color:"grey",fontSize:"14px"}}>
+		{Utils.shortenSeed(props.seed, 70)}
+              </p>
+	    </td>
+	  </tr>
+	</tbody>
+      </RB.Table>
     </RB.ListGroupItem>);
 }
 
@@ -72,7 +75,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
     const modelData = Utils.getModelData(models, hyp.model);
-		const {r,g,b} = modelData.color
+    const {r,g,b} = modelData.color;
     if (!hyp.isSeparator) {
       hypItems.push(
 	<HypItem
@@ -83,7 +86,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
 	   onHypDismiss={onHypDismiss}/>
       );
     } else {
-			hypItems.push(<Separator key={i} seed={hyp.seed} modelData={modelData} />);
+      hypItems.push(<Separator key={i} seed={hyp.seed} modelData={modelData} />);
     }
   }
   return hypItems;
