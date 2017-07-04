@@ -71,12 +71,12 @@ function Separator(props) {
 }
 
 function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
-  let hypItems = [], lastSeed;
+  let hypItems = [], lastSeed = null;
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
     const modelData = Utils.getModelData(models, hyp.model);
     const {r,g,b} = modelData.color;
-    if (!lastSeed || hyp.seed != lastSeed) {
+    if (hyp.seed != lastSeed) {
       hypItems.push(<Separator key={i} seed={hyp.seed} modelData={modelData}/>);
       lastSeed = hyp.seed;
     }
