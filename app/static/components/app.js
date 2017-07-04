@@ -101,8 +101,8 @@ class App extends React.Component {
 
   // generation functions
   onGenerationSuccess(response) {
-    const separator = [{seed: response.seed, isSeparator: true,	model: response.model}];
-    const incomingHyps = separator.concat(response.hyps);
+    // append seed for convenience
+    const incomingHyps = response.hyps.map((hyp) => Object.assign(hyp, {'seed': response.seed}));
     this.setState(
       {hyps: incomingHyps.concat(this.state.hyps),
        lastSeed: response.seed,

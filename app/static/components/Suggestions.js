@@ -71,23 +71,23 @@ function Separator(props) {
 }
 
 function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
-  let hypItems = [];
+  let hypItems = [], lastSeed;
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
     const modelData = Utils.getModelData(models, hyp.model);
     const {r,g,b} = modelData.color;
-    if (!hyp.isSeparator) {
-      hypItems.push(
-	<HypItem
-	   key={hyp.generation_id}
-	   hyp={hyp}
-	   backgroundColor={`rgba(${r},${g},${b}, 0.5)`}
-	   onHypSelect={onHypSelect}
-	   onHypDismiss={onHypDismiss}/>
-      );
-    } else {
-      hypItems.push(<Separator key={i} seed={hyp.seed} modelData={modelData} />);
+    if (!lastSeed || hyp.seed != lastSeed) {
+      hypItems.push(<Separator key={i} seed={hyp.seed} modelData={modelData}/>);
+      lastSeed = hyp.seed;
     }
+    hypItems.push(
+      <HypItem
+	 key={hyp.generation_id}
+	 hyp={hyp}
+	 backgroundColor={`rgba(${r},${g},${b}, 0.5)`}
+	 onHypSelect={onHypSelect}
+	 onHypDismiss={onHypDismiss}/>
+    );
   }
   return hypItems;
 }
