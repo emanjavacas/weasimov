@@ -135,6 +135,20 @@ class App extends React.Component {
       seed = seed.substring(
         Math.max(selection.focusOffset - 200, 0), selection.focusOffset);
     }
+    if (seed.trim().length == 0) {
+      const startKey = currentContent.getFirstBlock().getKey();
+      let endKey = selection.getEndKey();
+      if (currentContent.getKeyAfter(endKey)) {
+        endKey = currentContent.getKeyAfter(endKey);
+      }
+      seed = currentContent.getBlockMap()
+        .takeUntil((block) => block.getKey() === endKey)
+          .map((block) => {
+            if (block) {
+              return block.getText();
+            }
+          }).join('\n');
+    }
     if (seed.length > 200) {
       seed = seed.substring(seed.length - 200);
     }
