@@ -130,8 +130,13 @@ class App extends React.Component {
     const selection = editorState.getSelection();
     let seed = EditorUtils.getTextSelection(currentContent, selection);
     if (seed.trim().length == 0) {
-      seed = currentContent.getPlainText('\n');
-      if (seed.length > 200) seed = seed.substring(seed.length - 200);
+      let focusBlock = currentContent.getBlockForKey(selection.anchorKey);
+      seed = focusBlock.getText();
+      seed = seed.substring(
+        Math.max(selection.focusOffset - 200, 0), selection.focusOffset);
+    }
+    if (seed.length > 200) {
+      seed = seed.substring(seed.length - 200);
     }
     this.launchGeneration(seed, model);
   }
