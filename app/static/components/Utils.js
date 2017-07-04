@@ -40,7 +40,7 @@ function getInitials(name) {
 
 function shortenSeed(seed, n){
   if (seed.length > 40) {
-    return seed.substring(-1, n) + " ...";
+    return " ..." + seed.substring(seed.length - n);
   }
   return seed;
 }
