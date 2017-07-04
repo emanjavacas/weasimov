@@ -110,7 +110,6 @@ class App extends React.Component {
        loadingHyps: false,
        hasHadHyps: true});
     this.toggleSuggestions(false);
-    console.log(this.refs);
     this.refs.suggestions.refs.suggestionlist.scrollUp();
   }
 
