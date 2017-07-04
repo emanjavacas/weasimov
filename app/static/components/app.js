@@ -110,6 +110,8 @@ class App extends React.Component {
        loadingHyps: false,
        hasHadHyps: true});
     this.toggleSuggestions(false);
+    console.log(this.refs);
+    this.refs.suggestions.refs.suggestionlist.scrollUp();
   }
 
   onGenerationError(error) {
@@ -278,6 +280,7 @@ class App extends React.Component {
 
 		<RB.Row>
     		  <Suggestions
+             ref="suggestions"
     		     hyps={this.state.hyps}
 		     models={this.state.models}
 		     isCollapsed={this.state.suggestionsCollapsed}
