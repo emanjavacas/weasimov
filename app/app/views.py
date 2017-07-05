@@ -3,7 +3,7 @@ from datetime import datetime
 import uuid
 import itertools
 
-from palettable.colorbrewer.qualitative import Set3_12
+from palettable.colorbrewer.qualitative import Pastel2_8
 import flask
 import flask_login
 from sqlalchemy import desc
@@ -19,7 +19,7 @@ def get_colors():
                 'g': g,
                 'b': b,
                 'a': 1}
-    return (format_color(*c) for c in Set3_12.colors)
+    return (format_color(*c) for c in Pastel2_8.colors)
 
 
 def format_models():
