@@ -293,7 +293,7 @@ class App extends React.Component {
 		     onTab={this.onTab}
 		     toggleInlineStyle={this.toggleInlineStyle}
 		     handleBeforeInput={this.handleBeforeInput}/>
-		  <Utils.Spacer height="50px"/>
+		  <Utils.Spacer height="250px"/>
 		</RB.Row>
 
 		<RB.Row>
