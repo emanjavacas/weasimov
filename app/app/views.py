@@ -67,8 +67,9 @@ def register():
     if form.validate_on_submit() and form.validate_fields():
         user = User(username=form.username.data,
                     password=form.password.data)
-        doc = Doc(user_id=user.id)
         db.session.add(user)
+        db.session.flush()
+        doc = Doc(user_id=user.id)
         db.session.add(doc)
         db.session.commit()
         return flask.redirect(flask.url_for('login'))
@@ -120,7 +121,8 @@ def init():
     user_id = int(flask_login.current_user.id)
     user = User.query.get(user_id)
     docs = get_user_docs(user_id).all()
-    text = get_last_text(user_id, docs[0].id)
+    doc_id = docs[0].id
+    text = get_last_text(user_id, doc_id)
     payload = {
         # app state data
         "username": user.username,
@@ -129,7 +131,8 @@ def init():
         "temperature": get_session_value("temperature", user.session),
         "maxSeqLen": get_session_value("max_seq_len", user.session),
         # docs
-        "docs": docs,
+        "docs": [doc.as_json() for doc in docs],
+        "docId": doc_id,
         # last editor state
         "contentState": text.text if text is not None else None}
     return flask.jsonify(status="OK", session=payload)
@@ -144,7 +147,8 @@ def fetchdoc():
     user_id = int(flask_login.current_user.id)
     doc = get_user_docs(user_id, doc_id=flask.request.json['doc_id']).first()
     text = get_last_text(user_id, doc.id)
-    return flask.jsonify(status='OK', doc=doc, text=text)
+    text = text.text if text is not None else None
+    return flask.jsonify(status='OK', doc=doc.as_json(), contentState=text)
 
 
 @app.route('/savechange', methods=['POST'])
@@ -167,18 +171,7 @@ def savechange():
     doc.last_modified = timestamp
     db.session.add(edit)
     db.session.commit()
-    return flask.jsonify(status='OK', message='Changes saved.')
-
-
-@app.route('/editdocname')
-@flask_login.login_required
-def editdocname():
-    data = flask.request.json
-    doc = Doc.query.get(data['doc_id'])
-    doc.last_modified = datetime.fromtimestamp(data['timestamp'])
-    doc.screen_name = data['screen_name']
-    db.session.commit()
-    return flask.jsonify(status='OK', message='Name changed.')
+    return flask.jsonify(status='OK')
 
 
 @app.route('/savesuggestion', methods=['POST'])
@@ -197,13 +190,13 @@ def savesuggestion():
     timestamp = datetime.fromtimestamp(data['timestamp'])
     generation = Generation.query.filter_by(generation_id=generation_id)
     generation.action_doc_id = data['doc_id']
-    if data['selected'] is True:
+    if data.get('selected'):
         # TODO: check if user is allowed to modify based on doc_id?
         # TODO: check if doc is active
         generation.selected = True
         generation.selected_timestamp = timestamp
         generation.draft_entity_id = data['draft_entity_id']
-    if data['dismissed'] is True:
+    if data.get('dismissed'):
         generation.dismissed = True
         generation.dismissed_timestamp = timestamp
     db.session.commit()
@@ -227,7 +220,7 @@ def createdoc():
               last_modified=timestamp)
     db.session.add(doc)
     db.session.commit()
-    return flask.jsonify(status='OK', doc=doc)
+    return flask.jsonify(status='OK', doc=doc.as_json())
 
 
 @app.route('/savedoc', methods=['POST'])
@@ -263,6 +256,17 @@ def removedoc():
     doc.active = False
     db.session.commit()
     return flask.jsonify(status='OK', message='Document deleted.')
+
+
+@app.route('/editdocname')
+@flask_login.login_required
+def editdocname():
+    data = flask.request.json
+    doc = Doc.query.get(data['doc_id'])
+    doc.last_modified = datetime.fromtimestamp(data['timestamp'])
+    doc.screen_name = data['screen_name']
+    db.session.commit()
+    return flask.jsonify(status='OK', message='Name changed.')
 
 
 @app.route('/savesession', methods=['POST'])
@@ -313,7 +317,7 @@ def generate():
                     seed_doc_id=seed_doc_id,
                     model=model,
                     seed=seed or '',
-                    temp=temperature,
+                    temperature=temperature,
                     max_seq_len=max_seq_len,
                     text=hyp['text'],
                     timestamp=timestamp))
@@ -323,4 +327,6 @@ def generate():
         db.session.commit()
         return flask.jsonify(status='OK', hyps=hyps, seed=seed, model=model)
     except Exception as e:
+        if app.debug is True:
+            raise e
         return flask.jsonify(status='Error', message=str(e)), 500

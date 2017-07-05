@@ -6,28 +6,78 @@ import * as RB from 'react-bootstrap';
 import Utils from './Utils';
 
 
+function DocItem(props) {
+  return (
+    <RB.MenuItem
+       eventKey={props.doc.id}
+       active={props.doc.id === props.activeDoc}
+       onClick={() => props.onClick(props.doc.id)}>
+      {props.doc.screen_name}
+    </RB.MenuItem>
+  );
+}
+
+
+class ScreenNameInput extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      inputState: props.screenName,
+      editing: false
+    };
+  }
+
+  render() {
+    return (
+      <RB.NavItem>
+	{this.props.screenName}
+      </RB.NavItem>
+    );
+  }
+}
+
+
 class Navbar extends React.Component {
   render() {
     return (
         <RB.Navbar>
-	<RB.Navbar.Header>
-	  <RB.Navbar.Brand>
-            <a href="#">Ik, Asimov</a>
-	    <span>
-	      <Utils.NBSP size={10}/>
-	      <small>{this.props.username || "loading"}</small>
-	    </span>
-	  </RB.Navbar.Brand>
-	  <RB.Navbar.Toggle/>
-	</RB.Navbar.Header>
-	<RB.Navbar.Collapse>
-	  <RB.Nav className="pull-right">
-	    <RB.NavItem eventKey={1} href="logout">
-	      <i className="fa fa-sign-out" style={{"fontSize": "25px"}}/>
-	    </RB.NavItem>
-	  </RB.Nav>
-	</RB.Navbar.Collapse>
-      </RB.Navbar>
+	  <RB.Navbar.Header>
+	    <RB.Navbar.Brand>
+              <a href="#">AsiBot</a>
+	    </RB.Navbar.Brand>
+	    <RB.Navbar.Toggle/>
+	  </RB.Navbar.Header>
+	  <RB.Navbar.Collapse>
+	    <RB.Nav>
+	      <RB.NavItem>
+		  {this.props.username || "loading"}
+	      </RB.NavItem>
+	      <ScreenNameInput
+		 screenName={this.props.docs[this.props.activeDoc].screen_name}
+		 onSubmit={this.props.onNewScreenName}/>
+	    </RB.Nav>
+	    <RB.Nav className="pull-right">
+	      <RB.NavDropdown title="Documents" id="nav-dropdown" style={{zIndex: 10000}}>
+		{Object.keys(this.props.docs).map((key) => {
+		  return (
+		    <DocItem
+		       key={key}
+		       doc={this.props.docs[key]}
+		       activeDoc={this.props.activeDoc}
+		       onClick={this.props.onSelectDoc}>
+		    </DocItem>
+		  );
+		})}
+              </RB.NavDropdown>
+             <RB.NavItem eventKey={2} onClick={this.props.onNewDoc}>
+               <i className="fa fa-plus-square" style={{fontSize: "20px"}}/>
+             </RB.NavItem>
+	     <RB.NavItem eventKey={3} href="logout">
+	       <i className="fa fa-sign-out" style={{fontSize: "20px"}}/>
+	     </RB.NavItem>
+	   </RB.Nav>
+	 </RB.Navbar.Collapse>
+       </RB.Navbar>
     );
   }
 }

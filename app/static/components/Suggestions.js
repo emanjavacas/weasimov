@@ -74,9 +74,10 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
   let hypItems = [], lastSeed = null;
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
-    const {r,g,b} = hyp.modelData.color;
+    const modelData = Utils.getModelData(models, hyp.model);
+    const {r,g,b} = modelData.color;
     if (hyp.seed != lastSeed) {
-      hypItems.push(<Separator key={i} seed={hyp.seed} modelData={hyp.modelData}/>);
+      hypItems.push(<Separator key={i} seed={hyp.seed} modelData={modelData}/>);
       lastSeed = hyp.seed;
     }
     hypItems.push(

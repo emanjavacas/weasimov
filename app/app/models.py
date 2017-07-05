@@ -1,5 +1,7 @@
+
 import datetime
 import json
+
 from app import db
 
 
@@ -25,11 +27,13 @@ class User(db.Model):
     username: str, username
     password: str, password
     session: json, {'max_seq_len': int, 'temperature': float}
+    timestamp: DateTime, time when user joined
     """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True)
     password = db.Column(db.String(64), unique=False)
     session = db.Column(JSONEncodedDict)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     def is_authenticated(self):
         return True
@@ -41,7 +45,7 @@ class User(db.Model):
         return False
 
     def get_id(self):
-        return str(self.id)
+        return self.id
 
     def __repr__(self):
         return '<User(%r)>' % self.username
@@ -56,12 +60,21 @@ class Doc(db.Model):
     active: bool, False if doc has been deleted
     screen_name: str, name to be displayed for this document
     """
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
     screen_name = db.Column(db.String, default='Untitled Document')
     active = db.Column(db.Boolean, default=True)
     last_modified = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+    def as_json(self):
+        def serialize_col(col):
+            data = getattr(self, col.name)
+            if col.name in ['last_modified', 'timestamp']:
+                return int(data.timestamp() * 1000)
+            else:
+                return data
+        return {col.name: serialize_col(col) for col in self.__table__.columns}
 
 
 class Text(db.Model):

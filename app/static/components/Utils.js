@@ -214,8 +214,8 @@ function saveSuggestion(generationId, docId, action, draftEntityId) {
 /**
  * session: {max_seq_len, temperature}
  */
-function saveSession(state) {
-  const {temperature, maxSeqLen} = state;
+function saveSession(sessionState) {
+  const {temperature, maxSeqLen} = sessionState;
   const session = {"temperature": temperature, "max_seq_len": maxSeqLen};
   $.ajax({
     contentType: 'application/json;charset=UTF-8',
@@ -256,6 +256,28 @@ function normalizeDocs(docs) {
 }
 
 
+function newDocState(docId, editorState) {
+  editorState = editorState || null;
+  return {
+    docId: docId,	      // docId of the editorState
+    editorState: editorState, // actual editor state, it will be null if not loaded yet
+    lastEditorState: null,    // last editor state for the doc
+    loading: false	      // fetching doc state?
+  };
+}
+
+
+function normalizeEditorState(currentDocId, docIds, currentEditorState) {
+  const editorStates = docIds.map((docId) => {
+    return newDocState(
+      docId,
+      (docId === currentDocId) ? currentEditorState : null
+    );
+  });
+  return _arrayToObject(editorStates, "docId");
+}
+
+
 const Utils = {
   // components
   Spinner: Spinner,
@@ -266,6 +288,7 @@ const Utils = {
   timestamp: timestamp,
   getInitials: getInitials,
   shortenSeed: shortenSeed,
+  newDocState: newDocState,
   // ajax
   launchGeneration: launchGeneration,
   saveChange: saveChange,
@@ -275,7 +298,8 @@ const Utils = {
   saveSession: saveSession,
   init: init,
   // normalizers
-  normalizeDocs: normalizeDocs
+  normalizeDocs: normalizeDocs,
+  normalizeEditorState: normalizeEditorState
 };
 
 export default Utils;

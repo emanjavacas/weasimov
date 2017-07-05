@@ -16,6 +16,10 @@ li.list-group-hover.list-group-item:hover {
   background-color: #fff
 }
 
+.dropdown-menu>.active>a, .dropdown-menu>.active>a:hover .dropdown-menu>.active>a:focus {
+  background-color: #777;
+}
+
 /* Generate Panel */
 .generate-panel  {
   border-left: none;

@@ -24,14 +24,25 @@ class App extends React.Component {
     // toolbar functions
     this.onTemperatureChange = (value) => this.setState({temperature: value});
     this.onSeqLenChange = (value) => this.setState({maxSeqLen: value});
+    // docs
+    this.loadDoc = this.loadDoc.bind(this);
+    this.onLoadDocSuccess = this.onLoadDocSuccess.bind(this);
+    this.onLoadDocError = this.onLoadDocError.bind(this);
+    this.createDoc = this.createDoc.bind(this);
+    this.onCreateDocSuccess = this.onCreateDocSuccess.bind(this);
+    this.onCreateDocError = this.onCreateDocError.bind(this);
+    this.onNewDoc = this.onNewDoc.bind(this);
+    this.selectDoc = this.selectDoc.bind(this);
+    this.getDocState = this.getDocState.bind(this);
+    this.setDocState = this.setDocState.bind(this);
     // editor functions
     this.insertHypAtCursor = this.insertHypAtCursor.bind(this);
     this.onEditorChange = this.onEditorChange.bind(this);
-    //suggestions
+    // suggestions
     this.dismissHyp = this.dismissHyp.bind(this);
     this.resetHyps = () => this.setState({hyps: []});
     this.toggleSuggestions = this.toggleSuggestions.bind(this);
-    // Editor
+    // editor
     this.handleKeyCommand = (command) => this._handleKeyCommand(command);
     this.onTab = (e) => this._onTab(e);
     this.toggleInlineStyle = (style) => this._toggleInlineStyle(style);
@@ -44,19 +55,19 @@ class App extends React.Component {
     this.regenerate = this.regenerate.bind(this);
     // saving functions
     this.onInit = this.onInit.bind(this);
-    this.saveInterval = this.saveInterval.bind(this);
-    this.saveUnload = this.saveUnload.bind(this);
+    this.saveOnInterval = this.saveOnInterval.bind(this);
+    this.saveOnUnload = this.saveOnUnload.bind(this);
   }
 
   componentDidMount() {
     // init session
     Utils.init(this.onInit, (error) => console.log("Error"));
     // add unload event
-    window.addEventListener("beforeunload", this.saveUnload);
+    window.addEventListener("beforeunload", this.saveOnUnload);
   }
 
   componentWillUnmount() {
-    window.removeEventListener("beforeunload", this.saveUnload);
+    window.removeEventListener("beforeunload", this.saveOnUnload);
   }
 
   // server interaction
@@ -67,12 +78,15 @@ class App extends React.Component {
       username: session.username,
       models: session.models,
       docs: Utils.normalizeDocs(session.docs),
-      docId: session.docs[0].id,
+      docId: session.docId,
       // editor state
-      editorState: session.contentState ?
-	EditorState.createWithContent(
-	  convertFromRaw(session.contentState), EditorUtils.hypDecorator) :
-	EditorState.createEmpty(EditorUtils.hypDecorator),
+      editorStates: Utils.normalizeEditorState(
+	session.docId,		// current docId
+	session.docs.map((doc) => doc.id), // all docIds
+	session.contentState ?		   // current doc editorState
+	  EditorState.createWithContent(
+	    convertFromRaw(session.contentState), EditorUtils.hypDecorator) :
+	  EditorState.createEmpty(EditorUtils.hypDecorator)),
       lastEditorState: null,	// check if there were changes
       // generation variables
       temperature: session.temperature,
@@ -86,21 +100,86 @@ class App extends React.Component {
       hasHadHyps: false
     });
     // set interval
-    this.saveIntervalId = setInterval(this.saveInterval, 25000);
+    this.saveOnIntervalId = setInterval(this.saveOnInterval, 25000);
   }
 
-  saveInterval() {
-    if (this.state.editorState !== this.state.lastEditorState) {
-      const text = convertToRaw(this.state.editorState.getCurrentContent());
+  setDocState(field, data) { // TODO: move active editorState to currentEditorState for performance
+    this.setState({
+      editorStates: {
+	...this.state.editorStates,
+	[this.state.docId]: {
+	  ...this.state.editorStates[this.state.docId],
+	  [field]: data
+	}
+      }
+    });
+  }
+
+  saveOnInterval() {
+    const {editorState, lastEditorState} = this.getDocState();
+    if (!lastEditorState || editorState.getCurrentContent() !== lastEditorState.getCurrentContent()) {
+      const text = convertToRaw(editorState.getCurrentContent());
       Utils.saveDoc(text, this.state.docId);
-      this.setState({lastEditorState: this.state.editorState});
+      this.setDocState('lastEditorState', editorState);
     }
   }
 
-  saveUnload() {
-    Utils.saveSession(this.state);
-    const text = convertToRaw(this.state.editorState.getCurrentContent());
-    Utils.saveDoc(text, this.state.docId);
+  saveOnUnload() {
+    const {temperature, maxSeqLen} = this.state;
+    Utils.saveSession({temperature, maxSeqLen});
+    const {editorState, docId} = this.getDocState();
+    Utils.saveDoc(convertToRaw(editorState.getCurrentContent()), docId);
+  }
+
+  // doc
+  loadDoc(docId) {
+    Utils.fetchDoc(docId, this.onLoadDocSuccess, this.onLoadDocError);
+    this.setDocState('loading', true);
+  }
+
+  onLoadDocSuccess(response) {
+    const editorState = response.contentState ?
+	    EditorState.createWithContent() :
+	    EditorState.createEmpty(EditorUtils.hypDecorator);
+    this.setDocState('editorState', editorState);
+    this.setDocState('loading', false);
+    this.setState({docId});
+  }
+
+  onLoadDocError(error) {
+    console.log("Couldn't load document");
+  }
+
+  createDoc(screenName) {
+    Utils.createDoc(screenName, this.onCreateDocSuccess, this.onCreateDocError);
+  }
+
+  onCreateDocSuccess(response) {
+    const {editorStates, docs} = this.state;
+    docs[response.doc.id] = response.doc;
+    editorStates[response.doc.id] = Utils.newDocState(
+      response.doc.id,
+      EditorState.createEmpty(EditorUtils.hypDecorator)
+    );
+    this.setState({editorStates: editorStates, docs: docs});
+  }
+
+  onCreateDocError(response) {
+    console.log("Couldn't create document.");
+  }
+
+  onNewDoc() {
+    
+  }
+
+  selectDoc(docId) {
+    if (docId != this.state.docId) {
+      this.saveOnInterval(); this.setState({docId});
+    }
+  }
+
+  getDocState() {
+    return this.state.editorStates[this.state.docId];
   }
 
   // generation functions
@@ -134,7 +213,7 @@ class App extends React.Component {
   }
 
   generate(model) {
-    const {editorState} = this.state;
+    const {editorState} = this.getDocState();
     const currentContent = editorState.getCurrentContent();
     const selection = editorState.getSelection();
     let seed = EditorUtils.getTextSelection(currentContent, selection);
@@ -152,7 +231,8 @@ class App extends React.Component {
   // editor functions
   insertHypAtCursor(hyp) {
     // insert the hyp
-    const {editorState, models} = this.state;
+    const {editorState} = this.getDocState();
+    const {models} = this.state;
     let selection = editorState.getSelection();
     if (!selection.isCollapsed()) { // collapse selection if not already so
       selection = new SelectionState(
@@ -175,21 +255,21 @@ class App extends React.Component {
     Utils.saveSuggestion(generation_id, docId, 'selected', draftEntityId);
   }
   
-  onEditorChange(editorState) {
-    const oldState = this.state.editorState;
-    const oldContent = oldState.getCurrentContent();
-    const newContent = editorState.getCurrentContent();
+  onEditorChange(newEditorState) {
+    const {editorState} = this.getDocState();
+    const oldContent = editorState.getCurrentContent();
+    const newContent = newEditorState.getCurrentContent();
     if (oldContent !== newContent) {
       // handle new metadata
-      EditorUtils.updateHypMetadata(editorState);
+      EditorUtils.updateHypMetadata(newEditorState);
       // block-level diff
-      const selection = editorState.getSelection();
+      const selection = newEditorState.getSelection();
       const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
       const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
       const edit = jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS());
       Utils.saveChange(edit, this.state.docId);
     }
-    this.setState({editorState});
+    this.setDocState('editorState', newEditorState);
   }
 
   dismissHyp(hypId) {
@@ -215,7 +295,7 @@ class App extends React.Component {
   }
  
   _handleKeyCommand(command) {
-    const {editorState} = this.state;
+    const {editorState} = this.getDocState();
     const newState = RichUtils.handleKeyCommand(editorState, command);
     if (newState) {
       this.onEditorChange(newState);
@@ -226,20 +306,17 @@ class App extends React.Component {
 
   _onTab(e) {
     const maxDepth = 4;
-    this.onEditorChange(RichUtils.onTab(e, this.state.editorState, maxDepth));
+    const {editorState} = this.getDocState();
+    this.onEditorChange(RichUtils.onTab(e, editorState, maxDepth));
   }
 
   _toggleInlineStyle(inlineStyle) {
-    this.onEditorChange(
-      RichUtils.toggleInlineStyle(
-        this.state.editorState,
-        inlineStyle
-      )
-    );
+    const {editorState} = this.getDocState();
+    this.onEditorChange(RichUtils.toggleInlineStyle(editorState, inlineStyle));
   }
 
   _handleBeforeInput(char) {
-    const {editorState} = this.state;
+    const {editorState} = this.getDocState();
     const newState = EditorUtils.handleContiguousEntity(char, editorState);
     if (newState) {
       this.onEditorChange(newState);
@@ -266,7 +343,12 @@ class App extends React.Component {
     } else {
       return (
 	<div>
-	  <Navbar username={this.state.username}/>
+	  <Navbar
+	     username={this.state.username}
+	     activeDoc={this.state.docId}
+	     docs={this.state.docs}
+	     onSelectDoc={this.selectDoc}
+	     onNewDoc={this.onNewDoc}/>
 	  <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
 	  <RB.Grid fluid={true}>
 	    <RB.Row>
@@ -291,7 +373,7 @@ class App extends React.Component {
 
 		<RB.Row>
 		  <TextEditor
-		     editorState={this.state.editorState}
+		     editorState={this.getDocState().editorState}
 		     onChange={this.onEditorChange}
 		     handleKeyCommand={this.handleKeyCommand}
 		     onTab={this.onTab}
