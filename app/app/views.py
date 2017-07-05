@@ -1,8 +1,9 @@
 
 from datetime import datetime
 import uuid
+import itertools
 
-from palettable.colorbrewer.qualitative import Pastel2_8
+from palettable.colorbrewer.qualitative import Set3_12
 import flask
 import flask_login
 from sqlalchemy import desc
@@ -18,17 +19,18 @@ def get_colors():
                 'g': g,
                 'b': b,
                 'a': 1}
-    return (format_color(*c) for c in Pastel2_8.colors)
+    return (format_color(*c) for c in Set3_12.colors)
 
 
 def format_models():
     models = []
     model_names = app.config.get("MODEL_NAMES", {})
     ignore_unnamed = app.config.get('IGNORE_UNNAMED', False)
-    for model, color in zip(app.synthesizer.list_models(), get_colors()):
+    colors = itertools.cycle(get_colors())
+    for model in app.synthesizer.list_models():
         if ignore_unnamed and model['path'] not in model_names:
             continue
-        model['color'] = color
+        model['color'] = next(colors)
         model['modelName'] = model_names.get(model['path'])
         models.append(model)
     return models
