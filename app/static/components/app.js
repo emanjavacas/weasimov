@@ -66,6 +66,8 @@ class App extends React.Component {
       init: true,
       username: session.username,
       models: session.models,
+      docs: Utils.normalizeDocs(session.docs),
+      docId: session.docs[0].id,
       // editor state
       editorState: session.contentState ?
 	EditorState.createWithContent(
@@ -89,14 +91,16 @@ class App extends React.Component {
 
   saveInterval() {
     if (this.state.editorState !== this.state.lastEditorState) {
-      Utils.saveDoc(convertToRaw(this.state.editorState.getCurrentContent()));
+      const text = convertToRaw(this.state.editorState.getCurrentContent());
+      Utils.saveDoc(text, this.state.docId);
       this.setState({lastEditorState: this.state.editorState});
     }
   }
 
   saveUnload() {
     Utils.saveSession(this.state);
-    Utils.saveDoc(convertToRaw(this.state.editorState.getCurrentContent()));
+    const text = convertToRaw(this.state.editorState.getCurrentContent());
+    Utils.saveDoc(text, this.state.docId);
   }
 
   // generation functions
@@ -119,7 +123,13 @@ class App extends React.Component {
   
   launchGeneration(seed, model) {
     console.log(`Generating with seed: [${seed}]`);
-    Utils.launchGeneration(seed, model, this.state, this.onGenerationSuccess, this.onGenerationError);
+    const {temperature, maxSeqLen, docId} = this.state;
+    Utils.launchGeneration(
+      seed,
+      model,
+      {temperature, maxSeqLen, docId},
+      this.onGenerationSuccess,
+      this.onGenerationError);
     this.setState({loadingHyps: true});
   }
 
@@ -141,9 +151,10 @@ class App extends React.Component {
 
   // editor functions
   insertHypAtCursor(hyp) {
+    // insert the hyp
     const {editorState, models} = this.state;
     let selection = editorState.getSelection();
-    if (!selection.isCollapsed()) {
+    if (!selection.isCollapsed()) { // collapse selection if not already so
       selection = new SelectionState(
 	{anchorKey: selection.getAnchorKey(),
 	 anchorOffset: selection.getEndOffset(),
@@ -155,11 +166,13 @@ class App extends React.Component {
     const modelData = Utils.getModelData(models, model);
     const contentStateWithHyp = EditorUtils.insertGeneratedText(
       editorState, text, {score: score, source: text, model: modelData}, selection);
-    const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
     const newEditorState = EditorState.push(
       editorState, contentStateWithHyp, 'insert-characters');
     this.onEditorChange(newEditorState);
-    Utils.saveSuggestion(generation_id, draftEntityId);
+    // send selection to server
+    const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
+    const docId = this.state.docId;
+    Utils.saveSuggestion(generation_id, docId, 'selected', draftEntityId);
   }
   
   onEditorChange(editorState) {
@@ -173,13 +186,24 @@ class App extends React.Component {
       const selection = editorState.getSelection();
       const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
       const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
-      Utils.saveChange(jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS()));
+      const edit = jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS());
+      Utils.saveChange(edit, this.state.docId);
     }
     this.setState({editorState});
   }
 
   dismissHyp(hypId) {
-    this.setState({hyps: this.state.hyps.filter((hyp) => hyp.generation_id !== hypId)});
+    let dismissedHyp, newHyps = [];
+    for (var i=0; i<this.state.hyps.length; i++) {
+      const hyp = this.state.hyps[i];
+      if (hyp.generation_id === hypId) {
+	dismissedHyp = this.state.hyps[i];
+      } else {
+	newHyps.push(hyp);
+      }
+    }
+    this.setState({hyps: newHyps});
+    Utils.saveSuggestion(hypId, this.state.docId, 'dismissed');
   }
 
   toggleSuggestions(newState) {

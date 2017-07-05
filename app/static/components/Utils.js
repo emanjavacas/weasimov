@@ -54,8 +54,8 @@ function shortenSeed(seed, n){
  * temperature: float
  * max_seq_len: int
  */
-function launchGeneration(seed, model, docId, appState, success, error) {
-  const {temperature, maxSeqLen} = appState;
+function launchGeneration(seed, model, appState, success, error) {
+  const {temperature, maxSeqLen, docId} = appState;
   $.ajax({
     contentType: 'application/json;charset=UTF-8',
     url: 'generate',
@@ -240,6 +240,21 @@ function init(success, error) {
   });
 }
 
+// Normalizers
+function _arrayToObject(array, fieldId) {
+  let newObj = {};
+  for (var i=0; i<array.length; i++) {
+    const obj = array[i];
+    newObj[obj[fieldId]] = obj;
+  }
+  return newObj;
+}
+
+
+function normalizeDocs(docs) {
+  return _arrayToObject(docs, "id");
+}
+
 
 const Utils = {
   // components
@@ -258,7 +273,9 @@ const Utils = {
   removeDoc: removeDoc,
   saveSuggestion: saveSuggestion,
   saveSession: saveSession,
-  init: init
+  init: init,
+  // normalizers
+  normalizeDocs: normalizeDocs
 };
 
 export default Utils;

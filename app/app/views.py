@@ -67,8 +67,9 @@ def register():
     if form.validate_on_submit() and form.validate_fields():
         user = User(username=form.username.data,
                     password=form.password.data)
-        # TODO: create default doc
+        doc = Doc(user_id=user.id)
         db.session.add(user)
+        db.session.add(doc)
         db.session.commit()
         return flask.redirect(flask.url_for('login'))
     return flask.render_template('register.html', title='Sign Up', form=form)
@@ -101,8 +102,9 @@ def get_last_text(user_id, doc_id):
 
 def get_user_docs(user_id, doc_id=None):
     """
-    Fetch user docs metadata from the db. If doc_id is given, it will
-    fetch only that doc metadata.
+    Fetch user docs metadata from the db ordered by last modified
+    data (later is first). If doc_id is given, it will fetch only
+    that doc metadata.
     """
     expr = Doc.user_id == user_id and Doc.active is True
     if doc_id is not None:

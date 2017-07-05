@@ -56,9 +56,9 @@ class Doc(db.Model):
     active: bool, False if doc has been deleted
     screen_name: str, name to be displayed for this document
     """
-    id = db.Column(db.String(64), primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True)
     user_id = db.Column(db.Integer)
-    screen_name = db.Column(db.String)
+    screen_name = db.Column(db.String, default='Untitled Document')
     active = db.Column(db.Boolean, default=True)
     last_modified = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
