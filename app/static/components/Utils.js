@@ -294,6 +294,8 @@ const Utils = {
   saveChange: saveChange,
   saveDoc: saveDoc,
   removeDoc: removeDoc,
+  fetchDoc: fetchDoc,
+  editDocName: editDocName,
   saveSuggestion: saveSuggestion,
   saveSession: saveSession,
   init: init,

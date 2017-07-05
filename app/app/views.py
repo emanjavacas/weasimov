@@ -128,8 +128,8 @@ def init():
         "username": user.username,
         "models": format_models(),
         # user session data
-        "temperature": get_session_value("temperature", user.session),
-        "maxSeqLen": get_session_value("max_seq_len", user.session),
+        "temperature": get_session_value("temperature", user.session or {}),
+        "maxSeqLen": get_session_value("max_seq_len", user.session or {}),
         # docs
         "docs": [doc.as_json() for doc in docs],
         "docId": doc_id,
@@ -258,9 +258,14 @@ def removedoc():
     return flask.jsonify(status='OK', message='Document deleted.')
 
 
-@app.route('/editdocname')
+@app.route('/editdocname', methods=['POST'])
 @flask_login.login_required
 def editdocname():
+    """
+    doc_id: str
+    screen_name: str
+    timestamp: int
+    """
     data = flask.request.json
     doc = Doc.query.get(data['doc_id'])
     doc.last_modified = datetime.fromtimestamp(data['timestamp'])
