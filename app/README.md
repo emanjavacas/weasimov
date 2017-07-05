@@ -70,9 +70,10 @@ npm install
 
 The entry point for the app is in `static/components/app.js`.
 
-While developing on the frontend, run `webpack --watch` to keep re-compiling your JavaScript code.
+While developing on the frontend, run `npm run-script run` to keep re-compiling your JavaScript code.
 
-Running `webpack` creates a file in `static/bundle.js`, which is the bundled version of your frontend code.
+For production run `npm run-script build`, which will create a file in `static/bundle.js`, which is 
+the bundled version of the frontend code for production (minified, using production builds of react, etc...).
 
 ## Running the app
 
