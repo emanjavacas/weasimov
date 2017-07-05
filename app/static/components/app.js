@@ -31,7 +31,8 @@ class App extends React.Component {
     this.createDoc = this.createDoc.bind(this);
     this.onCreateDocSuccess = this.onCreateDocSuccess.bind(this);
     this.onCreateDocError = this.onCreateDocError.bind(this);
-    this.onNewDoc = this.onNewDoc.bind(this);
+    this.editDocName = this.editDocName.bind(this);
+    this.updateNewScreenName = this.updateNewScreenName.bind(this);
     this.selectDoc = this.selectDoc.bind(this);
     this.getDocState = this.getDocState.bind(this);
     this.setDocState = this.setDocState.bind(this);
@@ -166,6 +167,21 @@ class App extends React.Component {
 
   onCreateDocError(response) {
     console.log("Couldn't create document.");
+  }
+
+  updateNewScreenName(docId, newName) {
+    const doc = this.state.docs[docId];
+    doc['screen_name'] = newName;
+    this.setState({docs: {...this.state.docs, [docId]: doc}});
+  }
+
+  editDocName(newName) {
+    Utils.editDocName(
+      this.state.docId,
+      newName,
+      () => this.updateNewScreenName(this.state.docId, newName),
+      () => console.log("Couldn't update document name")
+    );
   }
 
   onNewDoc() {
@@ -348,7 +364,7 @@ class App extends React.Component {
 	     activeDoc={this.state.docId}
 	     docs={this.state.docs}
 	     onSelectDoc={this.selectDoc}
-	     onNewDoc={this.onNewDoc}/>
+	     onSubmitScreenName={this.editDocName}/>
 	  <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
 	  <RB.Grid fluid={true}>
 	    <RB.Row>

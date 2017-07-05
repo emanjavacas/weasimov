@@ -25,14 +25,47 @@ class ScreenNameInput extends React.Component {
       inputState: props.screenName,
       editing: false
     };
+    this.onSaveScreenName = this.onSaveScreenName.bind(this);
+    this.getInputValue = () => ReactDOM.findDOMNode(this.refs.input).value;
+  }
+
+  toggleEditing(newValue) {
+    if (newValue === null) {
+      this.setState({editing: !this.state.editing});
+    } else {
+      this.setState({editing: newValue});
+    }
+  }
+
+  onSaveScreenName() {
+    const newName = this.getInputValue();
+    if (newName) {
+      this.props.onSubmit(newName);
+      this.toggleEditing(false);
+    }
   }
 
   render() {
-    return (
-      <RB.NavItem>
-	{this.props.screenName}
-      </RB.NavItem>
-    );
+    return this.state.editing ?
+      (
+	<RB.Navbar.Form pullLeft>
+	  <RB.FormGroup>
+            <RB.FormControl
+	       ref="input"
+	       type="text"
+	       placeholder="Enter a new name"
+	       defaultValue={this.props.screenName}/>
+          </RB.FormGroup>
+	  <Utils.NBSP size={2}/>
+          <RB.Button onClick={() => this.onSaveScreenName()}>Save</RB.Button>
+	</RB.Navbar.Form>
+      ) : (
+	<RB.Nav>
+	  <RB.NavItem>
+	    <span onClick={() => this.toggleEditing(true)}>{this.props.screenName}</span>
+	  </RB.NavItem>
+	</RB.Nav>
+      );
   }
 }
 
@@ -50,12 +83,12 @@ class Navbar extends React.Component {
 	  <RB.Navbar.Collapse>
 	    <RB.Nav>
 	      <RB.NavItem>
-		  {this.props.username || "loading"}
+		{this.props.username || "loading"}
 	      </RB.NavItem>
-	      <ScreenNameInput
-		 screenName={this.props.docs[this.props.activeDoc].screen_name}
-		 onSubmit={this.props.onNewScreenName}/>
 	    </RB.Nav>
+	    <ScreenNameInput
+	       screenName={this.props.docs[this.props.activeDoc].screen_name}
+	       onSubmit={this.props.onSubmitScreenName}/>
 	    <RB.Nav className="pull-right">
 	      <RB.NavDropdown title="Documents" id="nav-dropdown" style={{zIndex: 10000}}>
 		{Object.keys(this.props.docs).map((key) => {
