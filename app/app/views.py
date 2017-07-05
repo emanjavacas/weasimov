@@ -8,7 +8,7 @@ import flask_login
 from sqlalchemy import desc
 
 from app import app, db, lm
-from .models import User, Text, Edit, Generation
+from .models import User, Doc, Text, Edit, Generation
 from .forms import LoginForm, RegisterForm
 
 
@@ -67,6 +67,7 @@ def register():
     if form.validate_on_submit() and form.validate_fields():
         user = User(username=form.username.data,
                     password=form.password.data)
+        # TODO: create default doc
         db.session.add(user)
         db.session.commit()
         return flask.redirect(flask.url_for('login'))
@@ -87,8 +88,28 @@ def index():
     return flask.render_template('index.html')
 
 
-def get_session_value(key, session):
+def get_session_value(key, session={}):
     return session.get(key) or app.config["DEFAULTS"][key]
+
+
+def get_last_text(user_id, doc_id):
+    expr = Text.user_id == user_id and Text.doc_id == doc_id
+    return Text.query.filter(expr) \
+                     .order_by(desc(Text.timestamp)) \
+                     .first()
+
+
+def get_user_docs(user_id, doc_id=None):
+    """
+    Fetch user docs metadata from the db. If doc_id is given, it will
+    fetch only that doc metadata.
+    """
+    expr = Doc.user_id == user_id and Doc.active is True
+    if doc_id is not None:
+        expr = expr and Doc.id == doc_id
+    return Doc.query \
+              .filter(expr) \
+              .order_by(desc(Doc.last_modified))
 
 
 @app.route('/init', methods=['GET'])
@@ -96,66 +117,158 @@ def get_session_value(key, session):
 def init():
     user_id = int(flask_login.current_user.id)
     user = User.query.get(user_id)
-    session = user.session or {}
-    text = db.session.query(Text) \
-                     .filter(Text.user_id == user_id) \
-                     .order_by(desc(Text.timestamp)) \
-                     .first()
-    content_state = text.text if text is not None else None
+    docs = get_user_docs(user_id).all()
+    text = get_last_text(user_id, docs[0].id)
     payload = {
         # app state data
         "username": user.username,
         "models": format_models(),
         # user session data
-        "temperature": get_session_value("temperature", session),
-        "maxSeqLen": get_session_value("max_seq_len", session),
-        "hyps": session.get("hyps", []),
+        "temperature": get_session_value("temperature", user.session),
+        "maxSeqLen": get_session_value("max_seq_len", user.session),
+        # docs
+        "docs": docs,
         # last editor state
-        "contentState": content_state}
+        "contentState": text.text if text is not None else None}
     return flask.jsonify(status="OK", session=payload)
+
+
+@app.route('/fetchdoc', methods=['GET'])
+@flask_login.login_required
+def fetchdoc():
+    """
+    doc_id: str
+    """
+    user_id = int(flask_login.current_user.id)
+    doc = get_user_docs(user_id, doc_id=flask.request.json['doc_id']).first()
+    text = get_last_text(user_id, doc.id)
+    return flask.jsonify(status='OK', doc=doc, text=text)
 
 
 @app.route('/savechange', methods=['POST'])
 @flask_login.login_required
 def savechange():
+    """
+    doc_id: str,
+    edit: json,
+    timestamp: int
+    """
+    # TODO: check if user is allowed to modify based on doc_id?
+    # TODO: check if doc is active
     data = flask.request.json
     timestamp = datetime.fromtimestamp(data['timestamp'])
-    user_id = int(flask_login.current_user.id)
-    edit = Edit(edit=data['edit'], timestamp=timestamp, user_id=user_id)
+    edit = Edit(user_id=int(flask_login.current_user.id),
+                doc_id=data['doc_id'],
+                edit=data['edit'],
+                timestamp=timestamp)
+    doc = Doc.query.get(data['doc_id'])
+    doc.last_modified = timestamp
     db.session.add(edit)
     db.session.commit()
     return flask.jsonify(status='OK', message='Changes saved.')
 
 
+@app.route('/editdocname')
+@flask_login.login_required
+def editdocname():
+    data = flask.request.json
+    doc = Doc.query.get(data['doc_id'])
+    doc.last_modified = datetime.fromtimestamp(data['timestamp'])
+    doc.screen_name = data['screen_name']
+    db.session.commit()
+    return flask.jsonify(status='OK', message='Name changed.')
+
+
 @app.route('/savesuggestion', methods=['POST'])
 @flask_login.login_required
 def savesuggestion():
+    """
+    generation_id: str,
+    doc_id: str, id of doc where the action took place
+    selected: True, (optional), requires `draft_entity_id`
+    draft_entity_id: str
+    dismissed: True, (optional)
+    timestamp: int
+    """
     data = flask.request.json
+    generation_id = data['generation_id']
     timestamp = datetime.fromtimestamp(data['timestamp'])
-    generation = Generation.query.filter_by(
-        generation_id=data['generation_id'])
-    generation.selected = True
-    generation.draft_entity_id = data['draft_entity_id']
-    generation.selected_timestamp = timestamp
+    generation = Generation.query.filter_by(generation_id=generation_id)
+    generation.action_doc_id = data['doc_id']
+    if data['selected'] is True:
+        # TODO: check if user is allowed to modify based on doc_id?
+        # TODO: check if doc is active
+        generation.selected = True
+        generation.selected_timestamp = timestamp
+        generation.draft_entity_id = data['draft_entity_id']
+    if data['dismissed'] is True:
+        generation.dismissed = True
+        generation.dismissed_timestamp = timestamp
     db.session.commit()
     return flask.jsonify(status='OK', message='Suggestion updated.')
+
+
+@app.route('/createdoc', methods=['POST'])
+@flask_login.login_required
+def createdoc():
+    """
+    doc_id: str
+    screen_name: str
+    timestamp: int
+    """
+    data = flask.request.json
+    user_id = int(flask_login.current_user.id)
+    timestamp = datetime.fromtimestamp(data['timestamp'])
+    doc = Doc(user_id=user_id,
+              screen_name=data['screen_name'],
+              timestamp=timestamp,
+              last_modified=timestamp)
+    db.session.add(doc)
+    db.session.commit()
+    return flask.jsonify(status='OK', doc=doc)
 
 
 @app.route('/savedoc', methods=['POST'])
 @flask_login.login_required
 def savedoc():
-    data = flask.request.json
-    timestamp = datetime.fromtimestamp(data['timestamp'])
+    """
+    doc_id: str
+    text: json
+    timestamp: int
+    """
     user_id = int(flask_login.current_user.id)
-    text = Text(text=data['text'], timestamp=timestamp, user_id=user_id)
+    data = flask.request.json
+    # TODO: check if user is allowed to modify based on doc_id?
+    # TODO: check if doc is active
+    timestamp = datetime.fromtimestamp(data['timestamp'])
+    text = Text(user_id=user_id,
+                doc_id=data['doc_id'],
+                text=data['text'],
+                timestamp=timestamp)
     db.session.add(text)
     db.session.commit()
     return flask.jsonify(status='OK', message='Document saved.')
 
 
+@app.route('/removedoc', methods=['POST'])
+@flask_login.login_required
+def removedoc():
+    """
+    doc_id: str
+    """
+    user_id = int(flask_login.current_user.id)
+    doc = get_user_docs(user_id, doc_id=flask.request.json['doc_id']).first()
+    doc.active = False
+    db.session.commit()
+    return flask.jsonify(status='OK', message='Document deleted.')
+
+
 @app.route('/savesession', methods=['POST'])
 @flask_login.login_required
 def savesession():
+    """
+    session: json {'max_seq_len': int, 'temperature': float}
+    """
     user = User.query.get(int(flask_login.current_user.id))
     user.session = flask.request.json['session']
     db.session.commit()
@@ -165,10 +278,18 @@ def savesession():
 @app.route('/generate', methods=['POST'])
 @flask_login.login_required
 def generate():
+    """
+    seed: str
+    seed_doc_id: str, doc id where the generation was triggered
+    model: str, path of the model used for generation
+    temperature: float
+    max_seq_len: int
+    """
     user_id = int(flask_login.current_user.id)
-    model = flask.request.json['model_path']
+    model = flask.request.json['model']
     app.synthesizer.load(model_names=(model,))  # maybe load model
-    seed = flask.request.json["selection"]
+    seed = flask.request.json["seed"]
+    seed_doc_id = flask.request.json['seed_doc_id']
     temperature = float(flask.request.json['temperature'])
     max_seq_len = int(flask.request.json['max_seq_len'])
     try:
@@ -183,14 +304,17 @@ def generate():
             max_tries=1)
         for hyp in hyps:
             generation_id = str(uuid.uuid4())
-            db.session.add(Generation(
-                model=model,
-                seed=seed or '',
-                temp=temperature,
-                text=hyp['text'],
-                generation_id=generation_id,
-                timestamp=timestamp,
-                user_id=user_id))
+            db.session.add(
+                Generation(
+                    generation_id=generation_id,
+                    user_id=user_id,
+                    seed_doc_id=seed_doc_id,
+                    model=model,
+                    seed=seed or '',
+                    temp=temperature,
+                    max_seq_len=max_seq_len,
+                    text=hyp['text'],
+                    timestamp=timestamp))
             hyp["generation_id"] = generation_id
             hyp["timestamp"] = timestamp
             hyp["model"] = model

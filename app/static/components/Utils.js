@@ -47,16 +47,23 @@ function shortenSeed(seed, n){
 
 
 // AJAX stuff
-function launchGeneration(seed, model, appState, success, error) {
+/**
+ * seed: str
+ * seed_doc_id: str, current doc id
+ * model: str, model path
+ * temperature: float
+ * max_seq_len: int
+ */
+function launchGeneration(seed, model, docId, appState, success, error) {
   const {temperature, maxSeqLen} = appState;
   $.ajax({
     contentType: 'application/json;charset=UTF-8',
     url: 'generate',
-    data: JSON.stringify(
-      {'selection': seed,
-       'temperature': temperature,
-       'model_path': model,
-       'max_seq_len': maxSeqLen}),
+    data: JSON.stringify({seed_doc_id: docId,
+			  seed: seed,
+			  temperature: temperature,
+			  model: model,
+			  max_seq_len: maxSeqLen}),
     type: 'POST',
     dataType: 'json',
     success: success,
@@ -65,18 +72,35 @@ function launchGeneration(seed, model, appState, success, error) {
 }
 
 /**
+ * doc_id: str
  * edit: json
  * timestamp: int, unix timestamp
  */
-function saveChange(edit) {
+function saveChange(edit, docId) {
   $.ajax({
     contentType: 'application/json;charset=UTF-8',
     url: 'savechange',
-    data: JSON.stringify({edit: edit, timestamp: timestamp()}),
+    data: JSON.stringify({edit: edit, timestamp: timestamp(), doc_id: docId}),
     type: 'POST',
     dataType: 'json',
     success: (response) => console.log(response),
     error: (error) => console.log(error)
+  });
+}
+
+/**
+ * screen_name: str
+ * timestamp: int
+ */
+function createDoc(screenName, success, error) {
+  $.ajax({
+    contentType: 'application/json;charset=UTF-8',
+    url: 'savedoc',
+    data: JSON.stringify({screen_name: screenName, timestamp: timestamp()}),
+    type: 'POST',
+    dataType: 'json',
+    success: (response) => success(response),
+    error: (response) => error(response)
   });
 }
 
@@ -85,29 +109,100 @@ function saveChange(edit) {
  * text: json
  * timestamp: int, unix timestamp
  */
-function saveDoc(text) {
+function saveDoc(text, docId) {
   $.ajax({
     contentType: 'application/json;charset=UTF-8',
     url: 'savedoc',
-    data: JSON.stringify({text: text, timestamp: timestamp()}),
+    data: JSON.stringify({text: text, timestamp: timestamp(), doc_id: docId}),
     type: 'POST',
     dataType: 'json',
     success: (response) => console.log(response),
     error: (error) => console.log(error)
+  });
+}
+
+
+/**
+ * doc_id: str
+ */
+function removeDoc(docId, success, error) {
+  success = success || console.log;
+  error = error || console.log;
+  $.ajax({
+    contentType: 'application/json;charset=UTF-8',
+    url: 'removedoc',
+    data: JSON.stringify({doc_id: docId, timestamp: timestamp()}),
+    type: 'POST',
+    dataType: 'json',
+    success: (response) => success(response),
+    error: (response) => error(response)
+  });
+}
+
+
+/**
+ * doc_id: str
+ */
+function fetchDoc(docId, success, error) {
+  success = success || console.log;
+  error = error || console.log;
+  $.ajax({
+    contentType: 'application/json;charset=UTF-8',
+    url: 'fetchdoc',
+    data: JSON.stringify({doc_id: docId}),
+    type: 'GET',
+    dataType: 'json',
+    success: (response) => success(response),
+    error: (response) => error(response)
+  });
+}
+
+
+/**
+ * doc_id: str
+ * screen_name: str
+ * timestamp: int
+ */
+function editDocName(docId, newName, success, error) {
+  success = success || console.log;
+  error = error || console.log;
+  $.ajax({
+    contentType: 'application/json;charset=UTF-8',
+    url: 'editdocname',
+    data: JSON.stringify({doc_id: docId, screen_name: newName, timestamp: timestamp()}),
+    type: 'POST',
+    dataType: 'json',
+    success: (response) => success(response),
+    error: (response) => error(response)
   });
 }
 
 
 /**
  * generation_id: str
- * draft_entity_id: str
  * timestamp: int, unix timestamp
+ * doc_id: str, id of currently shown doc
+ * selected: True, (optional)
+ *   requires:
+ *   - draft_entity_id: str
+ * dismissed: True, (optional)
  */
-function saveSuggestion(generation_id, draft_entity_id) {
+function saveSuggestion(generationId, docId, action, draftEntityId) {
+  const data = {generation_id: generationId,
+		timestamp: timestamp(),
+		doc_id: docId};
+  if (action === 'selected') {
+    data['draft_entity_id'] = draftEntityId;
+    data['selected'] = true;
+  } else {
+    if (action !== 'dismissed')
+      throw new Error('Action must be "selected", "dismissed"');
+    data['dismissed'] = true;
+  }
   $.ajax({
     contentType: 'application/json;charset=UTF-8',
     url: 'savesuggestion',
-    data: JSON.stringify({generation_id, draft_entity_id, timestamp: timestamp()}),
+    data: JSON.stringify(data),
     type: 'POST',
     dataType: 'json',
     success: (response) => console.log(response),
@@ -117,7 +212,7 @@ function saveSuggestion(generation_id, draft_entity_id) {
 
 
 /**
- * session: {max_seq_len, temperature, hyps}
+ * session: {max_seq_len, temperature}
  */
 function saveSession(state) {
   const {temperature, maxSeqLen} = state;
@@ -145,6 +240,7 @@ function init(success, error) {
   });
 }
 
+
 const Utils = {
   // components
   Spinner: Spinner,
@@ -159,6 +255,7 @@ const Utils = {
   launchGeneration: launchGeneration,
   saveChange: saveChange,
   saveDoc: saveDoc,
+  removeDoc: removeDoc,
   saveSuggestion: saveSuggestion,
   saveSession: saveSession,
   init: init
