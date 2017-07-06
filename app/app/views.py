@@ -105,18 +105,15 @@ def get_last_text(user_id, doc_id):
 
 def get_user_docs(user_id, doc_id=None):
     """
-    Fetch user docs metadata from the db ordered by last modified
-    data (later is first). If doc_id is given, it will fetch only
-    that doc metadata.
+    Fetch user docs metadata from the db. If doc_id is given, it will
+    fetch only that doc metadata.
     """
     expr = and_(Doc.user_id == user_id, Doc.active == True)  # nopep8
     if doc_id is not None:
         expr = and_(Doc.user_id == user_id,
                     Doc.active == True,  # nopep8
                     Doc.id == doc_id)
-    return Doc.query \
-              .filter(expr) \
-              .order_by(desc(Doc.last_modified))
+    return Doc.query.filter(expr)
 
 
 @app.route('/init', methods=['GET'])
@@ -221,9 +218,8 @@ def fetchdoc():
     doc_id: str
     """
     user_id = int(flask_login.current_user.id)
-    data = flask.request.args
-    doc = get_user_docs(user_id, doc_id=data.get('doc_id')).first()
-    print(doc.id, data.get('doc_id'))
+    doc_id = flask.request.args.get('doc_id')
+    doc = get_user_docs(user_id, doc_id=doc_id).first()
     text = get_last_text(user_id, doc.id)
     text = text.text if text is not None else None
     return flask.jsonify(status='OK', doc=doc.as_json(), contentState=text)
@@ -258,7 +254,8 @@ def removedoc():
     doc_id: str
     """
     user_id = int(flask_login.current_user.id)
-    doc = get_user_docs(user_id, doc_id=flask.request.json['doc_id']).first()
+    doc_id = flask.request.args.get('doc_id')
+    doc = get_user_docs(user_id, doc_id=doc_id).first()
     doc.active = False
     db.session.commit()
     return flask.jsonify(status='OK', message='Document deleted.')
