@@ -87,18 +87,19 @@ class NewDocModal extends React.Component {
 
   render() {
     return (
-      <RB.Modal show={this.props.show} onHide={this.props.close}>
-	<RB.Modal.Body>
-	  <RB.Form inline>
-	    <RB.FormGroup controlId="newDoc">
-	      <RB.FormControl
-		 ref="newDocInput"
-		 type="text"
-		 placeholder="Enter a name"/>
-	    </RB.FormGroup>
-	    <RB.Button onClick={this.onNewDoc}>Create</RB.Button>
-	  </RB.Form>
-	</RB.Modal.Body>
+      <RB.Modal className="document-form" show={this.props.show} onHide={this.props.close}>
+        <RB.Modal.Body >
+          <RB.Form inline> 
+            <RB.FormGroup controlId="newDoc">
+              <RB.FormControl
+                ref="newDocInput"
+                type="text"
+                placeholder="Enter a name"
+                />
+            </RB.FormGroup>
+            <RB.Button className="pull-right" onClick={this.onNewDoc}>Create</RB.Button>
+          </RB.Form>
+      	</RB.Modal.Body>
       </RB.Modal>
     );
   }

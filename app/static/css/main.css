@@ -269,6 +269,11 @@ li.list-group-hover.list-group-item:hover {
   font-weight: bold;
 }
 
+/* Document Form */
+.document-form .modal-dialog {
+  max-width: 310px;
+}
+
 /* MEDIA QUERIES */
 /* Ordered by screen size; largest to smallest*/
 
