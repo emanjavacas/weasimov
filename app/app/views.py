@@ -1,6 +1,7 @@
 
 from datetime import datetime
 import uuid
+import itertools
 
 from palettable.colorbrewer.qualitative import Pastel2_8
 import flask
@@ -25,10 +26,11 @@ def format_models():
     models = []
     model_names = app.config.get("MODEL_NAMES", {})
     ignore_unnamed = app.config.get('IGNORE_UNNAMED', False)
-    for model, color in zip(app.synthesizer.list_models(), get_colors()):
+    colors = itertools.cycle(get_colors())
+    for model in app.synthesizer.list_models():
         if ignore_unnamed and model['path'] not in model_names:
             continue
-        model['color'] = color
+        model['color'] = next(colors)
         model['modelName'] = model_names.get(model['path'])
         models.append(model)
     return models

@@ -120,9 +120,10 @@ class RegenerateButton extends React.Component {
 
 
 class SuggestionList extends React.Component {
-  componentDidUpdate() {
-    ReactDOM.findDOMNode(this).scrollTop = 0;
-  }
+
+	scrollUp() {
+		ReactDOM.findDOMNode(this).scrollTop = 0;
+	}		
 
   render () {
     const {hyps, models, onHypSelect, onHypDismiss} = this.props;
@@ -182,6 +183,7 @@ class Suggestions extends React.Component {
 	  </RB.Row>
 	</div>
 	<SuggestionList
+	   ref="suggestionlist"
 	   hyps={this.props.hyps}
 	   models={this.props.models}
 	   onHypSelect={this.props.onHypSelect}

@@ -6,7 +6,7 @@ const Spinner = (props) => (
     <span className="loading dots"></span>
   </div>);
 
-const Spacer = (props) => <div className="row" style={{height: props.height}}></div>;
+const Spacer = (props) => <div className="row spacer" style={{height: props.height}}></div>;
 
 function NBSP(props) {
   let nbsp = '&nbsp;';

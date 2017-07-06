@@ -58,30 +58,6 @@ li.list-group-hover.list-group-item:hover {
   top: 70%;
 }
 
-@media only screen and (min-width: 1200px) {
-  .suggestions-panel {
-    width: 66.66%;
-  }
-}
-
-@media only screen and (max-width: 1200px) {
-  .suggestions-panel {
-    width: 66.66%;
-  }
-}
-
-@media only screen and (max-width: 992px) {
-  .suggestions-panel {
-    width: 83.3%;
-  }
-}
-
-@media only screen and (max-width: 768px) {
-  .suggestions-panel {
-    width: 100%;
-  }
-}
-
 .suggestions-panel .seed {
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -292,3 +268,51 @@ li.list-group-hover.list-group-item:hover {
   color: #aaaaaa;
   font-weight: bold;
 }
+
+/* MEDIA QUERIES */
+/* Ordered by screen size; largest to smallest*/
+
+@media only screen and (min-width: 1201px) {
+/* Text editor */
+  .spacer{
+    height: 400px;
+  }
+/* suggestions */
+  .suggestions-panel {
+    width: 66.66%;
+  }
+}
+
+@media only screen and (max-width: 1200px) {
+/* Text editor */
+  .spacer{
+    height: 350px;
+  }
+/* suggestions */ 
+  .suggestions-panel {
+    width: 66.66%;
+  }
+
+}
+
+@media only screen and (max-width: 992px) {
+/* Text editor */
+  .spacer{
+    height: 300px;
+  }
+/* suggestions */
+  .suggestions-panel {
+    width: 83.3%;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+/* Text editor */
+  .spacer{
+    height: 250px;
+  }
+/* suggestions */
+  .suggestions-panel {
+    width: 100%;
+  }
+} 

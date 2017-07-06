@@ -219,6 +219,7 @@ class App extends React.Component {
        loadingHyps: false,
        hasHadHyps: true});
     this.toggleSuggestions(false);
+    this.refs.suggestions.refs.suggestionlist.scrollUp();
   }
 
   onGenerationError(error) {
@@ -244,8 +245,27 @@ class App extends React.Component {
     const selection = editorState.getSelection();
     let seed = EditorUtils.getTextSelection(currentContent, selection);
     if (seed.trim().length == 0) {
-      seed = currentContent.getPlainText('\n');
-      if (seed.length > 200) seed = seed.substring(seed.length - 200);
+      let focusBlock = currentContent.getBlockForKey(selection.anchorKey);
+      seed = focusBlock.getText();
+      seed = seed.substring(
+        Math.max(selection.focusOffset - 200, 0), selection.focusOffset);
+    }
+    if (seed.trim().length == 0) {
+      const startKey = currentContent.getFirstBlock().getKey();
+      let endKey = selection.getEndKey();
+      if (currentContent.getKeyAfter(endKey)) {
+        endKey = currentContent.getKeyAfter(endKey);
+      }
+      seed = currentContent.getBlockMap()
+        .takeUntil((block) => block.getKey() === endKey)
+          .map((block) => {
+            if (block) {
+              return block.getText();
+            }
+          }).join('\n');
+    }
+    if (seed.length > 200) {
+      seed = seed.substring(seed.length - 200);
     }
     this.launchGeneration(seed, model);
   }
@@ -416,6 +436,7 @@ class App extends React.Component {
 		  
 		  <RB.Row>
     		    <Suggestions
+		       ref="suggestions"
     		       hyps={this.state.hyps}
 		       models={this.state.models}
 		       isCollapsed={this.state.suggestionsCollapsed}
