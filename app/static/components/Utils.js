@@ -134,8 +134,8 @@ function removeDoc(docId, success, error) {
     data: JSON.stringify({doc_id: docId, timestamp: timestamp()}),
     type: 'POST',
     dataType: 'json',
-    success: (response) => success(response),
-    error: (response) => error(response)
+    success: (response) => success(response, docId),
+    error: (response) => error(response, docId)
   });
 }
 
@@ -151,7 +151,7 @@ function fetchDoc(docId, success, error) {
     data: {doc_id: docId},
     type: 'GET',
     dataType: 'json',
-    success: (response) => success(response),
+    success: (response) => success(response, docId),
     error: (response) => error(response, docId)
   });
 }

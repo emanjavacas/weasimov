@@ -31,6 +31,9 @@ class App extends React.Component {
     this.createDoc = this.createDoc.bind(this);
     this.onCreateDocSuccess = this.onCreateDocSuccess.bind(this);
     this.onCreateDocError = this.onCreateDocError.bind(this);
+    this.removeDoc = this.removeDoc.bind(this);
+    this.onRemoveDocSuccess = this.onRemoveDocSuccess.bind(this);
+    this.onRemoveDocError = this.onRemoveDocError.bind(this);
     this.editDocName = this.editDocName.bind(this);
     this.updateNewScreenName = this.updateNewScreenName.bind(this);
     this.selectDoc = this.selectDoc.bind(this);
@@ -169,11 +172,42 @@ class App extends React.Component {
       response.doc.id,
       EditorState.createEmpty(EditorUtils.hypDecorator)
     );
-    this.setState({editorStates: editorStates, docs: docs});
+    this.setState({
+      editorStates: editorStates,
+      docs: docs,
+      docId: response.doc.id	// move to new doc
+    });
   }
 
   onCreateDocError(response) {
     console.log("Couldn't create document.");
+  }
+
+  removeDoc(docId) {
+    Utils.removeDoc(docId, this.onRemoveDocSuccess, this.onRemoveDocError);
+  }
+
+  onRemoveDocSuccess(response, docId) {
+    const {docs, editorStates} = this.state, docIds = Object.keys(docs);
+    // find new doc after removal
+    let nextDocId;
+    for (var i=0; i<docIds.length; i++) {
+      if (docIds[i] !== docId.toString()) {
+	nextDocId = docIds[i];
+	break;
+      }
+    }
+    delete docs[docId];		// remove doc from docs
+    delete editorStates[docId];	// remove doc from editorStates
+    this.setState({
+      docId: nextDocId,		// move to next doc
+      docs: docs,
+      editorStates: editorStates
+    });
+  }
+
+  onRemoveDocError(response, docId) {
+    console.log(`Couldn't remove doc ${docId}`);
   }
 
   updateNewScreenName(docId, newName) {
@@ -192,13 +226,11 @@ class App extends React.Component {
   }
 
   selectDoc(docId) {
-    if (docId != this.state.docId) { // don't do anything if selecting same doc
-      this.saveOnInterval();
-      if (!this.state.editorStates[docId].editorState) { // if doc editorState data isn't loaded
-	this.loadDoc(docId);
-      } else {
-	this.setState({docId});
-      }
+    this.saveOnInterval();
+    if (!this.state.editorStates[docId].editorState) { // if doc editorState data isn't loaded
+      this.loadDoc(docId);
+    } else {
+      this.setState({docId});
     }
   }
 
@@ -261,7 +293,9 @@ class App extends React.Component {
           .map((block) => {
             if (block) {
               return block.getText();
-            }
+            } else {
+	      return null;
+	    }
           }).join('\n');
     }
     if (seed.length > 200) {
@@ -400,7 +434,8 @@ class App extends React.Component {
 	       docs={this.state.docs}
 	       onSelectDoc={this.selectDoc}
 	       onSubmitScreenName={this.editDocName}
-	       onSubmitNewDoc={this.createDoc}/>
+	       onSubmitNewDoc={this.createDoc}
+	       onSubmitRemoveDoc={this.removeDoc}/>
 	    <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
             <RB.Grid fluid={true}>
 	      <RB.Row>
