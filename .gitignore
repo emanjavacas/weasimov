@@ -115,7 +115,8 @@ models/*
 
 # npm
 node_modules/
-bundle.js
+app.bundle.js
+monitor.bundle.js
 
 # vscode
 .vscode/*

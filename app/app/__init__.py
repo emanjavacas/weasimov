@@ -6,6 +6,7 @@ from .sentence_sampler import RandomSentenceSampler
 import flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_socketio import SocketIO
 
 app = flask.Flask(
     __name__,
@@ -36,5 +37,8 @@ app.synthesizer = Synthesizer(
     model_dir=model_dir,
     gpu=gpu,
     sentence_sampler=sentence_sampler)
+
+# WebSockets
+socketio = SocketIO(app)
 
 from app import views, models

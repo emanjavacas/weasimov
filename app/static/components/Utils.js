@@ -1,4 +1,5 @@
 import React from 'react';
+import * as RB from 'react-bootstrap';
 
 // Components
 const Spinner = (props) => (
@@ -12,6 +13,23 @@ function NBSP(props) {
   let nbsp = '&nbsp;';
   for (var i=0; i<props.size; i++) nbsp = nbsp + '&nbsp;';
   return <span dangerouslySetInnerHTML={{__html: nbsp}}></span>;
+}
+
+
+function LoadingApp(props) {
+  return (
+    <RB.Grid>
+      <RB.Row>
+	<RB.Col md={2}/>
+	<RB.Col md={8}>
+	  <RB.Jumbotron style={{backgroundColor:"#f5f5f5"}}>
+	    <h2>Loading...</h2>
+	  </RB.Jumbotron>
+	</RB.Col>
+	<RB.Col md={2}/>
+      </RB.Row>
+    </RB.Grid>
+  );
 }
 
 
@@ -282,6 +300,7 @@ const Utils = {
   Spinner: Spinner,
   Spacer: Spacer,
   NBSP: NBSP,
+  LoadingApp: LoadingApp,
   // utility functions
   getModelData: getModelData,
   timestamp: timestamp,

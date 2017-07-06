@@ -34,12 +34,13 @@ class User(db.Model):
     password = db.Column(db.String(64), unique=False)
     session = db.Column(JSONEncodedDict)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    active = db.Column(db.Boolean, default=False)
 
     def is_authenticated(self):
         return True
 
     def is_active(self):
-        return True
+        return self.active
 
     def is_anonymous(self):
         return False

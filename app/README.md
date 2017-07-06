@@ -39,6 +39,8 @@ DEFAULTS = {
     "ignore_eos": True,
     "gpu": False
 }
+
+MONITORS = ['admin']
 ```
 
 ## Prerequisites

@@ -1,4 +1,5 @@
-from app import app
+
+from app import app, socketio
 
 if __name__ == '__main__':
     import argparse
@@ -8,4 +9,4 @@ if __name__ == '__main__':
     parser.add_argument('--prod', action='store_true')
     args = parser.parse_args()
 
-    app.run(debug=not args.prod, port=args.port, host=args.host)
+    socketio.run(app, debug=not args.prod, port=args.port, host=args.host)

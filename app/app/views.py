@@ -1,4 +1,5 @@
 
+from functools import wraps
 from datetime import datetime
 import uuid
 import itertools
@@ -6,9 +7,11 @@ import itertools
 from palettable.colorbrewer.qualitative import Pastel2_8
 import flask
 import flask_login
+from flask_socketio import emit, join_room, leave_room
 from sqlalchemy import desc, and_
 
 from app import app, db, lm
+from . import socketio
 from .models import User, Doc, Text, Edit, Generation
 from .forms import LoginForm, RegisterForm
 
@@ -56,6 +59,12 @@ def login():
     if form.validate_on_submit() and form.validate_fields():
         flask.session['remember_me'] = form.remember_me.data
         flask_login.login_user(form.get_user(), remember=form.remember_me.data)
+        # set active
+        user = form.get_user()
+        user.active = True
+        db.session.commit()
+        # socketio
+        socketio.emit('login', {}, namespace='/monitor')
         return flask.redirect(flask.url_for("index"))
     return flask.render_template("login.html", title='Sign in', form=form)
 
@@ -81,7 +90,13 @@ def register():
 @app.route('/logout', methods=['POST', 'GET'])
 @flask_login.login_required
 def logout():
+    user_id = int(flask_login.current_user.id)
     flask_login.logout_user()
+    user = User.query.get(user_id)
+    user.active = False
+    db.session.commit()
+    # websocket
+    socketio.emit('logout', {'user_id': user_id}, namespace='/monitor')
     return flask.redirect(flask.url_for('login'))
 
 
@@ -151,7 +166,8 @@ def savechange():
     # TODO: check if doc is active
     data = flask.request.json
     timestamp = datetime.fromtimestamp(data['timestamp'])
-    edit = Edit(user_id=int(flask_login.current_user.id),
+    user_id = int(flask_login.current_user.id)
+    edit = Edit(user_id=user_id,
                 doc_id=data['doc_id'],
                 edit=data['edit'],
                 timestamp=timestamp)
@@ -159,6 +175,8 @@ def savechange():
     doc.last_modified = timestamp
     db.session.add(edit)
     db.session.commit()
+    # websocket
+    emit('savechange', data, room=user_id, namespace='/monitor')
     return flask.jsonify(status='OK')
 
 
@@ -188,6 +206,9 @@ def savesuggestion():
         generation.dismissed = True
         generation.dismissed_timestamp = timestamp
     db.session.commit()
+    # websocket
+    user_id = int(flask_login.current_user.id)
+    emit('savesuggestion', data, room=user_id, namespace='/monitor')
     return flask.jsonify(status='OK', message='Suggestion updated.')
 
 
@@ -208,6 +229,7 @@ def createdoc():
               last_modified=timestamp)
     db.session.add(doc)
     db.session.commit()
+    emit('createdoc', doc.as_json(), room=user_id, namespace='/monitor')
     return flask.jsonify(status='OK', doc=doc.as_json())
 
 
@@ -258,6 +280,8 @@ def removedoc():
     doc = get_user_docs(user_id, doc_id=doc_id).first()
     doc.active = False
     db.session.commit()
+    # websocket
+    emit('removedoc', {'doc_id': doc_id}, room=user_id, namespace='/monitor')
     return flask.jsonify(status='OK', message='Document deleted.')
 
 
@@ -274,6 +298,9 @@ def editdocname():
     doc.last_modified = datetime.fromtimestamp(data['timestamp'])
     doc.screen_name = data['screen_name']
     db.session.commit()
+    # websocket
+    user_id = int(flask_login.current_user.id)
+    emit('editdocname', data, room=user_id, namespace='/monitor')
     return flask.jsonify(status='OK', message='Name changed.')
 
 
@@ -338,3 +365,67 @@ def generate():
         if app.debug is True:
             raise e
         return flask.jsonify(status='Error', message=str(e)), 500
+
+
+# WebSockets
+def whitelist(whitelisted):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            user = User.query.get(int(flask_login.current_user.id))
+            print(user, whitelisted)
+            if user.username not in whitelisted:
+                return flask.jsonify(status='ERROR', message='Forbidden'), 403
+            return f(*args, **kwargs)
+        return wrapped
+    return wrapper
+
+
+@app.route('/monitor', methods=['GET'])
+@flask_login.login_required
+@whitelist(app.config.get('MONITORS', []))
+def monitor():
+    return flask.render_template('monitor.html', title='Monitor')
+
+
+@app.route('/fetchusers', methods=['GET'])
+@flask_login.login_required
+@whitelist(app.config.get('MONITORS', []))
+def fetchusers():
+    rooms = socketio.rooms['/monitor'].keys()
+    users = {u.id: {'username': u.username, 'active': u.is_active()}
+             for u in User.query.all()}
+    return flask.jsonify(status='OK', rooms=rooms, users=users)
+
+
+@socketio.on('connect', namespace='/monitor')
+def on_connect():
+    username = flask_login.current_user.username
+    if username in app.config.get('MONITORS', []):  # TODO: fetch from db
+        emit('Connected to /monitor',
+             {'data': 'connected', 'username': username},
+             broadcast=True)
+    else:
+        return False            # user is not in MONITORS
+
+
+@socketio.on('disconnect', namespace='/monitor')
+def on_disconnect():
+    username = flask_login.current_user.username
+    print("{username} is leaving".format(username=username))
+
+
+@socketio.on('join')
+def on_join(data):
+    username = flask_login.current_user.username
+    join_room(data['room'])
+    print("{username} has joined room {room}".format(
+        username=username, room=data['room']))
+
+
+@socketio.on('leave')
+def on_leave(data):
+    username = flask_login.current_user.username
+    leave_room(data['room'])
+    print("{username} has left room {room}".format(
+        username=username, room=data['room']))
