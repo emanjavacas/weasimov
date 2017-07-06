@@ -88,7 +88,6 @@ class App extends React.Component {
 	  EditorState.createWithContent(
 	    convertFromRaw(session.contentState), EditorUtils.hypDecorator) :
 	  EditorState.createEmpty(EditorUtils.hypDecorator)),
-      lastEditorState: null,	// check if there were changes
       // generation variables
       temperature: session.temperature,
       maxSeqLen: session.maxSeqLen,
@@ -102,18 +101,6 @@ class App extends React.Component {
     });
     // set interval
     this.saveOnIntervalId = setInterval(this.saveOnInterval, 25000);
-  }
-
-  setDocState(field, data) { // TODO: move active editorState to currentEditorState for performance
-    this.setState({
-      editorStates: {
-	...this.state.editorStates,
-	[this.state.docId]: {
-	  ...this.state.editorStates[this.state.docId],
-	  [field]: data
-	}
-      }
-    });
   }
 
   saveOnInterval() {
@@ -133,21 +120,41 @@ class App extends React.Component {
   }
 
   // doc
+  setDocState(field, data, docId) { // TODO: move active editorState to currentEditorState for performance
+    docId = docId || this.state.docId;
+    this.setState({
+      editorStates: {
+	...this.state.editorStates,
+	[docId]: {...this.state.editorStates[docId], [field]: data}
+      }
+    });
+  }
+
   loadDoc(docId) {
     Utils.fetchDoc(docId, this.onLoadDocSuccess, this.onLoadDocError);
-    this.setDocState('loading', true);
+    this.setDocState('loading', true, docId);
   }
 
   onLoadDocSuccess(response) {
     const editorState = response.contentState ?
-	    EditorState.createWithContent() :
+	    EditorState.createWithContent(
+	      convertFromRaw(response.contentState), EditorUtils.hypDecorator) :
 	    EditorState.createEmpty(EditorUtils.hypDecorator);
-    this.setDocState('editorState', editorState);
-    this.setDocState('loading', false);
-    this.setState({docId});
+    this.setState({
+      docId: response.doc.id,	// move to doc
+      editorStates: {
+	...this.state.editorStates,
+	[response.doc.id]: {
+	  ...this.state.editorStates[response.doc.id],
+	  editorState: editorState, // add editorState
+	  loading: false	    // stop loading
+	}
+      }
+    });
   }
 
-  onLoadDocError(error) {
+  onLoadDocError(error, docId) {
+    this.setDocState('loading', false, docId);
     console.log("Couldn't load document");
   }
 
@@ -184,13 +191,14 @@ class App extends React.Component {
     );
   }
 
-  onNewDoc() {
-    
-  }
-
   selectDoc(docId) {
-    if (docId != this.state.docId) {
-      this.saveOnInterval(); this.setState({docId});
+    if (docId != this.state.docId) { // don't do anything if selecting same doc
+      this.saveOnInterval();
+      if (!this.state.editorStates[docId].editorState) { // if doc editorState data isn't loaded
+	this.loadDoc(docId);
+      } else {
+	this.setState({docId});
+      }
     }
   }
 
@@ -201,7 +209,9 @@ class App extends React.Component {
   // generation functions
   onGenerationSuccess(response) {
     // append seed for convenience
-    const incomingHyps = response.hyps.map((hyp) => Object.assign(hyp, {'seed': response.seed}));
+    const incomingHyps = response.hyps.map(
+      (hyp) => Object.assign(hyp, {'seed': response.seed})
+    );
     this.setState(
       {hyps: incomingHyps.concat(this.state.hyps),
        lastSeed: response.seed,
@@ -357,68 +367,75 @@ class App extends React.Component {
 	</RB.Grid>
       );
     } else {
-      return (
-	<div>
-	  <Navbar
-	     username={this.state.username}
-	     activeDoc={this.state.docId}
-	     docs={this.state.docs}
-	     onSelectDoc={this.selectDoc}
-	     onSubmitScreenName={this.editDocName}/>
-	  <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
-	  <RB.Grid fluid={true}>
-	    <RB.Row>
-	      <RB.Col lg={2} md={2} sm={1}></RB.Col>
-	      <RB.Col lg={8} md={8} sm={10}>
-
-		<RB.Row>
-		  <Sticky enabled={true} top={0} innerZ={1001}>
-		    <div className="panel panel-default generate-panel">
-		      <div className="panel-heading">
-			<ButtonToolbar
-			   temperature={this.state.temperature} 
-			   onTemperatureChange={this.onTemperatureChange}
-			   maxSeqLen={this.state.maxSeqLen}
-			   onSeqLenChange={this.onSeqLenChange}
-			   models={this.state.models}
-			   onGenerate={this.generate}/>
+      const {loading} = this.getDocState();
+      if (loading) { // is the current doc's editorState loading (being fetched from server)?
+	return <span>Loading</span>; // TODO: nicer component
+      } else { // get doc's editorState and render TextEditor
+	const {editorState} = this.getDocState();
+	return (
+	  <div>
+	    <Navbar
+	       username={this.state.username}
+	       activeDoc={this.state.docId}
+	       docs={this.state.docs}
+	       onSelectDoc={this.selectDoc}
+	       onSubmitScreenName={this.editDocName}
+	       onSubmitNewDoc={this.createDoc}/>
+	    <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
+            <RB.Grid fluid={true}>
+	      <RB.Row>
+		<RB.Col lg={2} md={2} sm={1}></RB.Col>
+		<RB.Col lg={8} md={8} sm={10}>
+		  
+		  <RB.Row>
+		    <Sticky enabled={true} top={0} innerZ={1001}>
+		      <div className="panel panel-default generate-panel">
+			<div className="panel-heading">
+			  <ButtonToolbar
+			     temperature={this.state.temperature} 
+			     onTemperatureChange={this.onTemperatureChange}
+			     maxSeqLen={this.state.maxSeqLen}
+			     onSeqLenChange={this.onSeqLenChange}
+			     models={this.state.models}
+			     onGenerate={this.generate}/>
+			</div>
 		      </div>
-		    </div>
-		  </Sticky>
-		</RB.Row>
-
-		<RB.Row>
-		  <TextEditor
-		     editorState={this.getDocState().editorState}
-		     onChange={this.onEditorChange}
-		     handleKeyCommand={this.handleKeyCommand}
-		     onTab={this.onTab}
-		     toggleInlineStyle={this.toggleInlineStyle}
-		     handleBeforeInput={this.handleBeforeInput}/>
-		  <Utils.Spacer height="50px"/>
-		</RB.Row>
-
-		<RB.Row>
-    		  <Suggestions
-    		     hyps={this.state.hyps}
-		     models={this.state.models}
-		     isCollapsed={this.state.suggestionsCollapsed}
-		     onCollapse={this.toggleSuggestions}
-    		     loadingHyps={this.state.loadingHyps}
-    		     onRegenerate={this.regenerate}
-    		     onHypSelect={this.insertHypAtCursor}
-		     onHypDismiss={this.dismissHyp}
-		     hasHadHyps={this.state.hasHadHyps}
-		     resetHyps={this.resetHyps}/>
-		</RB.Row>
-		
-	      </RB.Col>
-	      <RB.Col lg={2} md={2} sm={1}></RB.Col>
-	    </RB.Row>
-
-	  </RB.Grid>
-	</div>
-      );
+		    </Sticky>
+		  </RB.Row>
+		  
+		  <RB.Row>
+		    <TextEditor
+		       editorState={editorState}
+		       onChange={this.onEditorChange}
+		       handleKeyCommand={this.handleKeyCommand}
+		       onTab={this.onTab}
+		       toggleInlineStyle={this.toggleInlineStyle}
+		       handleBeforeInput={this.handleBeforeInput}/>
+		    <Utils.Spacer height="50px"/>
+		  </RB.Row>
+		  
+		  <RB.Row>
+    		    <Suggestions
+    		       hyps={this.state.hyps}
+		       models={this.state.models}
+		       isCollapsed={this.state.suggestionsCollapsed}
+		       onCollapse={this.toggleSuggestions}
+    		       loadingHyps={this.state.loadingHyps}
+    		       onRegenerate={this.regenerate}
+    		       onHypSelect={this.insertHypAtCursor}
+		       onHypDismiss={this.dismissHyp}
+		       hasHadHyps={this.state.hasHadHyps}
+		       resetHyps={this.resetHyps}/>
+		  </RB.Row>
+		  
+		</RB.Col>
+		<RB.Col lg={2} md={2} sm={1}></RB.Col>
+	      </RB.Row>
+	      
+	    </RB.Grid>
+          </div>
+	);
+      }
     }
   }
 };

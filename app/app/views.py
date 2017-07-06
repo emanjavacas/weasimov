@@ -5,7 +5,7 @@ import uuid
 from palettable.colorbrewer.qualitative import Pastel2_8
 import flask
 import flask_login
-from sqlalchemy import desc
+from sqlalchemy import desc, and_
 
 from app import app, db, lm
 from .models import User, Doc, Text, Edit, Generation
@@ -95,7 +95,7 @@ def get_session_value(key, session={}):
 
 
 def get_last_text(user_id, doc_id):
-    expr = Text.user_id == user_id and Text.doc_id == doc_id
+    expr = and_(Text.user_id == user_id, Text.doc_id == doc_id)
     return Text.query.filter(expr) \
                      .order_by(desc(Text.timestamp)) \
                      .first()
@@ -107,9 +107,11 @@ def get_user_docs(user_id, doc_id=None):
     data (later is first). If doc_id is given, it will fetch only
     that doc metadata.
     """
-    expr = Doc.user_id == user_id and Doc.active is True
+    expr = and_(Doc.user_id == user_id, Doc.active == True)  # nopep8
     if doc_id is not None:
-        expr = expr and Doc.id == doc_id
+        expr = and_(Doc.user_id == user_id,
+                    Doc.active == True,  # nopep8
+                    Doc.id == doc_id)
     return Doc.query \
               .filter(expr) \
               .order_by(desc(Doc.last_modified))
@@ -136,19 +138,6 @@ def init():
         # last editor state
         "contentState": text.text if text is not None else None}
     return flask.jsonify(status="OK", session=payload)
-
-
-@app.route('/fetchdoc', methods=['GET'])
-@flask_login.login_required
-def fetchdoc():
-    """
-    doc_id: str
-    """
-    user_id = int(flask_login.current_user.id)
-    doc = get_user_docs(user_id, doc_id=flask.request.json['doc_id']).first()
-    text = get_last_text(user_id, doc.id)
-    text = text.text if text is not None else None
-    return flask.jsonify(status='OK', doc=doc.as_json(), contentState=text)
 
 
 @app.route('/savechange', methods=['POST'])
@@ -221,6 +210,21 @@ def createdoc():
     db.session.add(doc)
     db.session.commit()
     return flask.jsonify(status='OK', doc=doc.as_json())
+
+
+@app.route('/fetchdoc', methods=['GET'])
+@flask_login.login_required
+def fetchdoc():
+    """
+    doc_id: str
+    """
+    user_id = int(flask_login.current_user.id)
+    data = flask.request.args
+    doc = get_user_docs(user_id, doc_id=data.get('doc_id')).first()
+    print(doc.id, data.get('doc_id'))
+    text = get_last_text(user_id, doc.id)
+    text = text.text if text is not None else None
+    return flask.jsonify(status='OK', doc=doc.as_json(), contentState=text)
 
 
 @app.route('/savedoc', methods=['POST'])

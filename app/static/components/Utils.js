@@ -95,7 +95,7 @@ function saveChange(edit, docId) {
 function createDoc(screenName, success, error) {
   $.ajax({
     contentType: 'application/json;charset=UTF-8',
-    url: 'savedoc',
+    url: 'createdoc',
     data: JSON.stringify({screen_name: screenName, timestamp: timestamp()}),
     type: 'POST',
     dataType: 'json',
@@ -147,13 +147,12 @@ function fetchDoc(docId, success, error) {
   success = success || console.log;
   error = error || console.log;
   $.ajax({
-    contentType: 'application/json;charset=UTF-8',
     url: 'fetchdoc',
-    data: JSON.stringify({doc_id: docId}),
+    data: {doc_id: docId},
     type: 'GET',
     dataType: 'json',
     success: (response) => success(response),
-    error: (response) => error(response)
+    error: (response) => error(response, docId)
   });
 }
 
@@ -293,6 +292,7 @@ const Utils = {
   launchGeneration: launchGeneration,
   saveChange: saveChange,
   saveDoc: saveDoc,
+  createDoc: createDoc,
   removeDoc: removeDoc,
   fetchDoc: fetchDoc,
   editDocName: editDocName,
