@@ -148,9 +148,9 @@ class App extends React.Component {
               return block.getText();
             }
           }).join('\n');
-    }
-    if (seed.length > 200) {
-      seed = seed.substring(seed.length - 200);
+      if (seed.length > 200) {
+        seed = seed.substring(seed.length - 200);
+      }
     }
     this.launchGeneration(seed, model);
   }
