@@ -1,19 +1,29 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as RB from 'react-bootstrap';
+import Moment from 'react-moment';
 
 import Utils from './Utils';
 
-
 function DocItem(props) {
   return (
-    <RB.MenuItem
-       eventKey={props.doc.id}
-       active={props.doc.id === props.activeDoc}
-       onClick={() => props.onClick(props.doc.id)}>
-      {props.doc.screen_name}
-    </RB.MenuItem>
+    <RB.Table style={{marginBottom: "0px", width:"320px"}}>
+      <tbody>
+        <tr>
+          <td>
+            <span 
+        eventKey={props.doc.id}
+        active={props.doc.id === props.activeDoc}
+        onClick={() => props.onClick(props.doc.id)}>
+        {props.doc.screen_name}
+        </span>
+        </td>
+        <td className="pull-right">
+          <Moment fromNow ago >{props.doc.last_modified}</Moment>
+        </td>
+        </tr>
+      </tbody>
+    </RB.Table>
   );
 }
 
@@ -48,23 +58,21 @@ class ScreenNameInput extends React.Component {
   render() {
     return this.state.editing ?
       (
-	<RB.Navbar.Form pullLeft>
+	<RB.Form inline>
 	  <RB.FormGroup>
             <RB.FormControl
 	       ref="input"
 	       type="text"
 	       placeholder="Enter a new name"
 	       defaultValue={this.props.screenName}/>
+    <RB.Button onClick={() => this.onSaveScreenName()} style={{margin: "0 16px"}}>Save</RB.Button>
           </RB.FormGroup>
-	  <Utils.NBSP size={2}/>
-          <RB.Button onClick={() => this.onSaveScreenName()}>Save</RB.Button>
-	</RB.Navbar.Form>
+	        {/*<Utils.NBSP size={2}/>*/}
+	</RB.Form>
       ) : (
-	<RB.Nav>
-	  <RB.NavItem>
-	    <span onClick={() => this.toggleEditing(true)}>{this.props.screenName}</span>
-	  </RB.NavItem>
-	</RB.Nav>
+    <RB.Button onClick={() => this.toggleEditing(true)}>
+	    <span >{this.props.screenName}</span>
+    </RB.Button>
       );
   }
 }
@@ -187,48 +195,48 @@ class Navbar extends React.Component {
 	  <RB.Navbar.Toggle/>
 	</RB.Navbar.Header>
 	<RB.Navbar.Collapse>
-	  <RB.Nav>
-	    <RB.NavItem>
-	      {this.props.username || "loading"}
-	    </RB.NavItem>
-	  </RB.Nav>
-	  <ScreenNameInput
-	     screenName={this.props.docs[this.props.activeDoc].screen_name}
-	     onSubmit={this.props.onSubmitScreenName}/>
-	  <RB.Nav className="pull-right">
-	    <RB.NavDropdown
-	       title="Documents"
+    <RB.ButtonGroup style={{marginTop:"7px", display: "inline-flex"}}>
+      <ScreenNameInput
+        screenName={this.props.docs[this.props.activeDoc].screen_name}
+        onSubmit={this.props.onSubmitScreenName}/>
+      <RB.DropdownButton
+        title=" "
 	       id="nav-dropdown"
 	       open={this.state.dropdownOpen}
 	       onToggle={this.toggleDropdown}
-	       style={{zIndex: 10000}}>
+	       style={{zIndex: 9999999}}>
 	      {Object.keys(this.props.docs).map((key) => {
-		return (
-		  <DocItem
-		     key={key}
-		     doc={this.props.docs[key]}
-		     activeDoc={this.props.activeDoc}
-		     onClick={this.onSelectDoc}>
-		  </DocItem>
-		);
+            return (
+              <DocItem
+                key={key}
+                doc={this.props.docs[key]}
+                activeDoc={this.props.activeDoc}
+                onClick={this.onSelectDoc}
+                >
+              </DocItem>
+            );
 	      })}
-            </RB.NavDropdown>
-           <RB.NavItem 
-               eventKey={2} 
-               onClick={this.toggleNewDocModal}>
-             <i className="fa fa-plus-square" style={{fontSize: "20px"}}/>
-	   </RB.NavItem>
-           <RB.NavItem 
-               eventKey={3}
-               onClick={this.toggleRemoveDocModal}>
-             <i className="fa fa-minus-square" style={{fontSize: "20px"}}/>
-           </RB.NavItem>
-	   <RB.NavItem eventKey={4} href="logout">
-	     <i className="fa fa-sign-out" style={{fontSize: "20px"}}/>
-	   </RB.NavItem>
-	 </RB.Nav>
-       </RB.Navbar.Collapse>
-     </RB.Navbar>
+      </RB.DropdownButton>
+      <RB.Button eventKey={2} onClick={this.toggleNewDocModal}>
+       <i className="fa fa-file" style={{fontSize: "16px"}}/>
+	    </RB.Button>
+      <RB.Button 
+          eventKey={3}
+          onClick={this.toggleRemoveDocModal}>
+          <i className="fa fa-trash-o" style={{fontSize: "16px"}}/>
+      </RB.Button>
+    </RB.ButtonGroup>
+    <RB.ButtonGroup className="pull-right" style={{marginTop:"7px"}}>
+      <RB.Button>
+	      {this.props.username || "loading"}
+        </RB.Button>
+      <RB.Button eventKey={4} href="logout">
+        <i className="fa fa-sign-out" style={{fontSize: "16px"}}/>
+        </RB.Button>
+    </RB.ButtonGroup>
+
+    </RB.Navbar.Collapse>
+  </RB.Navbar>
     );
   }
 }
