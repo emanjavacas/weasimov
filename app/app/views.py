@@ -63,8 +63,8 @@ def login():
         user = form.get_user()
         user.active = True
         db.session.commit()
-        # socketio
-        socketio.emit('login', {}, namespace='/monitor')
+        # websocket
+        socketio.emit('login', {'user_id': user.id}, namespace='/monitor')
         return flask.redirect(flask.url_for("index"))
     return flask.render_template("login.html", title='Sign in', form=form)
 
@@ -158,7 +158,7 @@ def init():
 @flask_login.login_required
 def savechange():
     """
-    doc_id: str,
+    doc_id: int,
     edit: json,
     timestamp: int
     """
@@ -185,7 +185,7 @@ def savechange():
 def savesuggestion():
     """
     generation_id: str,
-    doc_id: str, id of doc where the action took place
+    doc_id: int, id of doc where the action took place
     selected: True, (optional), requires `draft_entity_id`
     draft_entity_id: str
     dismissed: True, (optional)
@@ -216,7 +216,7 @@ def savesuggestion():
 @flask_login.login_required
 def createdoc():
     """
-    doc_id: str
+    doc_id: int
     screen_name: str
     timestamp: int
     """
@@ -229,7 +229,9 @@ def createdoc():
               last_modified=timestamp)
     db.session.add(doc)
     db.session.commit()
-    emit('createdoc', doc.as_json(), room=user_id, namespace='/monitor')
+    data = doc.as_json()
+    data['snippet'] = ''
+    emit('createdoc', data, room=user_id, namespace='/monitor')
     return flask.jsonify(status='OK', doc=doc.as_json())
 
 
@@ -237,9 +239,14 @@ def createdoc():
 @flask_login.login_required
 def fetchdoc():
     """
-    doc_id: str
+    doc_id: int
+    user_id: int, optional
     """
-    user_id = int(flask_login.current_user.id)
+    requested_user = flask.request.args.get('user_id')
+    if requested_user is not None:
+        # TODO check if whitelisted
+        pass
+    user_id = requested_user or int(flask_login.current_user.id)
     doc_id = flask.request.args.get('doc_id')
     doc = get_user_docs(user_id, doc_id=doc_id).first()
     text = get_last_text(user_id, doc.id)
@@ -251,7 +258,7 @@ def fetchdoc():
 @flask_login.login_required
 def savedoc():
     """
-    doc_id: str
+    doc_id: int
     text: json
     timestamp: int
     """
@@ -273,7 +280,7 @@ def savedoc():
 @flask_login.login_required
 def removedoc():
     """
-    doc_id: str
+    doc_id: int
     """
     user_id = int(flask_login.current_user.id)
     doc_id = flask.request.args.get('doc_id')
@@ -289,7 +296,7 @@ def removedoc():
 @flask_login.login_required
 def editdocname():
     """
-    doc_id: str
+    doc_id: int
     screen_name: str
     timestamp: int
     """
@@ -321,7 +328,7 @@ def savesession():
 def generate():
     """
     seed: str
-    seed_doc_id: str, doc id where the generation was triggered
+    seed_doc_id: int, doc id where the generation was triggered
     model: str, path of the model used for generation
     temperature: float
     max_seq_len: int
@@ -413,7 +420,6 @@ def fetch_docs(max_length=50):
     for doc in Doc.query.filter(Doc.active == True).all():  # nopep8
         doc = doc.as_json()
         doc['snippet'] = fetch_snippet(doc['id'], max_length=max_length)
-        print('snippet', doc['snippet'])
         result.append(doc)
     return result
 
@@ -446,7 +452,7 @@ def on_disconnect():
     print("{username} is leaving".format(username=username))
 
 
-@socketio.on('join')
+@socketio.on('join', namespace='/monitor')
 def on_join(data):
     username = flask_login.current_user.username
     join_room(data['room'])
@@ -454,7 +460,7 @@ def on_join(data):
         username=username, room=data['room']))
 
 
-@socketio.on('leave')
+@socketio.on('leave', namespace='/monitor')
 def on_leave(data):
     username = flask_login.current_user.username
     leave_room(data['room'])

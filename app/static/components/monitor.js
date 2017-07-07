@@ -26,7 +26,71 @@ class Monitor extends React.Component {
 
   componentDidMount() {
     MonitorUtils.monitorInit(this.onInitSuccess, this.onInitError);
-    // listen to login, logout, createdoc...
+    /**
+     * user_id: int
+     */
+    socket.on('login', (data) => {
+      this.setState({
+	users: {
+	  ...this.state.users,
+	  [data.user_id]: {
+	    ...this.state.users[data.user_id],
+	    active: true
+	  }
+	}
+      });
+    });
+    /**
+     * user_id: int
+     */
+    socket.on('logout', (data) => {
+      this.setState({
+	users: {
+	  ...this.state.users,
+	  [data.user_id]: {
+	    ...this.state.users[data.user_id],
+	    active: false
+	  }
+	}
+      });
+    });
+    /**
+     * id: int
+     * user_id: int
+     * screen_name: str
+     * last_modified: int
+     * timestamp: int
+     * snippet: str
+     */
+    socket.on('createdoc', (data) => {
+      const {docs} = this.state;
+      docs[data.id] = data;
+      this.setState({docs: docs});
+    });
+    /**
+     * doc_id: int
+     */
+    socket.on('removedoc', (data) => {
+      const {docs} = this.state;
+      delete docs[data.doc_id];
+      this.setState({docs: docs});
+    });
+    /**
+     * doc_id: id
+     * screen_name: str
+     * timestamp: int
+     */
+    socket.on('editdocname', (data) => {
+      this.setState({
+	docs: {
+	  ...this.state.docs,
+	  [data.doc_id]: {
+	    ...this.state.docs[data.doc_id],
+	    screen_name: data.screen_name
+	  }
+	}
+      });
+    });
   }
 
   onInitSuccess(response) {
@@ -39,12 +103,12 @@ class Monitor extends React.Component {
   }
 
   joinRoom(docId) {
-    // join room
+    socket.emit('join', {'room': docId});
     this.setState({activeRoom: docId});
   }
 
   leaveRoom() {
-    // leave room
+    socket.emit('leave', {'room': this.state.activeRoom});
     this.setState({activeRoom: null});
   }
 

@@ -23,10 +23,15 @@ class MonitorNavbar extends React.Component {
 	  <RB.Nav pullRight>
 	    <RB.NavItem eventKey={1}>
 	      {(this.props.activeRoom !== null) ?
-		<i className="fa fa-home" style={{fontSize: "20px"}} onClick={this.props.onLeaveRoom}/> :
+		this.props.activeDoc.screen_name :
 		<span/>}
 	    </RB.NavItem>
-	    <RB.NavItem eventKey={1} href="index">
+	    <RB.NavItem eventKey={2}>
+	      {(this.props.activeRoom !== null) ?
+		<i className="fa fa-home" style={{fontSize: "20px"}} onClick={() => this.props.onLeaveRoom()}/> :
+		<span/>}
+	    </RB.NavItem>
+	    <RB.NavItem eventKey={3} href="index">
 	      <i className="fa fa-sign-out" style={{fontSize: "20px"}}/>
 	    </RB.NavItem>
 	  </RB.Nav>

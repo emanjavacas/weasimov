@@ -79,7 +79,7 @@ function shortenSeed(seed, n){
 // AJAX stuff
 /**
  * seed: str
- * seed_doc_id: str, current doc id
+ * seed_doc_id: int, current doc id
  * model: str, model path
  * temperature: float
  * max_seq_len: int
@@ -102,7 +102,7 @@ function launchGeneration(seed, model, appState, success, error) {
 }
 
 /**
- * doc_id: str
+ * doc_id: int
  * edit: json
  * timestamp: int, unix timestamp
  */
@@ -153,7 +153,7 @@ function saveDoc(text, docId) {
 
 
 /**
- * doc_id: str
+ * doc_id: int
  */
 function removeDoc(docId, success, error) {
   success = success || console.log;
@@ -171,14 +171,15 @@ function removeDoc(docId, success, error) {
 
 
 /**
- * doc_id: str
+ * doc_id: int
+ * user_id: 
  */
-function fetchDoc(docId, success, error) {
+function fetchDoc(docId, success, error, userId) {
   success = success || console.log;
   error = error || console.log;
   $.ajax({
     url: 'fetchdoc',
-    data: {doc_id: docId},
+    data: {doc_id: docId, user_id: userId},
     type: 'GET',
     dataType: 'json',
     success: (response) => success(response, docId),
@@ -188,7 +189,7 @@ function fetchDoc(docId, success, error) {
 
 
 /**
- * doc_id: str
+ * doc_id: int
  * screen_name: str
  * timestamp: int
  */
@@ -210,7 +211,7 @@ function editDocName(docId, newName, success, error) {
 /**
  * generation_id: str
  * timestamp: int, unix timestamp
- * doc_id: str, id of currently shown doc
+ * doc_id: int, id of currently shown doc
  * selected: True, (optional)
  *   requires:
  *   - draft_entity_id: str

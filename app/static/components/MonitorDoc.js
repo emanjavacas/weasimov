@@ -6,6 +6,13 @@ import {Editor, EditorState, RichUtils} from 'draft-js';
 class MonitorDoc extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      init: false
+    };
+  }
+
+  componentDidMount() {
+    this.props.onLoadDoc(this.props.activeRoom);
   }
 
   render() {
