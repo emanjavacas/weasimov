@@ -213,14 +213,10 @@ class Navbar extends React.Component {
 		);
 	      })}
             </RB.NavDropdown>
-           <RB.NavItem 
-               eventKey={2} 
-               onClick={this.toggleNewDocModal}>
+           <RB.NavItem eventKey={2} onClick={this.toggleNewDocModal}>
              <i className="fa fa-plus-square" style={{fontSize: "20px"}}/>
 	   </RB.NavItem>
-           <RB.NavItem 
-               eventKey={3}
-               onClick={this.toggleRemoveDocModal}>
+           <RB.NavItem eventKey={3} onClick={this.toggleRemoveDocModal}>
              <i className="fa fa-minus-square" style={{fontSize: "20px"}}/>
            </RB.NavItem>
 	   <RB.NavItem eventKey={4} href="logout">

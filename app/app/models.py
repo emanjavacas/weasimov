@@ -91,7 +91,7 @@ class Text(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
-    doc_id = db.Column(db.String(64))
+    doc_id = db.Column(db.Integer)
     text = db.Column(JSONEncodedDict)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
@@ -112,7 +112,7 @@ class Edit(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
-    doc_id = db.Column(db.String(64))
+    doc_id = db.Column(db.Integer)
     edit = db.Column(JSONEncodedDict)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
@@ -144,14 +144,14 @@ class Generation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     generation_id = db.Column(db.String(64))
     user_id = db.Column(db.Integer)
-    seed_doc_id = db.Column(db.String(64))
+    seed_doc_id = db.Column(db.Integer)
     model = db.Column(db.String(120))
     seed = db.Column(db.String)
     temperature = db.Column(db.Float)
     max_seq_len = db.Column(db.Integer)
     text = db.Column(db.String)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    action_doc_id = db.Column(db.String(64))
+    action_doc_id = db.Column(db.Integer)
     draft_entity_id = db.Column(db.String(64), default='')
     selected = db.Column(db.Boolean, default=False)
     selected_timestamp = db.Column(db.DateTime)
