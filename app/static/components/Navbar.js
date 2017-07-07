@@ -7,24 +7,33 @@ import Utils from './Utils';
 
 function DocItem(props) {
   return (
-    <RB.Table style={{marginBottom: "0px", width:"320px"}}>
-      <tbody>
-        <tr>
-          <td>
-            <span 
-        eventKey={props.doc.id}
-        active={props.doc.id === props.activeDoc}
-        onClick={() => props.onClick(props.doc.id)}>
-        {props.doc.screen_name}
-        </span>
-        </td>
-        <td className="pull-right">
-          <Moment fromNow ago >{props.doc.last_modified}</Moment>
-        </td>
-        </tr>
-      </tbody>
-    </RB.Table>
+    <RB.MenuItem
+       active={props.doc.id === props.activeDoc}
+       style={{marginBottom: "0px", width:"320px"}}
+       onClick={() => props.onSelectDoc(props.doc.id)}>
+      {props.doc.screen_name}
+      <Moment className="pull-right" fromNow ago >{props.doc.last_modified}</Moment>
+    </RB.MenuItem>
   );
+}
+
+
+function makeDocItems(docs, activeDoc, onSelectDoc) {
+  const docItems = [];
+  const docIds = Object.keys(docs);
+  for (var i=0; i<docIds.length; i++) {
+    const docId = docIds[i], doc = docs[docId];
+    docItems.push(
+      <DocItem
+         key={docId}
+	 eventKey={docId}
+	 doc={doc}
+	 activeDoc={activeDoc}
+	 onSelectDoc={onSelectDoc}>
+      </DocItem>
+    );
+  }
+  return docItems;
 }
 
 
@@ -65,14 +74,17 @@ class ScreenNameInput extends React.Component {
 	       type="text"
 	       placeholder="Enter a new name"
 	       defaultValue={this.props.screenName}/>
-    <RB.Button onClick={() => this.onSaveScreenName()} style={{margin: "0 16px"}}>Save</RB.Button>
+	    <RB.Button
+	      onClick={() => this.onSaveScreenName()}
+	      style={{margin: "0 16px"}}>
+	      Save
+	    </RB.Button>
           </RB.FormGroup>
-	        {/*<Utils.NBSP size={2}/>*/}
 	</RB.Form>
       ) : (
-    <RB.Button onClick={() => this.toggleEditing(true)}>
-	    <span >{this.props.screenName}</span>
-    </RB.Button>
+	<RB.Button onClick={() => this.toggleEditing(true)}>
+	  <span >{this.props.screenName}</span>
+	</RB.Button>
       );
   }
 }
@@ -195,48 +207,36 @@ class Navbar extends React.Component {
 	  <RB.Navbar.Toggle/>
 	</RB.Navbar.Header>
 	<RB.Navbar.Collapse>
-    <RB.ButtonGroup style={{marginTop:"7px", display: "inline-flex"}}>
-      <ScreenNameInput
-        screenName={this.props.docs[this.props.activeDoc].screen_name}
-        onSubmit={this.props.onSubmitScreenName}/>
-      <RB.DropdownButton
-        title=" "
+	  <RB.ButtonGroup style={{marginTop:"7px", display: "inline-flex"}}>
+	    <ScreenNameInput
+	       screenName={this.props.docs[this.props.activeDoc].screen_name}
+	       onSubmit={this.props.onSubmitScreenName}/>
+	    <RB.DropdownButton
+	       title=" "
 	       id="nav-dropdown"
 	       open={this.state.dropdownOpen}
 	       onToggle={this.toggleDropdown}
-	       style={{zIndex: 9999999}}>
-	      {Object.keys(this.props.docs).map((key) => {
-            return (
-              <DocItem
-                key={key}
-                doc={this.props.docs[key]}
-                activeDoc={this.props.activeDoc}
-                onClick={this.onSelectDoc}
-                >
-              </DocItem>
-            );
-	      })}
-      </RB.DropdownButton>
-      <RB.Button eventKey={2} onClick={this.toggleNewDocModal}>
-       <i className="fa fa-file" style={{fontSize: "16px"}}/>
+	       style={{zIndex: 9999999}}
+	       pullRight>
+	      {makeDocItems(this.props.docs, this.props.activeDoc, this.onSelectDoc)}
+	    </RB.DropdownButton>
+	    <RB.Button onClick={this.toggleNewDocModal}>
+	      <i className="fa fa-file" style={{fontSize: "16px"}}/>
 	    </RB.Button>
-      <RB.Button 
-          eventKey={3}
-          onClick={this.toggleRemoveDocModal}>
-          <i className="fa fa-trash-o" style={{fontSize: "16px"}}/>
-      </RB.Button>
-    </RB.ButtonGroup>
-    <RB.ButtonGroup className="pull-right" style={{marginTop:"7px"}}>
-      <RB.Button>
+	    <RB.Button onClick={this.toggleRemoveDocModal}>
+	      <i className="fa fa-trash-o" style={{fontSize: "16px"}}/>
+	    </RB.Button>
+	  </RB.ButtonGroup>
+	  <RB.ButtonGroup className="pull-right" style={{marginTop:"7px"}}>
+	    <RB.Button>
 	      {this.props.username || "loading"}
-        </RB.Button>
-      <RB.Button eventKey={4} href="logout">
-        <i className="fa fa-sign-out" style={{fontSize: "16px"}}/>
-        </RB.Button>
-    </RB.ButtonGroup>
-
-    </RB.Navbar.Collapse>
-  </RB.Navbar>
+            </RB.Button>
+	    <RB.Button href="logout">
+	      <i className="fa fa-sign-out" style={{fontSize: "16px"}}/>
+            </RB.Button>
+	  </RB.ButtonGroup>
+	</RB.Navbar.Collapse>
+      </RB.Navbar>
     );
   }
 }

@@ -58,14 +58,15 @@ class App extends React.Component {
     this.generate = this.generate.bind(this);
     this.regenerate = this.regenerate.bind(this);
     // saving functions
-    this.onInit = this.onInit.bind(this);
+    this.onInitSuccess = this.onInitSuccess.bind(this);
+    this.onInitError = this.onInitError.bind(this);
     this.saveOnInterval = this.saveOnInterval.bind(this);
     this.saveOnUnload = this.saveOnUnload.bind(this);
   }
 
   componentDidMount() {
     // init session
-    Utils.init(this.onInit, (error) => console.log("Error"));
+    Utils.init(this.onInitSuccess, this.onInitError);
     // add unload event
     window.addEventListener("beforeunload", this.saveOnUnload);
   }
@@ -75,7 +76,7 @@ class App extends React.Component {
   }
 
   // server interaction
-  onInit(session) {
+  onInitSuccess(session) {
     this.setState({
       // app state
       init: true,
@@ -104,6 +105,10 @@ class App extends React.Component {
     });
     // set interval
     this.saveOnIntervalId = setInterval(this.saveOnInterval, 25000);
+  }
+
+  onInitError(error) {
+    console.log(error);
   }
 
   saveOnInterval() {

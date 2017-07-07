@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Editor, EditorState, RichUtils} from 'draft-js';
+import {Editor} from 'draft-js';
 import * as RB from 'react-bootstrap';
 import Sticky from 'react-stickynode';
 
@@ -26,23 +26,22 @@ class TextEditor extends React.Component {
 
     return (
       <div className="RichEditor-root">
-      <Sticky enabled={true} top={70} innerZ={1001}>
-        <InlineStyleControls
-           editorState={editorState}
-           onToggle={this.props.toggleInlineStyle}
-           />
-      </Sticky>
+	<Sticky enabled={true} top={70} innerZ={1001}>
+          <InlineStyleControls
+             editorState={editorState}
+             onToggle={this.props.toggleInlineStyle}
+             />
+	</Sticky>
         <div className={className} onClick={this.focus}>
           <Editor
-            editorState={editorState}
-            handleKeyCommand={this.props.handleKeyCommand}
-            onChange={this.props.onChange}
-            onTab={this.props.onTab}
-            placeholder="Bieb bieb..."
-            ref="editor"
-            spellCheck={false}
-	    handleBeforeInput={this.props.handleBeforeInput}
-	   />
+             editorState={editorState}
+             handleKeyCommand={this.props.handleKeyCommand}
+             onChange={this.props.onChange}
+             onTab={this.props.onTab}
+             placeholder="Bieb bieb..."
+             ref="editor"
+             spellCheck={false}
+	     handleBeforeInput={this.props.handleBeforeInput}/>
         </div>
       </div>
     );
