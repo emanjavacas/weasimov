@@ -1,3 +1,4 @@
+
 import React from 'react';
 import * as RB from 'react-bootstrap';
 
@@ -7,7 +8,9 @@ const Spinner = (props) => (
     <span className="loading dots"></span>
   </div>);
 
+
 const Spacer = (props) => <div className="row spacer" style={{height: props.height}}></div>;
+
 
 function NBSP(props) {
   let nbsp = '&nbsp;';
@@ -43,6 +46,15 @@ function getModelData(models, modelName) {
 
 
 function timestamp() { return Date.now() / 1000; }
+
+
+function timestampToHuman(timestamp) {
+  const date = new Date(timestamp);
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
 
 
 /* Turn model author names into their initials */
@@ -307,6 +319,7 @@ const Utils = {
   getInitials: getInitials,
   shortenSeed: shortenSeed,
   newDocState: newDocState,
+  timestampToHuman: timestampToHuman,
   // ajax
   launchGeneration: launchGeneration,
   saveChange: saveChange,

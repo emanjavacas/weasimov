@@ -373,7 +373,6 @@ def whitelist(whitelisted):
         @wraps(f)
         def wrapped(*args, **kwargs):
             user = User.query.get(int(flask_login.current_user.id))
-            print(user, whitelisted)
             if user.username not in whitelisted:
                 return flask.jsonify(status='ERROR', message='Forbidden'), 403
             return f(*args, **kwargs)
@@ -388,20 +387,52 @@ def monitor():
     return flask.render_template('monitor.html', title='Monitor')
 
 
-@app.route('/fetchusers', methods=['GET'])
+def fetch_snippet(doc_id, max_length=50):
+    """
+    Get a snippet of length `max_length` from the beginning of the last version
+    of a given document.
+    """
+    snippet = ''
+    text = Text.query.filter_by(doc_id=doc_id) \
+               .order_by(desc(Text.timestamp)) \
+               .first()
+    for block in text.text['blocks']:
+        if len(snippet) >= max_length:
+            return snippet
+        block_text = block['text']
+        snippet += block_text[:min(max_length - len(snippet), len(block_text))]
+    return snippet
+
+
+def fetch_docs(max_length=50):
+    """
+    Fetch all document metadata (Doc) for monitoring, attaching a snippet of
+    size `max_length` for preview.
+    """
+    result = []
+    for doc in Doc.query.filter(Doc.active == True).all():  # nopep8
+        doc = doc.as_json()
+        doc['snippet'] = fetch_snippet(doc['id'], max_length=max_length)
+        print('snippet', doc['snippet'])
+        result.append(doc)
+    return result
+
+
+@app.route('/monitorinit', methods=['GET'])
 @flask_login.login_required
 @whitelist(app.config.get('MONITORS', []))
-def fetchusers():
-    rooms = socketio.rooms['/monitor'].keys()
-    users = {u.id: {'username': u.username, 'active': u.is_active()}
-             for u in User.query.all()}
-    return flask.jsonify(status='OK', rooms=rooms, users=users)
+def monitorinit():
+    users = [{'id': user.id,
+              'username': user.username,
+              'active': user.is_active()} for user in User.query.all()]
+    return flask.jsonify(status='OK', users=users, docs=fetch_docs())
 
 
 @socketio.on('connect', namespace='/monitor')
 def on_connect():
     username = flask_login.current_user.username
     if username in app.config.get('MONITORS', []):  # TODO: fetch from db
+        print("{username} has joined /monitor".format(username=username))
         emit('Connected to /monitor',
              {'data': 'connected', 'username': username},
              broadcast=True)
