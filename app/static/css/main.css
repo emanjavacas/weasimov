@@ -28,6 +28,10 @@ li.list-group-hover.list-group-item:hover {
   padding: 0;
 }
 
+.sticky-inner-wrapper {
+  z-index: 999 !important;
+}
+
 /* Suggestions Panel */
 .suggestions-panel .table, tbody tr, td {
   border: none !important;
