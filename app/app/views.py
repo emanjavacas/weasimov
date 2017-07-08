@@ -7,7 +7,7 @@ import itertools
 from palettable.colorbrewer.qualitative import Pastel2_8
 import flask
 import flask_login
-from flask_socketio import emit, join_room, leave_room
+from flask_socketio import join_room, leave_room, emit
 from sqlalchemy import desc, and_
 
 from app import app, db, lm
@@ -176,7 +176,7 @@ def savechange():
     db.session.add(edit)
     db.session.commit()
     # websocket
-    emit('savechange', data, room=user_id, namespace='/monitor')
+    emit('savechange', data, room=str(doc.id), namespace='/monitor')
     return flask.jsonify(status='OK')
 
 
@@ -206,9 +206,6 @@ def savesuggestion():
         generation.dismissed = True
         generation.dismissed_timestamp = timestamp
     db.session.commit()
-    # websocket
-    user_id = int(flask_login.current_user.id)
-    emit('savesuggestion', data, room=user_id, namespace='/monitor')
     return flask.jsonify(status='OK', message='Suggestion updated.')
 
 
@@ -231,7 +228,7 @@ def createdoc():
     db.session.commit()
     data = doc.as_json()
     data['snippet'] = ''
-    emit('createdoc', data, room=user_id, namespace='/monitor')
+    socketio.emit('createdoc', data, namespace='/monitor')
     return flask.jsonify(status='OK', doc=doc.as_json())
 
 
@@ -283,12 +280,12 @@ def removedoc():
     doc_id: int
     """
     user_id = int(flask_login.current_user.id)
-    doc_id = flask.request.args.get('doc_id')
+    doc_id = flask.request.json['doc_id']
     doc = get_user_docs(user_id, doc_id=doc_id).first()
     doc.active = False
     db.session.commit()
     # websocket
-    emit('removedoc', {'doc_id': doc_id}, room=user_id, namespace='/monitor')
+    socketio.emit('removedoc', {'doc_id': doc_id}, namespace='/monitor')
     return flask.jsonify(status='OK', message='Document deleted.')
 
 
@@ -306,8 +303,7 @@ def editdocname():
     doc.screen_name = data['screen_name']
     db.session.commit()
     # websocket
-    user_id = int(flask_login.current_user.id)
-    emit('editdocname', data, room=user_id, namespace='/monitor')
+    socketio.emit('editdocname', data, namespace='/monitor')
     return flask.jsonify(status='OK', message='Name changed.')
 
 
@@ -403,12 +399,16 @@ def fetch_snippet(doc_id, max_length=50):
     text = Text.query.filter_by(doc_id=doc_id) \
                .order_by(desc(Text.timestamp)) \
                .first()
-    for block in text.text['blocks']:
-        if len(snippet) >= max_length:
-            return snippet
-        block_text = block['text']
-        snippet += block_text[:min(max_length - len(snippet), len(block_text))]
-    return snippet
+    if text is not None:        # Document is not empty
+        for block in text.text['blocks']:
+            if len(snippet) >= max_length:
+                return snippet
+            block_text = block['text']
+            stop = min(max_length - len(snippet), len(block_text))
+            snippet += block_text[:stop]
+        return snippet
+    else:
+        return ''
 
 
 def fetch_docs(max_length=50):
@@ -439,9 +439,6 @@ def on_connect():
     username = flask_login.current_user.username
     if username in app.config.get('MONITORS', []):  # TODO: fetch from db
         print("{username} has joined /monitor".format(username=username))
-        emit('Connected to /monitor',
-             {'data': 'connected', 'username': username},
-             broadcast=True)
     else:
         return False            # user is not in MONITORS
 

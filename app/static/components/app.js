@@ -5,6 +5,7 @@ import * as RB from 'react-bootstrap';
 import Sticky from 'react-stickynode';
 import NotificationSystem from 'react-notification-system';
 import jsonpatch from 'fast-json-patch';
+import {fromJS, OrderedMap} from 'immutable';
 
 import Navbar from './Navbar';
 import ButtonToolbar from './ButtonToolbar';

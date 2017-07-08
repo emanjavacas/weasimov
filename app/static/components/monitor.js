@@ -30,6 +30,7 @@ class Monitor extends React.Component {
      * user_id: int
      */
     socket.on('login', (data) => {
+      console.log('login');
       this.setState({
 	users: {
 	  ...this.state.users,
@@ -44,6 +45,7 @@ class Monitor extends React.Component {
      * user_id: int
      */
     socket.on('logout', (data) => {
+      console.log('logout');
       this.setState({
 	users: {
 	  ...this.state.users,
@@ -63,6 +65,7 @@ class Monitor extends React.Component {
      * snippet: str
      */
     socket.on('createdoc', (data) => {
+      console.log('createdoc', data);
       const {docs} = this.state;
       docs[data.id] = data;
       this.setState({docs: docs});
@@ -71,6 +74,7 @@ class Monitor extends React.Component {
      * doc_id: int
      */
     socket.on('removedoc', (data) => {
+      console.log('removedoc', data);
       const {docs} = this.state;
       delete docs[data.doc_id];
       this.setState({docs: docs});
@@ -81,6 +85,7 @@ class Monitor extends React.Component {
      * timestamp: int
      */
     socket.on('editdocname', (data) => {
+      console.log('editdocname', data);
       this.setState({
 	docs: {
 	  ...this.state.docs,

@@ -1,5 +1,4 @@
 
-import os
 from .synthesizer import Synthesizer
 from .sentence_sampler import RandomSentenceSampler
 

@@ -95,9 +95,11 @@ class MonitorPanel extends React.Component {
      * timestamp: int
      */
     this.props.socket.on('savechange', (data) => {
+      console.log('savechange', data);
       const contentState = this.state.editorState.getCurrentContent();
       const rawContent = convertToRaw(contentState);
-      const newContent = convertFromRaw(jsonpatch.apply(rawContent, data.edit));
+      const newRawContent = jsonpatch.applyPatch(rawContent, data.edit);
+      const newContent = convertFromRaw(newRawContent);
       this.onChange(EditorState.push(this.state.editorState, newContent));
     });
   }
