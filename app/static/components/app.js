@@ -82,6 +82,7 @@ class App extends React.Component {
       // app state
       init: true,
       username: session.username,
+      isMonitor: session.isMonitor,
       models: session.models,
       docs: Utils.normalizeDocs(session.docs),
       docId: session.docId,
@@ -427,6 +428,7 @@ class App extends React.Component {
 	  <div>
 	    <Navbar
 	       username={this.state.username}
+	       isMonitor={this.state.isMonitor}
 	       activeDoc={this.state.docId}
 	       docs={this.state.docs}
 	       onSelectDoc={this.selectDoc}

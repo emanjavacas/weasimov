@@ -111,9 +111,8 @@ def get_session_value(key, session={}):
     return session.get(key) or app.config["DEFAULTS"][key]
 
 
-def get_last_text(user_id, doc_id):
-    expr = and_(Text.user_id == user_id, Text.doc_id == doc_id)
-    return Text.query.filter(expr) \
+def get_last_text(doc_id):
+    return Text.query.filter(Text.doc_id == doc_id) \
                      .order_by(desc(Text.timestamp)) \
                      .first()
 
@@ -131,6 +130,32 @@ def get_user_docs(user_id, doc_id=None):
     return Doc.query.filter(expr)
 
 
+def get_snippet(text, max_length=50):
+    """
+    Get a snippet of length `max_length` from the beginning of the last version
+    of a given document.
+    """
+    snippet = ''
+    if text is not None:        # Document is not empty
+        for block in text.text['blocks']:
+            if len(snippet) >= max_length:
+                return snippet
+            block_text = block['text']
+            stop = min(max_length - len(snippet), len(block_text))
+            snippet += block_text[:stop]
+        return snippet
+    else:
+        return ''
+
+
+def get_wordcount(text):
+    wordcount = 0
+    if text is not None:
+        for block in text.text['blocks']:
+            wordcount += len(block['text'].split())
+    return wordcount
+
+
 @app.route('/init', methods=['GET'])
 @flask_login.login_required
 def init():
@@ -138,10 +163,12 @@ def init():
     user = User.query.get(user_id)
     docs = get_user_docs(user_id).all()
     doc_id = docs[0].id
-    text = get_last_text(user_id, doc_id)
+    text = get_last_text(doc_id)
     payload = {
         # app state data
         "username": user.username,
+        # - TODO: move monitor whitelisting to db
+        "isMonitor": user.username in app.config.get('MONITORS', []),
         "models": format_models(),
         # user session data
         "temperature": get_session_value("temperature", user.session or {}),
@@ -226,8 +253,10 @@ def createdoc():
               last_modified=timestamp)
     db.session.add(doc)
     db.session.commit()
-    data = doc.as_json()
-    data['snippet'] = ''
+    text = get_last_text(doc.id)
+    snippet = get_snippet(text)
+    wordcount = get_wordcount(text)
+    data = dict(doc.as_json(), snippet=snippet, wordcount=wordcount)
     socketio.emit('createdoc', data, namespace='/monitor')
     return flask.jsonify(status='OK', doc=doc.as_json())
 
@@ -246,7 +275,7 @@ def fetchdoc():
     user_id = requested_user or int(flask_login.current_user.id)
     doc_id = flask.request.args.get('doc_id')
     doc = get_user_docs(user_id, doc_id=doc_id).first()
-    text = get_last_text(user_id, doc.id)
+    text = get_last_text(doc.id)
     text = text.text if text is not None else None
     return flask.jsonify(status='OK', doc=doc.as_json(), contentState=text)
 
@@ -390,27 +419,6 @@ def monitor():
     return flask.render_template('monitor.html', title='Monitor')
 
 
-def fetch_snippet(doc_id, max_length=50):
-    """
-    Get a snippet of length `max_length` from the beginning of the last version
-    of a given document.
-    """
-    snippet = ''
-    text = Text.query.filter_by(doc_id=doc_id) \
-               .order_by(desc(Text.timestamp)) \
-               .first()
-    if text is not None:        # Document is not empty
-        for block in text.text['blocks']:
-            if len(snippet) >= max_length:
-                return snippet
-            block_text = block['text']
-            stop = min(max_length - len(snippet), len(block_text))
-            snippet += block_text[:stop]
-        return snippet
-    else:
-        return ''
-
-
 def fetch_docs(max_length=50):
     """
     Fetch all document metadata (Doc) for monitoring, attaching a snippet of
@@ -419,8 +427,10 @@ def fetch_docs(max_length=50):
     result = []
     for doc in Doc.query.filter(Doc.active == True).all():  # nopep8
         doc = doc.as_json()
-        doc['snippet'] = fetch_snippet(doc['id'], max_length=max_length)
-        result.append(doc)
+        text = get_last_text(doc['id'])
+        snippet = get_snippet(text, max_length=max_length)
+        wordcount = get_wordcount(text)
+        result.append(dict(doc, snippet=snippet, wordcount=wordcount))
     return result
 
 

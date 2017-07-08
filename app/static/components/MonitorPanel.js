@@ -26,7 +26,8 @@ function makeUserDocs(docs, onJoinRoom) {
 	  {doc.screen_name}
 	  <small>
 	    <span className="text-muted pull-right">
-	      <Moment fromNow ago>{doc.last_modified}</Moment>
+	      words {doc.wordcount}; {' '}
+	      modified <Moment fromNow ago>{doc.last_modified}</Moment> ago
 	    </span>
 	  </small>
 	</h4>

@@ -1,9 +1,11 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as RB from 'react-bootstrap';
 import Moment from 'react-moment';
 
 import Utils from './Utils';
+
 
 function DocItem(props) {
   return (
@@ -228,7 +230,7 @@ class Navbar extends React.Component {
 	    </RB.Button>
 	  </RB.ButtonGroup>
 	  <RB.ButtonGroup className="pull-right" style={{marginTop:"7px"}}>
-	    <RB.Button>
+	    <RB.Button href={(this.props.isMonitor) ? "/monitor" : null}>
 	      {this.props.username || "loading"}
             </RB.Button>
 	    <RB.Button href="logout">
