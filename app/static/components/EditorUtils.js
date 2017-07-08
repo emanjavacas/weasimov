@@ -67,7 +67,6 @@ function getNormLev(s1, s2) {
   // - lower bound: different in size between strings
   // - upper bound: length of the longest string
   const max = Math.max(s1.length, s2.length);
-  console.log('lev', lev, 'normlev', lev / max, 'max', max);
   return lev/ max;
 }
 
@@ -93,16 +92,18 @@ function updateHypMetadata(editorState, totalSkips, triggerOnStringDiff) {
 	  const prevTextLength = prevText ? prevText.length : entityText.length;
 	  const diff = Math.abs(prevTextLength - entityText.length);
 	  // only compute lev after 5 edits or an edit of length 5
+	  let newContentState;
 	  if (skips >= totalSkips || diff > triggerOnStringDiff) {
-	    currentContent.mergeEntityData(
+	    newContentState = currentContent.mergeEntityData(
 	      entityKeyBeforeCaret,
 	      {'lev': getNormLev(entityText, source),
 	       'skips': 0,
 	       'prevText': entityText});
 	  } else {		// increase counters and previous text
-	    currentContent.mergeEntityData(
+	    newContentState = currentContent.mergeEntityData(
 	      entityKeyBeforeCaret, {'skips': skips + 1, 'prevText': entityText});
 	  }
+	  return EditorState.push(editorState, newContentState, 'apply-entity');
 	}
       }
     }
