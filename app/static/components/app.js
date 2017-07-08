@@ -346,7 +346,10 @@ class App extends React.Component {
     const newContent = newEditorState.getCurrentContent();
     if (oldContent !== newContent) {
       // handle new metadata
-      EditorUtils.updateHypMetadata(newEditorState);
+      const editorStateWithUpdatedHyp = EditorUtils.updateHypMetadata(newEditorState);
+      if (editorStateWithUpdatedHyp) {
+	newEditorState = editorStateWithUpdatedHyp;
+      }
       // block-level diff
       const selection = newEditorState.getSelection();
       const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
