@@ -135,7 +135,7 @@ def savesuggestion():
     data = flask.request.json
     timestamp = datetime.fromtimestamp(data['timestamp'])
     generation = Generation.query.filter_by(
-        generation_id=data['generation_id'])
+        generation_id=data['generation_id']).first()
     generation.selected = True
     generation.draft_entity_id = data['draft_entity_id']
     generation.selected_timestamp = timestamp
