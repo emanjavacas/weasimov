@@ -1,8 +1,9 @@
 
 import React from 'react';
 import * as RB from 'react-bootstrap';
-import {Editor, EditorState, convertFromRaw, convertToRaw} from 'draft-js';
 import Moment from 'react-moment';
+import {Editor, EditorState, convertFromRaw, convertToRaw} from 'draft-js';
+import {fromJS} from 'immutable';
 import jsonpatch from 'fast-json-patch';
 
 import Utils from './Utils';
@@ -99,8 +100,9 @@ class MonitorPanel extends React.Component {
       console.log('savechange', data);
       const contentState = this.state.editorState.getCurrentContent();
       const rawContent = convertToRaw(contentState);
-      const newRawContent = jsonpatch.applyPatch(rawContent, data.edit);
-      const newContent = convertFromRaw(newRawContent);
+
+      // const newRawContent = jsonpatch.applyPatch(rawContent, data.edit);
+      // const newContent = convertFromRaw(newRawContent);
       this.onChange(EditorState.push(this.state.editorState, newContent));
     });
   }
