@@ -11,12 +11,6 @@ import seqmod.utils as u
 random.seed(1001)
 
 
-def load_metadata(fn):
-    df = pd.read_csv(fn, header=0, sep=',', dtype={'author:id': str})
-    df = df.set_index('filepath').fillna('')
-    return df
-
-
 def parse_filter_file(fn):
     df = pd.read_csv(fn, header=0, sep=';', dtype=str)
     df = df.set_index('filters').fillna('')

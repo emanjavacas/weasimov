@@ -6,7 +6,13 @@ const Spinner = (props) => (
     <span className="loading dots"></span>
   </div>);
 
-const Spacer = (props) => <div className="row" style={{height: props.height}}></div>;
+const Spacer = (props) => <div className="row spacer" style={{height: props.height}}></div>;
+
+function NBSP(props) {
+  let nbsp = '&nbsp;';
+  for (var i=0; i<props.size; i++) nbsp = nbsp + '&nbsp;';
+  return <span dangerouslySetInnerHTML={{__html: nbsp}}></span>;
+}
 
 
 // Utility functions
@@ -18,8 +24,25 @@ function getModelData(models, modelName) {
 };
 
 
-function timestamp() {
-  return Date.now() / 1000;
+function timestamp() { return Date.now() / 1000; }
+
+
+/* Turn model author names into their initials */
+function getInitials(name) {
+  let title = "Unk";
+  if (name) {
+    title = "";
+    let names = name.split(" ");
+    for (var n=0; n<names.length; n++) title += names[n][0];
+  }
+  return title;
+}
+
+function shortenSeed(seed, n){
+  if (seed.length > 40) {
+    return " ..." + seed.substring(seed.length - n);
+  }
+  return seed;
 }
 
 
@@ -122,12 +145,17 @@ function init(success, error) {
   });
 }
 
-
 const Utils = {
+  // components
   Spinner: Spinner,
   Spacer: Spacer,
+  NBSP: NBSP,
+  // utility functions
   getModelData: getModelData,
   timestamp: timestamp,
+  getInitials: getInitials,
+  shortenSeed: shortenSeed,
+  // ajax
   launchGeneration: launchGeneration,
   saveChange: saveChange,
   saveDoc: saveDoc,

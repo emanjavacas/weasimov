@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {EditorState, RichUtils, convertToRaw, convertFromRaw} from 'draft-js';
+import {EditorState, RichUtils, convertToRaw, convertFromRaw, SelectionState} from 'draft-js';
 import * as RB from 'react-bootstrap';
 import Sticky from 'react-stickynode';
+import NotificationSystem from 'react-notification-system';
 import jsonpatch from 'fast-json-patch';
 
 import Navbar from './Navbar';
@@ -14,9 +15,12 @@ import EditorUtils from './EditorUtils';
 
 
 class App extends React.Component {
+
   constructor(props) {
     super(props);
     this.state = {init: false};
+    // notification system
+    this._notificationSystem = null;
     // toolbar functions
     this.onTemperatureChange = (value) => this.setState({temperature: value});
     this.onSeqLenChange = (value) => this.setState({maxSeqLen: value});
@@ -25,7 +29,7 @@ class App extends React.Component {
     this.onEditorChange = this.onEditorChange.bind(this);
     //suggestions
     this.dismissHyp = this.dismissHyp.bind(this);
-    this.resetHyps = () => this.setState({hyps: []})
+    this.resetHyps = () => this.setState({hyps: []});
     this.toggleSuggestions = this.toggleSuggestions.bind(this);
     // Editor
     this.handleKeyCommand = (command) => this._handleKeyCommand(command);
@@ -97,13 +101,16 @@ class App extends React.Component {
 
   // generation functions
   onGenerationSuccess(response) {
+    // append seed for convenience
+    const incomingHyps = response.hyps.map((hyp) => Object.assign(hyp, {'seed': response.seed}));
     this.setState(
-      {hyps: response.hyps.concat(this.state.hyps),
+      {hyps: incomingHyps.concat(this.state.hyps),
        lastSeed: response.seed,
        lastModel: response.model,
        loadingHyps: false,
        hasHadHyps: true});
     this.toggleSuggestions(false);
+    this.refs.suggestions.refs.suggestionlist.scrollUp();
   }
 
   onGenerationError(error) {
@@ -123,8 +130,27 @@ class App extends React.Component {
     const selection = editorState.getSelection();
     let seed = EditorUtils.getTextSelection(currentContent, selection);
     if (seed.trim().length == 0) {
-      seed = currentContent.getPlainText('\n');
-      if (seed.length > 200) seed = seed.substring(seed.length - 200);
+      let focusBlock = currentContent.getBlockForKey(selection.anchorKey);
+      seed = focusBlock.getText();
+      seed = seed.substring(
+        Math.max(selection.focusOffset - 200, 0), selection.focusOffset);
+    }
+    if (seed.trim().length == 0) {
+      const startKey = currentContent.getFirstBlock().getKey();
+      let endKey = selection.getEndKey();
+      if (currentContent.getKeyAfter(endKey)) {
+        endKey = currentContent.getKeyAfter(endKey);
+      }
+      seed = currentContent.getBlockMap()
+        .takeUntil((block) => block.getKey() === endKey)
+          .map((block) => {
+            if (block) {
+              return block.getText();
+            }
+          }).join('\n');
+      if (seed.length > 200) {
+        seed = seed.substring(seed.length - 200);
+      }
     }
     this.launchGeneration(seed, model);
   }
@@ -135,11 +161,20 @@ class App extends React.Component {
 
   // editor functions
   insertHypAtCursor(hyp) {
+    const {editorState, models} = this.state;
+    let selection = editorState.getSelection();
+    if (!selection.isCollapsed()) {
+      selection = new SelectionState(
+	{anchorKey: selection.getAnchorKey(),
+	 anchorOffset: selection.getEndOffset(),
+	 focusKey: selection.getAnchorKey(),
+	 focusOffset: selection.getEndOffset()}
+      );
+    }
     const {eos, bos, par, text, score, generation_id, model} = hyp;
-    const modelData = Utils.getModelData(this.state.models, model);
-    const {editorState} = this.state;
+    const modelData = Utils.getModelData(models, model);
     const contentStateWithHyp = EditorUtils.insertGeneratedText(
-      editorState, text, {score: score, source: text, model: modelData});
+      editorState, text, {score: score, source: text, model: modelData}, selection);
     const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
     const newEditorState = EditorState.push(
       editorState, contentStateWithHyp, 'insert-characters');
@@ -153,7 +188,10 @@ class App extends React.Component {
     const newContent = editorState.getCurrentContent();
     if (oldContent !== newContent) {
       // handle new metadata
-      EditorUtils.updateHypMetadata(editorState);
+      const editorStateWithUpdatedHyp = EditorUtils.updateHypMetadata(editorState);
+      if (editorStateWithUpdatedHyp) {
+	editorState = editorStateWithUpdatedHyp;
+      }
       // block-level diff
       const selection = editorState.getSelection();
       const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
@@ -217,7 +255,7 @@ class App extends React.Component {
 	    <RB.Col md={2}/>
 	    <RB.Col md={8}>
 	      <RB.Jumbotron style={{backgroundColor:"#f5f5f5"}}>
-		      <h2>Loading...</h2>
+		<h2>Loading...</h2>
 	      </RB.Jumbotron>
 	    </RB.Col>
 	    <RB.Col md={2}/>
@@ -228,10 +266,11 @@ class App extends React.Component {
       return (
 	<div>
 	  <Navbar username={this.state.username}/>
+	  <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
 	  <RB.Grid fluid={true}>
 	    <RB.Row>
-	      <RB.Col lg={3} md={2} sm={1}></RB.Col>
-	      <RB.Col lg={6} md={8} sm={10}>
+	      <RB.Col lg={2} md={2} sm={1}></RB.Col>
+	      <RB.Col lg={8} md={8} sm={10}>
 
 		<RB.Row>
 		  <Sticky enabled={true} top={0} innerZ={1001}>
@@ -257,11 +296,12 @@ class App extends React.Component {
 		     onTab={this.onTab}
 		     toggleInlineStyle={this.toggleInlineStyle}
 		     handleBeforeInput={this.handleBeforeInput}/>
-		  <Utils.Spacer height="50px"/>
+		  <Utils.Spacer/>
 		</RB.Row>
 
 		<RB.Row>
     		  <Suggestions
+             ref="suggestions"
     		     hyps={this.state.hyps}
 		     models={this.state.models}
 		     isCollapsed={this.state.suggestionsCollapsed}
@@ -271,11 +311,11 @@ class App extends React.Component {
     		     onHypSelect={this.insertHypAtCursor}
 		     onHypDismiss={this.dismissHyp}
 		     hasHadHyps={this.state.hasHadHyps}
-         resetHyps={this.resetHyps}/>
+		     resetHyps={this.resetHyps}/>
 		</RB.Row>
 		
 	      </RB.Col>
-	      <RB.Col lg={3} md={2} sm={1}></RB.Col>
+	      <RB.Col lg={2} md={2} sm={1}></RB.Col>
 	    </RB.Row>
 
 	  </RB.Grid>

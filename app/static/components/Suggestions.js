@@ -5,48 +5,81 @@ import Utils from './Utils';
 import { CSSTransitionGroup } from 'react-transition-group';
 
 
-const HypItem = (props) => {
-  const {hyp, backgroundColor, onHypSelect, onHypDismiss} = props;
-  return (
-    <RB.ListGroupItem
-       className="list-group-hover"
-       style={{backgroundColor: backgroundColor}}>
-      <RB.Table style={{marginBottom: "0"}} responsive>
-	<tbody>
-	  <tr>
-	    <td>
-	      <RB.Button
-		 style={{border: "none", padding: "0", background: "none"}}
-		 onClick={(e) => onHypDismiss(hyp.generation_id)}>
-                <i className="fa fa-close fa-fw" style={{color:"#666666", fontSize: "20px"}}/>
-              </RB.Button>
-            </td>
-            <td style={{padding:"0px 10px 0px 20px"}}>
-	      <p>{hyp.text}</p>
-	    </td>
-	    <td>
-	      <RB.Label className="pull-right">{hyp.score}</RB.Label>
-	    </td>
-	    <td>
-	      <RB.Button onClick={() => onHypSelect(hyp)} 
-		className="pull-right" 
-		style={{border: "none", padding: "0", background: "none"}}>
-		<i className="fa fa-check" style={{color:"#666666", fontSize: "20px"}}/>
-	      </RB.Button> 
-	    </td>
-          </tr>
-        </tbody>
-      </RB.Table>
-    </RB.ListGroupItem>
-  );
+class HypItem extends React.Component {
+  render() {
+    const {hyp, backgroundColor, onHypSelect, onHypDismiss} = this.props;
+    return (
+      <RB.ListGroupItem
+	 className="list-group-hover"
+	 style={{backgroundColor: backgroundColor}}>
+	<RB.Table style={{marginBottom: "0"}} responsive>
+	  <tbody>
+	    <tr>
+	      <td>
+		<RB.Button
+		   style={{border: "none", padding: "0", background: "none"}}
+		   onClick={(e) => onHypDismiss(hyp.generation_id)}>
+                  <i className="fa fa-close fa-fw" style={{color:"#666666", fontSize: "20px"}}/>
+		</RB.Button>
+              </td>
+              <td style={{padding:"0px 10px 0px 20px", width:"100%"}}>
+		<p>{hyp.text}</p>
+	      </td>
+	      <td>
+		<RB.Label className="pull-right">{hyp.score}</RB.Label>
+	      </td>
+	      <td>
+		<RB.Button onClick={() => onHypSelect(hyp)} 
+		  className="pull-right" 
+		  style={{border: "none", padding: "0", background: "none"}}>
+		  <i className="fa fa-check" style={{color:"#666666", fontSize: "20px"}}/>
+		</RB.Button> 
+	      </td>
+            </tr>
+          </tbody>
+	</RB.Table>
+      </RB.ListGroupItem>
+    );
+  }
 };
 
 
+function Separator(props) {
+  const {r,g,b} = props.modelData.color;
+  const style = {cursor: "default",
+           	 padding: "10px 15px 0px 15px",
+		 backgroundColor:`rgba(${r},${g},${b}, 0.5)`};
+  return (
+    <RB.ListGroupItem>
+      <RB.Table style={{marginBottom: "0"}}>
+	<tbody>
+	  <tr>
+	    <td>
+	      <RB.Button disabled style={style}>
+		<span><p>{Utils.getInitials(props.modelData.modelName)}</p></span>
+	      </RB.Button>
+	    </td>
+	    <td style={{padding:"20px 0 0 0"}}>
+	      <p style={{color:"grey",fontSize:"14px"}}>
+		{Utils.shortenSeed(props.seed, 70)}
+              </p>
+	    </td>
+	  </tr>
+	</tbody>
+      </RB.Table>
+    </RB.ListGroupItem>);
+}
+
 function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
-  let hypItems = [];
+  let hypItems = [], lastSeed = null;
   for (var i=0; i<hyps.length; i++) {
     const hyp = hyps[i];
-    const {r, g, b} = Utils.getModelData(models, hyp.model).color;
+    const modelData = Utils.getModelData(models, hyp.model);
+    const {r,g,b} = modelData.color;
+    if (hyp.seed != lastSeed) {
+      hypItems.push(<Separator key={i} seed={hyp.seed} modelData={modelData}/>);
+      lastSeed = hyp.seed;
+    }
     hypItems.push(
       <HypItem
 	 key={hyp.generation_id}
@@ -86,6 +119,28 @@ class RegenerateButton extends React.Component {
 }
 
 
+class SuggestionList extends React.Component {
+
+	scrollUp() {
+		ReactDOM.findDOMNode(this).scrollTop = 0;
+	}		
+
+  render () {
+    const {hyps, models, onHypSelect, onHypDismiss} = this.props;
+    return (
+      <RB.ListGroup>
+	<CSSTransitionGroup
+	   transitionName="dismiss"
+	   transitionEnterTimeout={500}
+	   transitionLeaveTimeout={150}>
+ 	  {makeHypItems(hyps, models, onHypSelect, onHypDismiss)}
+	</CSSTransitionGroup>
+      </RB.ListGroup>
+    );
+  }
+}
+
+
 class Suggestions extends React.Component {
 
   render() {
@@ -97,12 +152,22 @@ class Suggestions extends React.Component {
 	   style={{visibility: hasHyps ? "visible" : "hidden"}}>
 	<div className="panel-heading">
 	  <RB.Row>
-	    <RB.Col md={6}>
-	      <RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
-		<i className={caretClass}></i>
-              </RB.Button>
+	    <RB.Col md={6} sm={4} xs={3}>
+	      <RB.ButtonGroup>
+		<RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
+		  <i className={caretClass}></i>
+		</RB.Button>
+		{(this.props.hyps.length > 0)
+		  ?
+		  <RB.Button disabled style={{cursor: "default", padding: "4px 10px"}}>
+		      <span>{this.props.hyps.length}</span>
+		    </RB.Button>
+		    :
+		    <span></span>
+		    }
+	      </RB.ButtonGroup>
 	    </RB.Col>
-	    <RB.Col md={6} className="pull-right">
+	    <RB.Col md={6} sm={8} xs={9} className="pull-right">
 	      <RB.ButtonGroup className="pull-right">
 		<RB.Button
 		   bsSize="sm"
@@ -117,14 +182,12 @@ class Suggestions extends React.Component {
 	    </RB.Col>
 	  </RB.Row>
 	</div>
-	<RB.ListGroup>
-	  <CSSTransitionGroup
-	     transitionName="dismiss"
-	     transitionEnterTimeout={500}
-	     transitionLeaveTimeout={150}>
- 	    {makeHypItems(this.props.hyps, this.props.models, this.props.onHypSelect, this.props.onHypDismiss)}
-	  </CSSTransitionGroup>
-	</RB.ListGroup>
+	<SuggestionList
+	   ref="suggestionlist"
+	   hyps={this.props.hyps}
+	   models={this.props.models}
+	   onHypSelect={this.props.onHypSelect}
+	   onHypDismiss={this.props.onHypDismiss}/>
       </div>
     );
   }

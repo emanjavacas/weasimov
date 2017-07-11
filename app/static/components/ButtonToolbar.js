@@ -2,30 +2,15 @@ import React from 'react';
 import ReactDom from 'react-dom';
 import * as RB  from 'react-bootstrap';
 import Slider from 'rc-slider';
-
-
-function getInitials(name) {
-  let names = name.split(" "), title = "";
-  for (var n=0; n<names.length; n++) {
-    title += names[n][0];
-  }
-  return title;
-}
+import Utils from './Utils';
 
 
 function makeButtons(models, onClick) {
   let buttons = [];
   for (var i=0; i<models.length; i++) {
     const model = models[i];
-
-    let overlay, title;
-    if (model.modelName) {
-      title = getInitials(model.modelName);
-      overlay = model.modelName;
-    } else {
-      title = "Unk";
-      overlay = model.path;
-    }
+    const title = Utils.getInitials(model.modelName);
+    const overlay = model.modelName ? model.modelName : model.path;
 
     const borderWidth = model.loaded ? "1.5px" : "0.5px";
     const {r, g, b} = model.color;
@@ -59,29 +44,33 @@ class ButtonToolbar extends React.Component {
     const {temperature, maxSeqLen, models} = this.props;
     return (
       <div className="generate-bar">
-	<RB.ButtonToolbar>
-	  <RB.ButtonGroup style={{width: "200px", display: "inline-flex", margin: "7px 20px"}}>
-	    <span>Creativity</span>
-	    <Slider
-	       defaultValue={temperature} min={0.05} max={1.0} step={0.05}
-	       style={{width: "100%", margin: "3px 10px"}}
-	       onChange={this.props.onTemperatureChange}
-	       title="Creativity"/>
-	    <RB.Label style={{padding:"4px 8px", width:"75px", margin: "0px 8px"}}>{temperature}</RB.Label>
-	  </RB.ButtonGroup>
-	  <RB.ButtonGroup style={{width: "200px", display: "inline-flex", margin: "7px 20px"}}>
-	    <span>Length</span>
-	    <Slider
-	       defaultValue={maxSeqLen} min={10} max={200} step={5}
-	       style={{width: "100%", margin: "3px 10px"}}
-	       onChange={this.props.onSeqLenChange}
-	       title="Length"/>
-	    <RB.Label style={{padding:"4px 8px", width:"75px", margin: "0px 8px"}}>{maxSeqLen}</RB.Label>
-	  </RB.ButtonGroup>
-      <RB.ButtonGroup className="pull-right" style={{backgroundColor: "none"}}> 
-        {(models.length > 0) ? makeButtons(models, this.props.onGenerate) : noModelsButton}
-      </RB.ButtonGroup>
-	</RB.ButtonToolbar>
+	<RB.Row>
+	  <RB.Col md={7} sm={5}>
+	    <RB.ButtonGroup style={{width: "200px", display: "inline-flex", margin: "7px 15px"}}>
+	      <span>Creativiteit</span>
+	      <Slider
+		 defaultValue={temperature} min={0.05} max={1.0} step={0.05}
+		 style={{width: "100%", margin: "3px 10px"}}
+		 onChange={this.props.onTemperatureChange}
+		 title="Creativiteit"/>
+	      <RB.Label style={{padding:"4px 8px", width:"75px", margin: "0px 8px"}}>{temperature}</RB.Label>
+	    </RB.ButtonGroup>
+	    <RB.ButtonGroup style={{width: "200px", display: "inline-flex", margin: "7px 15px"}}>
+	      <span>Lengte</span>
+	      <Slider
+		 defaultValue={maxSeqLen} min={10} max={200} step={5}
+		 style={{width: "100%", margin: "3px 10px"}}
+		 onChange={this.props.onSeqLenChange}
+		 title="Lengte"/>
+	      <RB.Label style={{padding:"4px 8px", width:"75px", margin: "0px 8px"}}>{maxSeqLen}</RB.Label>
+	    </RB.ButtonGroup>
+	  </RB.Col>
+	  <RB.Col md={5} sm={7} className="pull-right">
+	    <RB.ButtonGroup className="pull-right" style={{backgroundColor: "none"}}> 
+              {(models.length > 0) ? makeButtons(models, this.props.onGenerate) : noModelsButton}
+	    </RB.ButtonGroup>
+	  </RB.Col>
+	</RB.Row>
       </div>
     );
   }

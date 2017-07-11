@@ -1,6 +1,7 @@
 
 from datetime import datetime
 import uuid
+import itertools
 
 from palettable.colorbrewer.qualitative import Pastel2_8
 import flask
@@ -24,8 +25,12 @@ def get_colors():
 def format_models():
     models = []
     model_names = app.config.get("MODEL_NAMES", {})
-    for model, color in zip(app.synthesizer.list_models(), get_colors()):
-        model['color'] = color
+    ignore_unnamed = app.config.get('IGNORE_UNNAMED', False)
+    colors = itertools.cycle(get_colors())
+    for model in app.synthesizer.list_models():
+        if ignore_unnamed and model['path'] not in model_names:
+            continue
+        model['color'] = next(colors)
         model['modelName'] = model_names.get(model['path'])
         models.append(model)
     return models
@@ -130,7 +135,7 @@ def savesuggestion():
     data = flask.request.json
     timestamp = datetime.fromtimestamp(data['timestamp'])
     generation = Generation.query.filter_by(
-        generation_id=data['generation_id'])
+        generation_id=data['generation_id']).first()
     generation.selected = True
     generation.draft_entity_id = data['draft_entity_id']
     generation.selected_timestamp = timestamp
