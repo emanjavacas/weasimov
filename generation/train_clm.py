@@ -4,13 +4,11 @@ import sys
 import re
 import glob
 
-import random
-random.seed(1001)
+import random; random.seed(1001)
 
 import numpy as np
 
-import torch
-torch.manual_seed(1001)
+import torch; torch.manual_seed(1001)
 try:
     torch.cuda.manual_seed(1001)
 except:
@@ -135,7 +133,7 @@ if __name__ == '__main__':
 
     print(model)
     print(' * n parameters. %d' % model.n_params())
-    
+
     if args.gpu:
         model.cuda()
 
@@ -152,7 +150,7 @@ if __name__ == '__main__':
     check_hook = make_clm_hook(
         d, max_seq_len=args.max_seq_len, samples=5, gpu=args.gpu,
         method=args.decoding_method, temperature=args.temperature)
-        # save hooks
+    # save hooks
     model_save_hook = make_lm_save_hook(d, args)
 
     # loggers
