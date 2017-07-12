@@ -66,7 +66,7 @@ if __name__ == '__main__':
     parser.add_argument('--cell', default='LSTM')
     parser.add_argument('--emb_dim', default=50, type=int)
     parser.add_argument('--hid_dim', default=2064, type=int)
-    parser.add_argument('--att_dim', default=0, type=int)
+    parser.add_argument('--cond_emb_dim', default=24, type=int)
     parser.add_argument('--dropout', default=0.2, type=float)
     parser.add_argument('--word_dropout', default=0.0, type=float)
     parser.add_argument('--tie_weights', action='store_true')
@@ -76,15 +76,14 @@ if __name__ == '__main__':
     parser.add_argument('--model_path', help=('Path to pretrained model. ' +
                                               'Required if --load_model'))
     # dataset
-    parser.add_argument('--data_path', help='Path to preprocessed data',
+    parser.add_argument('--data_dir', help='Path to dir with preprocessed data',
                         required=True)
-    parser.add_argument('--data_path', type=str)
     parser.add_argument('--dev_split', default=0.01, type=float)
     parser.add_argument('--test_split', default=0.05, type=float)
     # training
     parser.add_argument('--epochs', default=10, type=int)
-    parser.add_argument('--batch_size', default=464, type=int)
-    parser.add_argument('--bptt', default=250, type=int)
+    parser.add_argument('--batch_size', default=264, type=int)
+    parser.add_argument('--bptt', default=200, type=int)
     parser.add_argument('--gpu', action='store_true')
     # - optimizer
     parser.add_argument('--optim', default='Adam', type=str)
@@ -109,15 +108,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print("Loading training data...")
-    d = u.load_model(args.data_path + ".dict.pt")
+    d = u.load_model(os.path.join(args.data_dir, "dataset.dict.pt"))
     lang_d, *conds_d = d
-    examples = []
-    for f in glob.glob(args.data_path + '_[0-9].pt'):
-        examples.append(u.load_model(f))
-    examples = torch.cat(examples, 1).long()
-    train, valid, test = BlockDataset.splits_from_data(
-        tuple(examples), d, args.batch_size, args.bptt, gpu=args.gpu,
-        test=args.test_split, dev=args.dev_split)
 
     # conditional structure
     conds = []
@@ -169,16 +161,26 @@ if __name__ == '__main__':
         env='weasimov', server='http://146.175.11.197')
     std_logger = StdLogger()
 
-    # trainer
-    trainer = CLMTrainer(
-        model, {'train': train, 'valid': valid, 'test': test},
-        criterion, optim)
-    num_checkpoints = min(
-        1, len(train) // (args.checkpoint * args.hooks_per_epoch))
-    trainer.add_loggers(std_logger, visdom_logger)
-    trainer.add_hook(check_hook, num_checkpoints=num_checkpoints)
-    trainer.add_hook(model_save_hook, num_checkpoints=num_checkpoints)
-    trainer.train(1, args.checkpoint, gpu=args.gpu)
+    # batched trainer
+    for epoch in range(args.epochs):
+        for f in glob.glob(args.data_dir + '/dataset_[0-9].pt'):
+            print("loading data from [%s]" % f)
+            examples = tuple(u.load_model(f).contiguous())
+            # dataset
+            train, valid, test = BlockDataset.splits_from_data(
+                examples, d, args.batch_size, args.bptt, gpu=args.gpu,
+                test=args.test_split, dev=args.dev_split)
+            # trainer
+            trainer = CLMTrainer(
+                model, {'train': train, 'valid': valid, 'test': test},
+                criterion, optim)
+            trainer.log("info", "Full dataset epoch [%d]" % epoch)
+            num_checkpoints = min(
+                1, len(train) // (args.checkpoint * args.hooks_per_epoch))
+            trainer.add_loggers(std_logger, visdom_logger)
+            trainer.add_hook(check_hook, num_checkpoints=num_checkpoints)
+            trainer.add_hook(model_save_hook, num_checkpoints=num_checkpoints)
+            trainer.train(1, args.checkpoint, gpu=args.gpu)
 
     if args.save:
         test_ppl = trainer.validate_model(test=True)

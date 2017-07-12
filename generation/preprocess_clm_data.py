@@ -2,12 +2,10 @@
 import os
 from itertools import chain, islice
 
+import torch
+
 from seqmod.misc.dataset import Dict
 import seqmod.utils as u
-
-
-def flatten(l):
-    return list(chain.from_iterable(l))
 
 
 def chunk(it, size):
@@ -83,18 +81,11 @@ def load_data(rootfiles, metapath,
             print("Couldn't find [%s]" % f)
 
 
-def expand_conditions(lines, lang_d, conds_d):
-    ls, cs = zip(*lines)
-    # transform lines
-    ls = list(lang_d.transform(ls))
-    # transform conditions
-    conds = zip(*cs)
-    conds = [list(d.transform([c]))[0] for d, c in zip(conds_d, conds)]
-    # expand conditions to lists matching sents sizes
-    conds = [[[c] * len(l) for c, l in zip(cond, ls)] for cond in conds]
-    # concat to single vectors
-    ls, conds = flatten(ls), [flatten(c) for c in conds]
-    return tuple([ls] + conds)
+def tensor_from_files(filenames, metapath, lang_d, conds_d):
+    for line, conds in load_data(filenames, metapath):
+        conds = [d.index(c) for d, c in zip(conds_d, conds)]
+        for char in next(lang_d.transform([line])):
+            yield [char] + conds
 
 
 if __name__ == '__main__':
@@ -109,14 +100,14 @@ if __name__ == '__main__':
     parser.add_argument('--min_freq', default=1, type=int,
                         help=('Minimum frequency for an item to be ' +
                               'included in the dictionary'))
+    parser.add_argument('--filesbatch', default=5000, type=int)
     parser.add_argument('--level', default='char')
-    parser.add_argument('--filebatch', default=500, type=int)
     args = parser.parse_args()
 
     filenames = [os.path.join(args.corpus, f)
                  for f in os.listdir(args.corpus)]
 
-    dict_path = args.save_path + '.dict'
+    dict_path = os.path.join(args.save_path, 'dataset.dict')
     if os.path.exists(dict_path + '.pt'):
         print("Loading dicts")
         d = u.load_model(dict_path + '.pt')
@@ -139,8 +130,8 @@ if __name__ == '__main__':
         u.save_model([lang_d] + conds_d, dict_path)
 
     print("Transforming dataset")
-    for batch_num, batch in enumerate(chunk(filenames, args.filebatch)):
-        lines = load_data(batch, args.metapath)
-        examples = expand_conditions(lines, lang_d, conds_d)
-        path = '{prefix}_{num}'.format(prefix=args.save_path, num=batch_num)
-        u.save_model(examples, path)
+    for batch_num, batch in enumerate(chunk(filenames, args.filesbatch)):
+        batch_path = '{path}/dataset_{batch_num}'.format(
+            path=args.save_path, batch_num=batch_num)
+        gen = tensor_from_files(batch, args.metapath, lang_d, conds_d)
+        u.save_model(torch.LongTensor(list(gen)).t().contiguous(), batch_path)
