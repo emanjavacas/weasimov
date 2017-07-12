@@ -6,6 +6,8 @@ import glob
 
 import pandas as pd
 
+import seqmod.utils as u
+
 random.seed(1001)
 
 
@@ -129,3 +131,30 @@ def format_hyp(score, hyp, hyp_num, d):
     return '\n* [{hyp}] [Score:{score:.3f}]: {sent}'.format(
         hyp=hyp_num, score=score/len(hyp),
         sent=' '.join([d.vocab[c] for c in hyp]))
+
+
+def make_lm_save_hook(d, args):
+
+    def hook(trainer, epoch, batch_num, checkpoint):
+        trainer.log("info", "Saving model...")
+        save_model(d, trainer.model, args, ppl=None)
+        if args.gpu:
+            trainer.model.cuda()
+
+    return hook
+
+
+def save_model(d, model, args, ppl=None):
+    fname = '{prefix}.{cell}.{layers}l.{hid_dim}h.{emb_dim}e.{bptt}b'
+
+    if ppl:  # add test ppl to final save
+        fname += '.{ppl}'
+        fname = fname.format(ppl="%.2f" % ppl, **vars(args))
+    else:
+        fname = fname.format(**vars(args))
+
+    u.save_model({'model': model.cpu(),
+                  'dict': d,
+                  'train_params': vars(args)},
+                 fname)
+    print("Model saved to [%s]..." % fname)
