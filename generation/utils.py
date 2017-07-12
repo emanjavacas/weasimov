@@ -105,16 +105,16 @@ def load_data(path='data/bigmama/',
                             yield l.strip().split()
                         elif level == 'char':
                             yield list(l.strip())
-
-        for l in open(fn, 'r'):
-            if not l.strip():
-                if include_paragraphs:
-                    yield [paragraph]
-            else:
-                if level == 'token':
-                    yield l.strip().split()
-                elif level == 'char':
-                    yield list(l.strip())
+        else:
+            for l in open(fn, 'r'):
+                if not l.strip():
+                    if include_paragraphs:
+                        yield [paragraph]
+                else:
+                    if level == 'token':
+                        yield l.strip().split()
+                    elif level == 'char':
+                        yield list(l.strip())
 
 
 def format_hyp(score, hyp, hyp_num, d):
