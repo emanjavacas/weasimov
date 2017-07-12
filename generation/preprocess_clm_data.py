@@ -81,11 +81,13 @@ def load_data(rootfiles, metapath,
             print("Couldn't find [%s]" % f)
 
 
-def tensor_from_files(filenames, metapath, lang_d, conds_d):
-    for line, conds in load_data(filenames, metapath):
-        conds = [d.index(c) for d, c in zip(conds_d, conds)]
-        for char in next(lang_d.transform([line])):
-            yield [char] + conds
+def tensor_from_files(lines, lang_d, conds_d):
+    def chars_gen():
+        for line, conds in lines:
+            conds = [d.index(c) for d, c in zip(conds_d, conds)]
+            for char in next(lang_d.transform([line])):
+                yield [char] + conds
+    return torch.LongTensor(list(chars_gen())).t().contiguous()
 
 
 if __name__ == '__main__':
@@ -100,13 +102,14 @@ if __name__ == '__main__':
     parser.add_argument('--min_freq', default=1, type=int,
                         help=('Minimum frequency for an item to be ' +
                               'included in the dictionary'))
-    parser.add_argument('--filesbatch', default=5000, type=int)
+    parser.add_argument('--filesbatch', default=500, type=int)
     parser.add_argument('--level', default='char')
     args = parser.parse_args()
 
     filenames = [os.path.join(args.corpus, f)
                  for f in os.listdir(args.corpus)]
 
+    # dictionaries
     dict_path = os.path.join(args.save_path, 'dataset.dict')
     if os.path.exists(dict_path + '.pt'):
         print("Loading dicts")
@@ -129,9 +132,12 @@ if __name__ == '__main__':
         print("Saving dicts")
         u.save_model([lang_d] + conds_d, dict_path)
 
+    # dataset
     print("Transforming dataset")
     for batch_num, batch in enumerate(chunk(filenames, args.filesbatch)):
         batch_path = '{path}/dataset_{batch_num}'.format(
             path=args.save_path, batch_num=batch_num)
-        gen = tensor_from_files(batch, args.metapath, lang_d, conds_d)
-        u.save_model(torch.LongTensor(list(gen)).t().contiguous(), batch_path)
+        lines = load_data(batch, args.metapath)
+        tensor = tensor_from_files(lines, lang_d, conds_d)
+        u.save_model(tensor, batch_path)
+        del tensor
