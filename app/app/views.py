@@ -183,8 +183,8 @@ def generate():
             ignore_eos=app.config.get('DEFAULTS', {}).get('ignore_eos', False),
             max_seq_len=max_seq_len,
             max_tries=1)
+        generation_id = str(uuid.uuid4())
         for hyp in hyps:
-            generation_id = str(uuid.uuid4())
             db.session.add(Generation(
                 model=model,
                 seed=seed or '',
