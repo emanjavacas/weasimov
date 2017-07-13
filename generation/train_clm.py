@@ -173,7 +173,7 @@ if __name__ == '__main__':
                 model, {'train': train, 'valid': valid, 'test': test},
                 criterion, optim)
             trainer.log("info", "Full dataset epoch [%d]" % epoch)
-            num_checkpoints = min(
+            num_checkpoints = max(
                 1, len(train) // (args.checkpoint * args.hooks_per_epoch))
             trainer.add_loggers(std_logger, visdom_logger)
             trainer.add_hook(check_hook, num_checkpoints=num_checkpoints)
