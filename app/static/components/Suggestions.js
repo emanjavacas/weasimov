@@ -85,7 +85,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
     }
     hypItems.push(
       <HypItem
-	 key={hyp.generation_id}
+	 key={hyp.i}
 	 hyp={hyp}
 	 backgroundColor={`rgba(${r},${g},${b}, 0.5)`}
 	 onHypSelect={onHypSelect}
