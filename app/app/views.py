@@ -393,7 +393,12 @@ def generate():
             hyp["timestamp"] = timestamp
             hyp["model"] = model
         db.session.commit()
-        return flask.jsonify(status='OK', hyps=hyps, seed=seed, model=model)
+        elapsed = (datetime.utcnow() - timestamp).total_seconds()
+        return flask.jsonify(status='OK',
+                             hyps=hyps,
+                             seed=seed,
+                             model=model,
+                             elapsed=elapsed)
     except Exception as e:
         if app.debug is True:
             raise e
