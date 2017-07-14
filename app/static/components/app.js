@@ -98,6 +98,7 @@ class App extends React.Component {
       temperature: session.temperature,
       maxSeqLen: session.maxSeqLen,
       hyps: [],
+      lastGenerationTime: 0.0,
       lastSeed: null,	     // keep track of last seed for refreshing
       lastModel: null,	     // keep track of last model for refreshing
       // component flags
@@ -253,6 +254,7 @@ class App extends React.Component {
     );
     this.setState(
       {hyps: incomingHyps.concat(this.state.hyps),
+       lastGenerationTime: response.elapsed,
        lastSeed: response.seed,
        lastModel: response.model,
        loadingHyps: false,
@@ -472,6 +474,7 @@ class App extends React.Component {
     		    <Suggestions
 		       ref="suggestions"
     		       hyps={this.state.hyps}
+		       elapsed={this.state.lastGenerationTime}
 		       models={this.state.models}
 		       isCollapsed={this.state.suggestionsCollapsed}
 		       onCollapse={this.toggleSuggestions}

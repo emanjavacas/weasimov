@@ -163,6 +163,11 @@ class Suggestions extends React.Component {
 		      <span>{this.props.hyps.length}</span>
 		  </RB.Button> :
 		  <span></span>}
+		{(this.props.hyps.length > 0) ?
+		  <RB.Button disabled style={{cursor: "default", padding: "4px 10px"}}>
+		      <span>Took {this.props.elapsed} secs</span>
+		  </RB.Button> :
+		  <span></span>}
 	      </RB.ButtonGroup>
 	    </RB.Col>
 	    <RB.Col md={6} sm={8} xs={9} className="pull-right">
