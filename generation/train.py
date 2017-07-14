@@ -27,7 +27,7 @@ from seqmod.misc.optimizer import Optimizer
 from seqmod.misc.dataset import Dict, BlockDataset
 from seqmod.misc.early_stopping import EarlyStopping
 
-from utils import load_data, format_hyp
+from utils import load_data, format_hyp, make_lm_save_hook, save_model
 
 
 def load_from_file(path):
@@ -78,34 +78,6 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
             trainer.log("info", '\n***' + ''.join(hyps) + "\n***")
 
     return hook
-
-
-# check hook
-def make_lm_save_hook(d, args):
-
-    def hook(trainer, epoch, batch_num, checkpoint):
-        trainer.log("info", "Saving model...")
-        save_model(d, trainer.model, args, ppl=None)
-        if args.gpu:
-            trainer.model.cuda()
-
-    return hook
-
-
-def save_model(d, model, args, ppl=None):
-    fname = '{prefix}.{cell}.{layers}l.{hid_dim}h.{emb_dim}e.{bptt}b'
-
-    if ppl:  # add test ppl to final save
-        fname += '.{ppl}'
-        fname = fname.format(ppl="%.2f" % ppl, **vars(args))
-    else:
-        fname = fname.format(**vars(args))
-
-    u.save_model({'model': model.cpu(),
-                  'dict': d,
-                  'train_params': vars(args)},
-                 fname)
-    print("Model saved to [%s]..." % fname)
 
 
 if __name__ == '__main__':

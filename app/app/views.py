@@ -221,7 +221,8 @@ def savesuggestion():
     data = flask.request.json
     generation_id = data['generation_id']
     timestamp = datetime.fromtimestamp(data['timestamp'])
-    generation = Generation.query.filter_by(generation_id=generation_id)
+    generation = Generation.query.filter_by(
+        generation_id=generation_id).first()
     generation.action_doc_id = data['doc_id']
     if data.get('selected'):
         # TODO: check if user is allowed to modify based on doc_id?
@@ -375,8 +376,8 @@ def generate():
             ignore_eos=app.config.get('DEFAULTS', {}).get('ignore_eos', False),
             max_seq_len=max_seq_len,
             max_tries=1)
+        generation_id = str(uuid.uuid4())
         for hyp in hyps:
-            generation_id = str(uuid.uuid4())
             db.session.add(
                 Generation(
                     generation_id=generation_id,
