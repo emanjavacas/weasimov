@@ -49,6 +49,12 @@ def filter_filenames(meta, path, filters):
     return filenames
 
 
+def load_metadata(fn):
+    df = pd.read_csv(fn, header=0, sep=',', dtype={'author:id': str})
+    df = df.set_index('filepath').fillna('')
+    return df
+
+
 def load_data(path='data/bigmama/',
               metapath='/home/mike/GitRepos/weasimov/metainfo.csv',
               filter_file=None,
