@@ -393,7 +393,7 @@ def generate():
             hyp["timestamp"] = timestamp
             hyp["model"] = model
         db.session.commit()
-        elapsed = (datetime.utcnow() - timestamp).total_seconds()
+        elapsed = round((datetime.utcnow() - timestamp).total_seconds(), 2)
         return flask.jsonify(status='OK',
                              hyps=hyps,
                              seed=seed,
