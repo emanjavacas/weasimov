@@ -1,10 +1,10 @@
 
 import os
-from itertools import chain, islice
+from itertools import islice
 
 import torch
 
-from seqmod.misc.dataset import Dict
+from seqmod.misc.dataset import Dict, CompressionTable
 import seqmod.utils as u
 
 
@@ -81,13 +81,22 @@ def load_data(rootfiles, metapath,
             print("Couldn't find [%s]" % f)
 
 
-def tensor_from_files(lines, lang_d, conds_d):
-    def chars_gen():
-        for line, conds in lines:
-            conds = [d.index(c) for d, c in zip(conds_d, conds)]
-            for char in next(lang_d.transform([line])):
-                yield [char] + conds
-    return torch.LongTensor(list(chars_gen())).t().contiguous()
+def chars_conds(lines, lang_d, conds_d, table=None):
+    for line, line_conds in lines:
+        line_conds = tuple(d.index(c) for d, c in zip(conds_d, line_conds))
+        for char in next(lang_d.transform([line])):
+            yield char
+            if table is None:
+                for c in line_conds:
+                    yield c
+            else:
+                yield table.hash_vals(line_conds)
+
+
+def examples_from_lines(lines, lang_d, conds_d, table=None):
+    gen = chars_conds(lines, lang_d, conds_d, table=table)
+    dims = 2 if table is not None else len(conds_d) + 1
+    return torch.LongTensor(list(gen)).view(-1, dims).t().contiguous()
 
 
 if __name__ == '__main__':
@@ -117,8 +126,8 @@ if __name__ == '__main__':
         lang_d, *conds_d = d
     else:
         print("Fitting dictionaries")
-        lang_d = Dict(max_size=args.max_size, min_freq=args.min_freq,
-                      eos_token=u.EOS, bos_token=u.BOS)
+        lang_d = Dict(
+            max_size=args.max_size, min_freq=args.min_freq, eos_token=u.EOS)
         lines = load_data(filenames, args.metapath)
         nconds = len(next(lines)[1])
         conds_d = [Dict(sequential=False, force_unk=False)
@@ -134,10 +143,11 @@ if __name__ == '__main__':
 
     # dataset
     print("Transforming dataset")
+    table = CompressionTable(len(conds_d))
     for batch_num, batch in enumerate(chunk(filenames, args.filesbatch)):
         batch_path = '{path}/dataset_{batch_num}'.format(
             path=args.save_path, batch_num=batch_num)
         lines = load_data(batch, args.metapath)
-        tensor = tensor_from_files(lines, lang_d, conds_d)
+        tensor = examples_from_lines(lines, lang_d, conds_d, table=table)
         u.save_model(tensor, batch_path)
         del tensor
