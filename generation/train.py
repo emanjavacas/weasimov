@@ -27,7 +27,7 @@ from seqmod.misc.optimizer import Optimizer
 from seqmod.misc.dataset import Dict, BlockDataset
 from seqmod.misc.early_stopping import EarlyStopping
 
-from utils import load_data, format_hyp, make_lm_save_hook, save_model
+from utils import load_data, make_lm_save_hook, save_model
 
 
 def load_from_file(path):
@@ -52,8 +52,6 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
     fpath = os.sep.join((dpath, 'seed-sentences.txt'))
     seed_texts = [l.strip() for l in open(fpath, 'r')]
     temperatures = np.linspace(0.1, temperature, nb_temperatures)
-    s = re.compile(r' +')
-    ss = re.compile(r"(?<=\S)\s(?=\S)")
 
     def hook(trainer, epoch, batch_num, checkpoint):
         trainer.log("info", "Checking training...")
@@ -69,11 +67,9 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
             scores, hyps = trainer.model.generate(
                 d, seed_texts=seed_texts, max_seq_len=max_seq_len, gpu=gpu,
                 method=method, temperature=temp, width=width)
-            hyps = [format_hyp(score, hyp, '...'+s.sub('  ', st)[-25:], d)
-                    for hyp_num, (score, st, hyp)
-                    in enumerate(zip(scores, seed_texts, hyps))]
-            hyps = [ss.sub('', h) for h in hyps]
-            hyps = [s.sub(' ', h) for h in hyps]
+            hyps = [u.format_hyp(score, hyp, hyp_num, d, level='char')
+                    for hyp_num, (score, hyp)
+                    in enumerate(zip(scores, hyps))]
             trainer.log("info", '\n***' + ''.join(hyps) + "\n***")
 
     return hook
@@ -169,24 +165,25 @@ if __name__ == '__main__':
         print("Loading data...")
         d = d or Dict(
             max_size=args.max_size, min_freq=args.min_freq, eos_token=u.EOS)
+
+        def examples():
+            return load_data(
+                path=args.corpus, level=args.level,
+                filters=args.filter_file,
+                skip_head_lines=args.skip_head_lines,
+                skip_tail_lines=args.skip_tail_lines)
+
         if not d.fitted:
             print("Fitting dictionary...")
-            d.fit(load_data(path=args.corpus, level=args.level,
-                            filters=args.filter_file,
-                            skip_head_lines=args.skip_head_lines,
-                            skip_tail_lines=args.skip_tail_lines))
+            d.fit(examples())
         print("Transforming data...")
-        print(args.filter_file)
-        data = d.transform(
-            load_data(path=args.corpus, level=args.level,
-                      filters=args.filter_file,
-                      skip_head_lines=args.skip_head_lines,
-                      skip_tail_lines=args.skip_tail_lines))
+        data = d.transform(examples())
         data = np.array([c for s in data for c in s], dtype=np.int32)
         if args.save_data:
             np.save(args.data_path + '.npy', data)
             u.save_model(d, args.dict_path + '.dict')
         data = torch.LongTensor(data.astype(np.int64))
+
     print("Splitting dataset...")
     train, valid, test = BlockDataset.splits_from_data(
         data, d, args.batch_size, args.bptt, gpu=args.gpu,

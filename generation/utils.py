@@ -143,20 +143,6 @@ def load_data(path='data/bigmama/',
                         yield list(l.strip())
 
 
-def format_hyp(score, hyp, hyp_num, d):
-    """
-    Transform a hypothesis into a string for visualization purposes
-
-    score: float, normalized probability
-    hyp: list of integers
-    hyp_num: int, index of the hypothesis
-    d: Dict, dictionary used for fitting the vocabulary
-    """
-    return '\n* [{hyp}] [Score:{score:.3f}]: {sent}'.format(
-        hyp=hyp_num, score=score/len(hyp),
-        sent=' '.join([d.vocab[c] for c in hyp]))
-
-
 def make_lm_save_hook(d, args):
 
     def hook(trainer, epoch, batch_num, checkpoint):
