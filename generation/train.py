@@ -68,8 +68,7 @@ def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
             trainer.log("info", "Temperature at " + "%.2f" % temp)
             scores, hyps = trainer.model.generate(
                 d, seed_texts=seed_texts, max_seq_len=max_seq_len, gpu=gpu,
-                method=method, temperature=temp, width=width,
-                eos=True, bos=True)
+                method=method, temperature=temp, width=width)
             hyps = [format_hyp(score, hyp, '...'+s.sub('  ', st)[-25:], d)
                     for hyp_num, (score, st, hyp)
                     in enumerate(zip(scores, seed_texts, hyps))]
@@ -168,8 +167,8 @@ if __name__ == '__main__':
         d = d or u.load_model(args.dict_path)
     else:
         print("Loading data...")
-        d = d or Dict(max_size=args.max_size, min_freq=args.min_freq,
-                      eos_token=u.EOS, bos_token=u.BOS)
+        d = d or Dict(
+            max_size=args.max_size, min_freq=args.min_freq, eos_token=u.EOS)
         if not d.fitted:
             print("Fitting dictionary...")
             d.fit(load_data(path=args.corpus, level=args.level,
