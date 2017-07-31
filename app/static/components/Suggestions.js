@@ -20,7 +20,7 @@ class HypItem extends React.Component {
 	      <td>
 		<RB.Button
 		   style={{border: "none", padding: "0", background: "none"}}
-		   onClick={(e) => onHypDismiss(hyp.generation_id)}>
+		   onClick={(e) => onHypDismiss(hyp.id)}>
                   <i className="fa fa-close fa-fw" style={{color:"#666666", fontSize: "20px"}}/>
 		</RB.Button>
               </td>
@@ -85,7 +85,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
     }
     hypItems.push(
       <HypItem
-	 key={hyp.i}
+	 key={hyp.id}
 	 hyp={hyp}
 	 backgroundColor={`rgba(${r},${g},${b}, 0.5)`}
 	 onHypSelect={onHypSelect}

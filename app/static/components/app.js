@@ -331,7 +331,7 @@ class App extends React.Component {
 	 focusOffset: selection.getEndOffset()}
       );
     }
-    const {eos, bos, par, text, score, generation_id, model} = hyp;
+    const {eos, bos, par, text, score, id, model} = hyp;
     const modelData = Utils.getModelData(models, model);
     const contentStateWithHyp = EditorUtils.insertGeneratedText(
       editorState, text, {score: score, source: text, model: modelData}, selection);
@@ -341,7 +341,7 @@ class App extends React.Component {
     // send selection to server
     const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
     const docId = this.state.docId;
-    Utils.saveSuggestion(generation_id, docId, 'selected', draftEntityId);
+    Utils.saveSuggestion(id, docId, 'selected', draftEntityId);
   }
   
   onEditorChange(newEditorState) {
@@ -368,7 +368,7 @@ class App extends React.Component {
     let dismissedHyp, newHyps = [];
     for (var i=0; i<this.state.hyps.length; i++) {
       const hyp = this.state.hyps[i];
-      if (hyp.generation_id === hypId) {
+      if (hyp.id === hypId) {
 	dismissedHyp = this.state.hyps[i];
       } else {
 	newHyps.push(hyp);

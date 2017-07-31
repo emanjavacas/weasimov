@@ -211,7 +211,7 @@ def savechange():
 @flask_login.login_required
 def savesuggestion():
     """
-    generation_id: str,
+    id: str, generation id
     doc_id: int, id of doc where the action took place
     selected: True, (optional), requires `draft_entity_id`
     draft_entity_id: str
@@ -219,10 +219,8 @@ def savesuggestion():
     timestamp: int
     """
     data = flask.request.json
-    generation_id = data['generation_id']
     timestamp = datetime.fromtimestamp(data['timestamp'])
-    generation = Generation.query.filter_by(
-        generation_id=generation_id).first()
+    generation = Generation.query.filter_by(id=data['id']).first()
     generation.action_doc_id = data['doc_id']
     if data.get('selected'):
         # TODO: check if user is allowed to modify based on doc_id?
@@ -378,17 +376,20 @@ def generate():
             max_tries=1)
         generation_id = str(uuid.uuid4())
         for hyp in hyps:
-            db.session.add(
-                Generation(
-                    generation_id=generation_id,
-                    user_id=user_id,
-                    seed_doc_id=seed_doc_id,
-                    model=model,
-                    seed=seed or '',
-                    temperature=temperature,
-                    max_seq_len=max_seq_len,
-                    text=hyp['text'],
-                    timestamp=timestamp))
+            generation = Generation(
+                generation_id=generation_id,
+                user_id=user_id,
+                seed_doc_id=seed_doc_id,
+                model=model,
+                seed=seed or '',
+                temperature=temperature,
+                max_seq_len=max_seq_len,
+                text=hyp['text'],
+                timestamp=timestamp)
+            db.session.add(generation)
+            db.session.flush()  # ensure generation gets the id
+            print(generation.id)
+            hyp['id'] = generation.id
             hyp["generation_id"] = generation_id
             hyp["timestamp"] = timestamp
             hyp["model"] = model

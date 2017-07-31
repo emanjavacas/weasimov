@@ -131,8 +131,7 @@ class Synthesizer(object):
     def sample(self, model_name, seed_texts=None,
                max_seq_len=100, max_tries=1, temperature=1.0,
                method='sample', batch_size=5, ignore_eos=True, **kwargs):
-        """Samples a sentence.
-
+        """
         Samples a single sentence from a single model.
 
         Parameters
@@ -155,7 +154,6 @@ class Synthesizer(object):
                 * `'sample'`
                 * `'argmax'`
         batch_size : int (default = 10)
-            The sizes of the batches.
         ignore_eos : bool (default = False)
             Whether to ignore the end-of-sentence symbol.
 

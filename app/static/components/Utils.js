@@ -209,7 +209,7 @@ function editDocName(docId, newName, success, error) {
 
 
 /**
- * generation_id: str
+ * id: str
  * timestamp: int, unix timestamp
  * doc_id: int, id of currently shown doc
  * selected: True, (optional)
@@ -217,8 +217,8 @@ function editDocName(docId, newName, success, error) {
  *   - draft_entity_id: str
  * dismissed: True, (optional)
  */
-function saveSuggestion(generationId, docId, action, draftEntityId) {
-  const data = {generation_id: generationId,
+function saveSuggestion(id, docId, action, draftEntityId) {
+  const data = {id: id,
 		timestamp: timestamp(),
 		doc_id: docId};
   if (action === 'selected') {
