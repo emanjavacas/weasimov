@@ -388,7 +388,6 @@ def generate():
                 timestamp=timestamp)
             db.session.add(generation)
             db.session.flush()  # ensure generation gets the id
-            print(generation.id)
             hyp['id'] = generation.id
             hyp["generation_id"] = generation_id
             hyp["timestamp"] = timestamp
