@@ -68,9 +68,11 @@ function getInitials(name) {
   return title;
 }
 
-function shortenSeed(seed, n){
-  if (seed.length > 40) {
-    return " ..." + seed.substring(seed.length - n);
+function shortenSeed(seed, maxLength){
+  maxLength = maxLength || 70;
+  if (seed.length > maxLength) {
+    const omitted = seed.length - maxLength;
+    return `...{${omitted} hidden}...` + seed.substring(omitted);
   }
   return seed;
 }
