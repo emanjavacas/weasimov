@@ -236,15 +236,11 @@ if __name__ == '__main__':
         d, method=args.decoding_method, temperature=args.temperature,
         max_seq_len=args.max_seq_len, seed_text=args.seed, gpu=args.gpu,
         early_stopping=early_stopping)
-    num_checkpoints = max(1, len(train) // (args.checkpoint *
-                                            args.hooks_per_epoch))
     trainer.add_hook(model_check_hook, num_checkpoints=num_checkpoints)
 
     # save hooks:
     model_save_hook = make_lm_save_hook(d, args)
-    num_checkpoints = max(1, len(train) // (args.checkpoint *
-                                            args.saves_per_epoch))
-    trainer.add_hook(model_save_hook, num_checkpoints=num_checkpoints)
+    trainer.add_hook(model_save_hook, hooks_per_epoch=args.hooks_per_epoch)
 
     # loggers
     visdom_logger = VisdomLogger(
