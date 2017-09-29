@@ -160,11 +160,11 @@ if __name__ == '__main__':
         d, method=args.decoding_method, temperature=args.temperature,
         max_seq_len=args.max_seq_len, seed_text=args.seed, gpu=args.gpu,
         early_stopping=early_stopping)
-    trainer.add_hook(model_check_hook, hooks_per_epochs=args.hooks_per_epochs)
+    trainer.add_hook(model_check_hook, hooks_per_epoch=args.hooks_per_epoch)
 
     # save hooks:
     model_save_hook = make_lm_save_hook(d, args)
-    trainer.add_hook(model_save_hook, hooks_per_epochs=args.hooks_per_epochs)
+    trainer.add_hook(model_save_hook, hooks_per_epoch=args.hooks_per_epoch)
 
     # loggers
     visdom_logger = VisdomLogger(
