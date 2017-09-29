@@ -43,7 +43,7 @@ def load_from_file(path):
 
 
 # check hook
-def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
+def make_lm_check_hook(d, max_seq_len=25, gpu=False,
                        method='sample', temperature=.5, width=5,
                        early_stopping=None, validate=True,
                        nb_temperatures=3):
@@ -177,7 +177,6 @@ if __name__ == '__main__':
                             skip_head_lines=args.skip_head_lines,
                             skip_tail_lines=args.skip_tail_lines))
         print("Transforming data...")
-        print(args.filter_file)
         data = d.transform(
             load_data(path=args.corpus, level=args.level,
                       filters=args.filter_file,
@@ -234,7 +233,7 @@ if __name__ == '__main__':
 
     model_check_hook = make_lm_check_hook(
         d, method=args.decoding_method, temperature=args.temperature,
-        max_seq_len=args.max_seq_len, seed_text=args.seed, gpu=args.gpu,
+        max_seq_len=args.max_seq_len, gpu=args.gpu,
         early_stopping=early_stopping)
     trainer.add_hook(model_check_hook, hooks_per_epoch=args.hooks_per_epoch)
 
