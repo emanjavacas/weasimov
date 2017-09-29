@@ -138,7 +138,7 @@ if __name__ == '__main__':
     parser.add_argument('--hooks_per_epoch', default=200, type=int)
     parser.add_argument('--saves_per_epoch', default=200, type=int)
     parser.add_argument('--log_checkpoints', action='store_true')
-    parser.add_argument('--visdom_server', default='localhost')
+    parser.add_argument('--visdom_server', default=None)
     parser.add_argument('--save', action='store_true')
     parser.add_argument('--prefix', default='model', type=str)
 
@@ -239,11 +239,14 @@ if __name__ == '__main__':
     trainer.add_hook(model_save_hook, hooks_per_epoch=args.saves_per_epoch)
 
     # loggers
-    visdom_logger = VisdomLogger(
-        log_checkpoints=args.log_checkpoints, title=args.prefix,
-        env='weasimov', server='http://146.175.11.197')
+    if args.visdom_server is not None:
+        visdom_logger = VisdomLogger(
+            log_checkpoints=args.log_checkpoints, title=args.prefix,
+            env='weasimov', server='http://146.175.11.197')
 
-    trainer.add_loggers(StdLogger(), visdom_logger)
+        trainer.add_loggers(StdLogger(), visdom_logger)
+    else:
+        trainer.add_loggers(StdLogger())
     if args.csv:
         trainer.add_loggers(CSVLogger(args=args, save_path=args.csv))
 

@@ -27,8 +27,8 @@ from seqmod.misc.optimizer import Optimizer
 from seqmod.misc.dataset import Dict, BlockDataset
 from seqmod.misc.early_stopping import EarlyStopping
 
-from utils import load_data
-from train import (make_lm_hook, make_lm_save_hook, save_model, load_from_file)
+from utils import load_data, make_lm_save_hook
+from train import (make_lm_check_hook, save_model, load_from_file)
 
 
 if __name__ == '__main__':
@@ -163,7 +163,7 @@ if __name__ == '__main__':
 
     # save hooks:
     model_save_hook = make_lm_save_hook(d, args)
-    trainer.add_hook(model_save_hook, hooks_per_epoch=args.saves_per_epoch)
+    trainer.add_hook(model_save_hook, hooks_per_epochs=args.saves_per_epoch)
 
     # loggers
     visdom_logger = VisdomLogger(
