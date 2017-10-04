@@ -43,7 +43,7 @@ def load_from_file(path):
 
 
 # check hook
-def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
+def make_lm_check_hook(d, max_seq_len=25, gpu=False,
                        method='sample', temperature=.5, width=5,
                        early_stopping=None, validate=True,
                        nb_temperatures=3):
@@ -143,7 +143,7 @@ if __name__ == '__main__':
     parser.add_argument('--hooks_per_epoch', default=200, type=int)
     parser.add_argument('--saves_per_epoch', default=200, type=int)
     parser.add_argument('--log_checkpoints', action='store_true')
-    parser.add_argument('--visdom_server', default='localhost')
+    parser.add_argument('--visdom_server', default=None)
     parser.add_argument('--save', action='store_true')
     parser.add_argument('--prefix', default='model', type=str)
 
@@ -177,7 +177,6 @@ if __name__ == '__main__':
                             skip_head_lines=args.skip_head_lines,
                             skip_tail_lines=args.skip_tail_lines))
         print("Transforming data...")
-        print(args.filter_file)
         data = d.transform(
             load_data(path=args.corpus, level=args.level,
                       filters=args.filter_file,
@@ -234,24 +233,23 @@ if __name__ == '__main__':
 
     model_check_hook = make_lm_check_hook(
         d, method=args.decoding_method, temperature=args.temperature,
-        max_seq_len=args.max_seq_len, seed_text=args.seed, gpu=args.gpu,
+        max_seq_len=args.max_seq_len, gpu=args.gpu,
         early_stopping=early_stopping)
-    num_checkpoints = max(1, len(train) // (args.checkpoint *
-                                            args.hooks_per_epoch))
-    trainer.add_hook(model_check_hook, num_checkpoints=num_checkpoints)
+    trainer.add_hook(model_check_hook, hooks_per_epoch=args.hooks_per_epoch)
 
     # save hooks:
     model_save_hook = make_lm_save_hook(d, args)
-    num_checkpoints = max(1, len(train) // (args.checkpoint *
-                                            args.saves_per_epoch))
-    trainer.add_hook(model_save_hook, num_checkpoints=num_checkpoints)
+    trainer.add_hook(model_save_hook, hooks_per_epoch=args.hooks_per_epoch)
 
     # loggers
-    visdom_logger = VisdomLogger(
-        log_checkpoints=args.log_checkpoints, title=args.prefix,
-        env='weasimov', server='http://146.175.11.197')
-
-    trainer.add_loggers(StdLogger(), visdom_logger)
+    if args.visdom_server is not None:
+        visdom_logger = VisdomLogger(
+            log_checkpoints=args.log_checkpoints, title=args.prefix,
+            env='weasimov', server='http://146.175.11.197')
+    
+        trainer.add_loggers(StdLogger(), visdom_logger)
+    else:
+        trainer.add_loggers(StdLogger())
     if args.csv:
         trainer.add_loggers(CSVLogger(args=args, save_path=args.csv))
 

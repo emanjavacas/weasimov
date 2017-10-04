@@ -10,7 +10,7 @@ import pandas as pd
 random.seed(1001)
 
 
-def filter_filenames(meta, path, filters):
+def _filter_filenames(meta, path, filters):
     filenames = []
     for fn in glob.glob(path+'/*.txt'):
         me = meta.loc[os.path.splitext(os.path.basename(fn))[0]]
@@ -35,10 +35,47 @@ def filter_filenames(meta, path, filters):
     return filenames
 
 
-def load_metadata(fn):
+def filter_filenames(meta, path, filters):
+    filenames = []
+    for fn in glob.glob(path+'/*.txt'):
+        filepath = os.path.splitext(os.path.basename(fn))[0]
+        me = meta.get(filepath)
+        if me is None:
+            continue
+        if 'authors' in filters and \
+           me['author:id'] not in filters['authors']:
+            continue
+        if 'titles' in filters and \
+           me['title:detail'] not in filters['titles']:
+            continue
+        if 'genres' in filters:
+            match = False
+            for f in filters['genres']:
+                if f in me['categories'].lower():
+                    match = True
+                    continue
+            if not match:
+                continue
+        filenames.append(fn)
+
+    return filenames
+
+
+def _load_metadata(fn, sep=','):
     df = pd.read_csv(fn, header=0, sep=',', dtype={'author:id': str})
     df = df.set_index('filepath').fillna('')
     return df
+
+
+def load_metadata(fn, sep=','):
+    by_filepath = {}
+    with open(fn, 'r') as f:
+        header = next(f).strip().split(sep)
+        for line in f:
+            row = line.strip().split(sep)
+            row_dict = {field: val for field, val in zip(header, row)}
+            by_filepath[row_dict['filepath']] = row_dict
+    return by_filepath
 
 
 def file_len(fname):

@@ -11,7 +11,7 @@ import seqmod.utils as u
 random.seed(1001)
 
 
-def parse_filter_file(fn):
+def _parse_filter_file(fn):
     df = pd.read_csv(fn, header=0, sep=';', dtype=str)
     df = df.set_index('filters').fillna('')
     filters = {}
@@ -21,6 +21,18 @@ def parse_filter_file(fn):
             filters[f] = set([v.strip() for v in vals])
         except:
             pass
+    return filters
+
+
+def parse_filter_file(fn, sep=';'):
+    filters = {}
+    with open(fn, 'r') as f:
+        next(f)                 # skip header
+        for line in f:
+            filt, *values = line.split(sep)
+            if filt not in ('authors', 'titles', 'genres'):
+                continue
+            filters[filt] = set([v.strip() for v in values])
     return filters
 
 
@@ -47,6 +59,12 @@ def filter_filenames(meta, path, filters):
         filenames.append(fn)
 
     return filenames
+
+
+def load_metadata(fn):
+    df = pd.read_csv(fn, header=0, sep=',', dtype={'author:id': str})
+    df = df.set_index('filepath').fillna('')
+    return df
 
 
 def load_data(path='data/bigmama/',
