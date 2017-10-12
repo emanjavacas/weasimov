@@ -43,7 +43,7 @@ def load_from_file(path):
 
 
 # check hook
-def make_lm_check_hook(d, seed_text, max_seq_len=25, gpu=False,
+def make_lm_check_hook(d, max_seq_len=25, gpu=False,
                        method='sample', temperature=.5, width=5,
                        early_stopping=None, validate=True,
                        nb_temperatures=3):
@@ -176,9 +176,11 @@ if __name__ == '__main__':
         if not d.fitted:
             print("Fitting dictionary...")
             d.fit(examples())
+
         print("Transforming data...")
         data = d.transform(examples())
         data = np.array([c for s in data for c in s], dtype=np.int32)
+
         if args.save_data:
             np.save(args.data_path + '.npy', data)
             u.save_model(d, args.dict_path + '.dict')
@@ -230,7 +232,7 @@ if __name__ == '__main__':
 
     model_check_hook = make_lm_check_hook(
         d, method=args.decoding_method, temperature=args.temperature,
-        max_seq_len=args.max_seq_len, seed_text=args.seed, gpu=args.gpu,
+        max_seq_len=args.max_seq_len, gpu=args.gpu,
         early_stopping=early_stopping)
     trainer.add_hook(model_check_hook, hooks_per_epoch=args.hooks_per_epoch)
 

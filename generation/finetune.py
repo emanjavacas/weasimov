@@ -163,7 +163,7 @@ if __name__ == '__main__':
 
     # save hooks:
     model_save_hook = make_lm_save_hook(d, args)
-    trainer.add_hook(model_save_hook, hooks_per_epochs=args.saves_per_epoch)
+    trainer.add_hook(model_save_hook, hooks_per_epoch=args.hooks_per_epoch)
 
     # loggers
     visdom_logger = VisdomLogger(
