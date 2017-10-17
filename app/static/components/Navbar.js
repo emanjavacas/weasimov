@@ -75,7 +75,8 @@ class ScreenNameInput extends React.Component {
 	       ref="input"
 	       type="text"
 	       placeholder="Enter a new name"
-	       defaultValue={this.props.screenName}/>
+	       defaultValue={this.props.screenName}
+         onKeyPress={(e) => {(e.key === 'Enter' ? this.onSaveScreenName() : null)}}/>
 	    <RB.Button
 	      onClick={() => this.onSaveScreenName()}
 	      style={{margin: "0 16px"}}>
@@ -143,15 +144,15 @@ class RemoveDocModal extends React.Component {
       <RB.Modal show={this.props.show} onHide={this.props.close}>
 	<RB.Modal.Header>
         <RB.Modal.Title>
-	  <p>Are you sure you want to delete "{this.props.doc.screen_name}"?</p>
+	  <p>Weet je zeker dat je het document "{this.props.doc.screen_name}" wilt verwijderen?</p>
       	</RB.Modal.Title>
 	</RB.Modal.Header>
 	<RB.Modal.Footer>
 	  <RB.Button bsStyle="danger" onClick={this.onRemoveDoc}>
-	    Yes, delete!
+	    Ja, gooi weg!
 	  </RB.Button>
 	  <RB.Button bsStyle="primary" onClick={this.props.close}>
-	    No! get me out of here!
+	    Nee, ik heb me bedacht!
 	  </RB.Button>
 	</RB.Modal.Footer>
       </RB.Modal>
@@ -204,7 +205,7 @@ class Navbar extends React.Component {
 	   onSubmit={this.props.onSubmitRemoveDoc}/>
 	<RB.Navbar.Header>
 	  <RB.Navbar.Brand>
-            <a href="#">AsiBot</a>
+            <a href="./">AsiBot</a>
 	  </RB.Navbar.Brand>
 	  <RB.Navbar.Toggle/>
 	</RB.Navbar.Header>
