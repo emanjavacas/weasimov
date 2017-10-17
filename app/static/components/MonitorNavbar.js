@@ -10,7 +10,7 @@ class MonitorNavbar extends React.Component {
       <RB.Navbar inverse>
 	<RB.Navbar.Header>
 	  <RB.Navbar.Brand>
-            <a href="./">AsiBot</a>
+            <a href="#">AsiBot</a>
 	  </RB.Navbar.Brand>
 	  <RB.Navbar.Toggle/>
 	</RB.Navbar.Header>

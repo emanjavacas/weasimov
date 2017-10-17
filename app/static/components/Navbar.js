@@ -206,7 +206,7 @@ class Navbar extends React.Component {
 	   onSubmit={this.props.onSubmitRemoveDoc}/>
 	<RB.Navbar.Header>
 	  <RB.Navbar.Brand>
-            <a href="./">AsiBot</a>
+            <a href="#">AsiBot</a>
 	  </RB.Navbar.Brand>
 	  <RB.Navbar.Toggle/>
 	</RB.Navbar.Header>
