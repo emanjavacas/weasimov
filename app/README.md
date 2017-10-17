@@ -5,7 +5,7 @@
 
 ## Configuration
 
-``` python
+```python
 import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -19,7 +19,7 @@ SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
 # Sentence sampler
 FILEDIR = os.path.join(basedir, 'data/novels/')
-METAPATH = os.path.join(basedir, 'metainfo.csv')
+METAPATH = os.path.join(basedir, 'data/metainfo.csv')
 
 # Model names
 MODEL_NAMES = {

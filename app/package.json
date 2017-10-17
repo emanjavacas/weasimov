@@ -1,9 +1,9 @@
 {
   "name": "we-asimov",
-  "version": "0.2-alpha",
+  "version": "0.2.1alpha",
   "description": "",
   "main": "index.js",
-  "author": "Enrique Manjavacas & Folger Karsdorp & Ben Burtenshaw & Mike Kestemont",
+  "author": "Enrique Manjavacas & Folgert Karsdorp & Ben Burtenshaw & Mike Kestemont",
   "scripts": {
     "run": "webpack --watch",
     "build": "webpack --config=webpack.prod.js"
