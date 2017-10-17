@@ -186,7 +186,8 @@ class Navbar extends React.Component {
       if (docId === this.props.activeDoc) { // don't do anything if selecting same doc
 	this.toggleDropdown(false);
       } else {
-	this.props.onSelectDoc(docId);
+  this.props.onSelectDoc(docId);
+  this.toggleDropdown(false);
       }
     };
   }
