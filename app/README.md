@@ -11,10 +11,15 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # Model
-MODEL_DIR = os.path.join(basedir, 'models')
+MODEL_DIR = os.path.join(basedir, 'data/models/')
 
 # Database
-SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'weasimov.db') + '?check_same_thread=False'
+if os.environ.get("WEASIMOV_DB_URL") is None:
+    print("Falling back to SQLite DB.")
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'weasimov.db') + '?check_same_thread=False'
+else:
+    print("Using MySQL Database")
+    SQLALCHEMY_DATABASE_URI = os.environ['WEASIMOV_DB_URL']
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
 # Sentence sampler
@@ -23,13 +28,15 @@ METAPATH = os.path.join(basedir, 'data/metainfo.csv')
 
 # Model names
 MODEL_NAMES = {
-    'fine_asi_giph.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov & Ronald Giphart',
-    'fine_asi.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov',
-    'fine_asi_hem.LSTM.1l.2048h.64e.256b.pt': 'Isaac Asimov & Kristien Hemmerechts',
-    'MEDIUM.pt': 'Alles'
+    'LARGE.pt': 'A. Dante',
+    'fine_gip_large.LSTM.1l.4096h.64e.256b.2.40.pt': 'R. Giphart',
+    'fine_asi_gip_large.LSTM.1l.4096h.64e.256b.2.26.pt':  'I. Robhart',
+    'fine_asi_hem_large.LSTM.1l.4096h.64e.256b.2.51.pt': 'K. Hembot',
+    'fine_asi_reve.LSTM.1l.4096h.64e.256b.2.17.pt': 'G. Revimov',
+    'fine_asi_nes_large.LSTM.1l.4096h.64e.256b.2.14.pt': 'I. Nescimov',
+    'fine_asi.LSTM.1l.2048h.64e.256b.2.31.pt': 'I. Asimov',
+    'fine_robot_large.LSTM.1l.4096h.64e.256b.1.87.pt': 'Robot Ik'
 }
-
-IGNORE_UNNAMED = True  # ignore models if not listed in MODEL_NAMES?
 
 # Defaults
 DEFAULTS = {
@@ -40,7 +47,24 @@ DEFAULTS = {
     "gpu": False
 }
 
+IGNORE_UNNAMED = True  # ignore models if not listed in MODEL_NAMES?
 MONITORS = ['admin']
+```
+
+## Database
+
+The app can be run with either SQLite or MySQL. To work with MySQL, a number of variables need to be in place. First create a database in MySQL, e.g.:
+
+```sql
+create database weasimov character set utf8 collate utf8_bin;
+```
+
+It might also be convenient to create a new user and grant all privileges to that user:
+
+```sql
+create user 'weasimov'@'localhost' identified by 'password';
+grant all privileges on weasimov.* to 'weasimov'@'localhost';
+flush privileges;
 ```
 
 ## Prerequisites
@@ -79,14 +103,24 @@ the bundled version of the frontend code for production (minified, using product
 
 ## Running the app
 
-Before running the Flask app, make sure you have set up the database. If not, simply run:
+Before running the Flask app, make sure you have set up the database. If not, and you want to use SQLite, run:
 
 ```make```
 
-in the `weasimov/app` dir.
+in the `weasimov/app` dir. For MySQL, run something like
 
-Run the Flask app
+```bash
+WEASIMOV_DB_URL=mysql+mysqldb://weasimov:weasimov@localhost/weasimov
+```
+
+Run the Flask app as follows with a SQLite DB:
 
 ```
-python run.py
+python run.py --port 5555 --host localhost
+```
+
+and like this with MySQL:
+
+```
+WEASIMOV_DB_URL=mysql+mysqldb://weasimov:weasimov@localhost/weasimov python run.py --port 5555 --host localhost
 ```
