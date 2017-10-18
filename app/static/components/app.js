@@ -5,6 +5,7 @@ import * as RB from 'react-bootstrap';
 import Sticky from 'react-stickynode';
 import NotificationSystem from 'react-notification-system';
 import jsonpatch from 'fast-json-patch';
+import {fromJS, OrderedMap} from 'immutable';
 
 import Navbar from './Navbar';
 import ButtonToolbar from './ButtonToolbar';
@@ -24,14 +25,29 @@ class App extends React.Component {
     // toolbar functions
     this.onTemperatureChange = (value) => this.setState({temperature: value});
     this.onSeqLenChange = (value) => this.setState({maxSeqLen: value});
+    // docs
+    this.loadDoc = this.loadDoc.bind(this);
+    this.onLoadDocSuccess = this.onLoadDocSuccess.bind(this);
+    this.onLoadDocError = this.onLoadDocError.bind(this);
+    this.createDoc = this.createDoc.bind(this);
+    this.onCreateDocSuccess = this.onCreateDocSuccess.bind(this);
+    this.onCreateDocError = this.onCreateDocError.bind(this);
+    this.removeDoc = this.removeDoc.bind(this);
+    this.onRemoveDocSuccess = this.onRemoveDocSuccess.bind(this);
+    this.onRemoveDocError = this.onRemoveDocError.bind(this);
+    this.editDocName = this.editDocName.bind(this);
+    this.updateNewScreenName = this.updateNewScreenName.bind(this);
+    this.selectDoc = this.selectDoc.bind(this);
+    this.getDocState = this.getDocState.bind(this);
+    this.setDocState = this.setDocState.bind(this);
     // editor functions
     this.insertHypAtCursor = this.insertHypAtCursor.bind(this);
     this.onEditorChange = this.onEditorChange.bind(this);
-    //suggestions
+    // suggestions
     this.dismissHyp = this.dismissHyp.bind(this);
     this.resetHyps = () => this.setState({hyps: []});
     this.toggleSuggestions = this.toggleSuggestions.bind(this);
-    // Editor
+    // editor
     this.handleKeyCommand = (command) => this._handleKeyCommand(command);
     this.onTab = (e) => this._onTab(e);
     this.toggleInlineStyle = (style) => this._toggleInlineStyle(style);
@@ -43,39 +59,46 @@ class App extends React.Component {
     this.generate = this.generate.bind(this);
     this.regenerate = this.regenerate.bind(this);
     // saving functions
-    this.onInit = this.onInit.bind(this);
-    this.saveInterval = this.saveInterval.bind(this);
-    this.saveUnload = this.saveUnload.bind(this);
+    this.onInitSuccess = this.onInitSuccess.bind(this);
+    this.onInitError = this.onInitError.bind(this);
+    this.saveOnInterval = this.saveOnInterval.bind(this);
+    this.saveOnUnload = this.saveOnUnload.bind(this);
   }
 
   componentDidMount() {
     // init session
-    Utils.init(this.onInit, (error) => console.log("Error"));
+    Utils.init(this.onInitSuccess, this.onInitError);
     // add unload event
-    window.addEventListener("beforeunload", this.saveUnload);
+    window.addEventListener("beforeunload", this.saveOnUnload);
   }
 
   componentWillUnmount() {
-    window.removeEventListener("beforeunload", this.saveUnload);
+    window.removeEventListener("beforeunload", this.saveOnUnload);
   }
 
   // server interaction
-  onInit(session) {
+  onInitSuccess(session) {
     this.setState({
       // app state
       init: true,
       username: session.username,
+      isMonitor: session.isMonitor,
       models: session.models,
+      docs: Utils.normalizeDocs(session.docs),
+      docId: session.docId,
       // editor state
-      editorState: session.contentState ?
-	EditorState.createWithContent(
-	  convertFromRaw(session.contentState), EditorUtils.hypDecorator) :
-	EditorState.createEmpty(EditorUtils.hypDecorator),
-      lastEditorState: null,	// check if there were changes
+      editorStates: Utils.normalizeEditorState(
+	session.docId,		// current docId
+	session.docs.map((doc) => doc.id), // all docIds
+	session.contentState ?		   // current doc editorState
+	  EditorState.createWithContent(
+	    convertFromRaw(session.contentState), EditorUtils.hypDecorator) :
+	  EditorState.createEmpty(EditorUtils.hypDecorator)),
       // generation variables
       temperature: session.temperature,
       maxSeqLen: session.maxSeqLen,
       hyps: [],
+      lastGenerationTime: 0.0,
       lastSeed: null,	     // keep track of last seed for refreshing
       lastModel: null,	     // keep track of last model for refreshing
       // component flags
@@ -84,27 +107,154 @@ class App extends React.Component {
       hasHadHyps: false
     });
     // set interval
-    this.saveIntervalId = setInterval(this.saveInterval, 25000);
+    this.saveOnIntervalId = setInterval(this.saveOnInterval, 25000);
   }
 
-  saveInterval() {
-    if (this.state.editorState !== this.state.lastEditorState) {
-      Utils.saveDoc(convertToRaw(this.state.editorState.getCurrentContent()));
-      this.setState({lastEditorState: this.state.editorState});
+  onInitError(error) {
+    console.log(error);
+  }
+
+  saveOnInterval() {
+    const {editorState, lastEditorState} = this.getDocState();
+    if (!lastEditorState || editorState.getCurrentContent() !== lastEditorState.getCurrentContent()) {
+      const text = convertToRaw(editorState.getCurrentContent());
+      Utils.saveDoc(text, this.state.docId);
+      this.setDocState('lastEditorState', editorState);
     }
   }
 
-  saveUnload() {
-    Utils.saveSession(this.state);
-    Utils.saveDoc(convertToRaw(this.state.editorState.getCurrentContent()));
+  saveOnUnload() {
+    const {temperature, maxSeqLen} = this.state;
+    Utils.saveSession({temperature, maxSeqLen});
+    const {editorState, docId} = this.getDocState();
+    Utils.saveDoc(convertToRaw(editorState.getCurrentContent()), docId);
+  }
+
+  // doc
+  setDocState(field, data, docId) { // TODO: move active editorState to currentEditorState for performance
+    docId = docId || this.state.docId;
+    this.setState({
+      editorStates: {
+	...this.state.editorStates,
+	[docId]: {...this.state.editorStates[docId], [field]: data}
+      }
+    });
+  }
+
+  loadDoc(docId) {
+    Utils.fetchDoc(docId, this.onLoadDocSuccess, this.onLoadDocError);
+    this.setDocState('loading', true, docId);
+  }
+
+  onLoadDocSuccess(response) {
+    const editorState = response.contentState ?
+	    EditorState.createWithContent(
+	      convertFromRaw(response.contentState), EditorUtils.hypDecorator) :
+	    EditorState.createEmpty(EditorUtils.hypDecorator);
+    this.setState({
+      docId: response.doc.id,	// move to doc
+      editorStates: {
+	...this.state.editorStates,
+	[response.doc.id]: {
+	  ...this.state.editorStates[response.doc.id],
+	  editorState: editorState, // add editorState
+	  loading: false	    // stop loading
+	}
+      }
+    });
+  }
+
+  onLoadDocError(error, docId) {
+    this.setDocState('loading', false, docId);
+    console.log("Couldn't load document");
+  }
+
+  createDoc(screenName) {
+    Utils.createDoc(screenName, this.onCreateDocSuccess, this.onCreateDocError);
+  }
+
+  onCreateDocSuccess(response) {
+    const {editorStates, docs} = this.state;
+    docs[response.doc.id] = response.doc;
+    editorStates[response.doc.id] = Utils.newDocState(
+      response.doc.id,
+      EditorState.createEmpty(EditorUtils.hypDecorator)
+    );
+    this.setState({
+      editorStates: editorStates,
+      docs: docs,
+      docId: response.doc.id	// move to new doc
+    });
+  }
+
+  onCreateDocError(response) {
+    console.log("Couldn't create document.");
+  }
+
+  removeDoc(docId) {
+    Utils.removeDoc(docId, this.onRemoveDocSuccess, this.onRemoveDocError);
+  }
+
+  onRemoveDocSuccess(response, docId) {
+    const {docs, editorStates} = this.state, docIds = Object.keys(docs);
+    // find new doc after removal
+    let nextDocId;
+    for (var i=0; i<docIds.length; i++) {
+      if (docIds[i] !== docId.toString()) {
+	nextDocId = docIds[i];
+	break;
+      }
+    }
+    delete docs[docId];		// remove doc from docs
+    delete editorStates[docId];	// remove doc from editorStates
+    this.setState({
+      docId: nextDocId,		// move to next doc
+      docs: docs,
+      editorStates: editorStates
+    });
+  }
+
+  onRemoveDocError(response, docId) {
+    console.log(`Couldn't remove doc ${docId}`);
+  }
+
+  updateNewScreenName(docId, newName) {
+    const doc = this.state.docs[docId];
+    doc['screen_name'] = newName;
+    this.setState({docs: {...this.state.docs, [docId]: doc}});
+  }
+
+  editDocName(newName) {
+    Utils.editDocName(
+      this.state.docId,
+      newName,
+      () => this.updateNewScreenName(this.state.docId, newName),
+      () => console.log("Couldn't update document name")
+    );
+  }
+
+  selectDoc(docId) {
+    this.saveOnInterval();
+    if (!this.state.editorStates[docId].editorState) { // if doc editorState data isn't loaded
+      this.loadDoc(docId);
+    } else {
+      this.setState({docId});
+    }
+  }
+
+  getDocState() {
+    return this.state.editorStates[this.state.docId];
   }
 
   // generation functions
   onGenerationSuccess(response) {
     // append seed for convenience
-    const incomingHyps = response.hyps.map((hyp) => Object.assign(hyp, {'seed': response.seed}));
+    const incomingHyps = response.hyps.map(
+      (hyp) => Object.assign(hyp, {'seed': response.seed})
+    );
     this.setState(
       {hyps: incomingHyps.concat(this.state.hyps),
+       lastGenerationTime: response.elapsed,
        lastSeed: response.seed,
        lastModel: response.model,
        loadingHyps: false,
@@ -120,12 +270,18 @@ class App extends React.Component {
   
   launchGeneration(seed, model) {
     console.log(`Generating with seed: [${seed}]`);
-    Utils.launchGeneration(seed, model, this.state, this.onGenerationSuccess, this.onGenerationError);
+    const {temperature, maxSeqLen, docId} = this.state;
+    Utils.launchGeneration(
+      seed,
+      model,
+      {temperature, maxSeqLen, docId},
+      this.onGenerationSuccess,
+      this.onGenerationError);
     this.setState({loadingHyps: true});
   }
 
   generate(model) {
-    const {editorState} = this.state;
+    const {editorState} = this.getDocState();
     const currentContent = editorState.getCurrentContent();
     const selection = editorState.getSelection();
     let seed = EditorUtils.getTextSelection(currentContent, selection);
@@ -146,7 +302,9 @@ class App extends React.Component {
           .map((block) => {
             if (block) {
               return block.getText();
-            }
+            } else {
+	      return null;
+	    }
           }).join('\n');
       if (seed.length > 200) {
         seed = seed.substring(seed.length - 200);
@@ -161,9 +319,11 @@ class App extends React.Component {
 
   // editor functions
   insertHypAtCursor(hyp) {
-    const {editorState, models} = this.state;
+    // insert the hyp
+    const {editorState} = this.getDocState();
+    const {models} = this.state;
     let selection = editorState.getSelection();
-    if (!selection.isCollapsed()) {
+    if (!selection.isCollapsed()) { // collapse selection if not already so
       selection = new SelectionState(
 	{anchorKey: selection.getAnchorKey(),
 	 anchorOffset: selection.getEndOffset(),
@@ -171,38 +331,51 @@ class App extends React.Component {
 	 focusOffset: selection.getEndOffset()}
       );
     }
-    const {eos, bos, par, text, score, generation_id, model} = hyp;
+    const {eos, bos, par, text, score, id, model} = hyp;
     const modelData = Utils.getModelData(models, model);
     const contentStateWithHyp = EditorUtils.insertGeneratedText(
       editorState, text, {score: score, source: text, model: modelData}, selection);
-    const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
     const newEditorState = EditorState.push(
       editorState, contentStateWithHyp, 'insert-characters');
     this.onEditorChange(newEditorState);
-    Utils.saveSuggestion(generation_id, draftEntityId);
+    // send selection to server
+    const draftEntityId = contentStateWithHyp.getLastCreatedEntityKey();
+    const docId = this.state.docId;
+    Utils.saveSuggestion(id, docId, 'selected', draftEntityId);
   }
   
-  onEditorChange(editorState) {
-    const oldState = this.state.editorState;
-    const oldContent = oldState.getCurrentContent();
-    const newContent = editorState.getCurrentContent();
+  onEditorChange(newEditorState) {
+    const {editorState} = this.getDocState();
+    const oldContent = editorState.getCurrentContent();
+    const newContent = newEditorState.getCurrentContent();
     if (oldContent !== newContent) {
       // handle new metadata
-      const editorStateWithUpdatedHyp = EditorUtils.updateHypMetadata(editorState);
+      const editorStateWithUpdatedHyp = EditorUtils.updateHypMetadata(newEditorState);
       if (editorStateWithUpdatedHyp) {
-	editorState = editorStateWithUpdatedHyp;
+	newEditorState = editorStateWithUpdatedHyp;
       }
       // block-level diff
-      const selection = editorState.getSelection();
+      const selection = newEditorState.getSelection();
       const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
       const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
-      Utils.saveChange(jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS()));
+      const edit = jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS());
+      Utils.saveChange(edit, this.state.docId);
     }
-    this.setState({editorState});
+    this.setDocState('editorState', newEditorState);
   }
 
   dismissHyp(hypId) {
-    this.setState({hyps: this.state.hyps.filter((hyp) => hyp.generation_id !== hypId)});
+    let dismissedHyp, newHyps = [];
+    for (var i=0; i<this.state.hyps.length; i++) {
+      const hyp = this.state.hyps[i];
+      if (hyp.id === hypId) {
+	dismissedHyp = this.state.hyps[i];
+      } else {
+	newHyps.push(hyp);
+      }
+    }
+    this.setState({hyps: newHyps});
+    Utils.saveSuggestion(hypId, this.state.docId, 'dismissed');
   }
 
   toggleSuggestions(newState) {
@@ -214,7 +387,7 @@ class App extends React.Component {
   }
  
   _handleKeyCommand(command) {
-    const {editorState} = this.state;
+    const {editorState} = this.getDocState();
     const newState = RichUtils.handleKeyCommand(editorState, command);
     if (newState) {
       this.onEditorChange(newState);
@@ -225,20 +398,17 @@ class App extends React.Component {
 
   _onTab(e) {
     const maxDepth = 4;
-    this.onEditorChange(RichUtils.onTab(e, this.state.editorState, maxDepth));
+    const {editorState} = this.getDocState();
+    this.onEditorChange(RichUtils.onTab(e, editorState, maxDepth));
   }
 
   _toggleInlineStyle(inlineStyle) {
-    this.onEditorChange(
-      RichUtils.toggleInlineStyle(
-        this.state.editorState,
-        inlineStyle
-      )
-    );
+    const {editorState} = this.getDocState();
+    this.onEditorChange(RichUtils.toggleInlineStyle(editorState, inlineStyle));
   }
 
   _handleBeforeInput(char) {
-    const {editorState} = this.state;
+    const {editorState} = this.getDocState();
     const newState = EditorUtils.handleContiguousEntity(char, editorState);
     if (newState) {
       this.onEditorChange(newState);
@@ -249,78 +419,81 @@ class App extends React.Component {
 
   render() {
     if (!this.state.init) {
-      return (
-	<RB.Grid>
-	  <RB.Row>
-	    <RB.Col md={2}/>
-	    <RB.Col md={8}>
-	      <RB.Jumbotron style={{backgroundColor:"#f5f5f5"}}>
-		<h2>Loading...</h2>
-	      </RB.Jumbotron>
-	    </RB.Col>
-	    <RB.Col md={2}/>
-	  </RB.Row>
-	</RB.Grid>
-      );
+      return <Utils.LoadingApp/>;
     } else {
-      return (
-	<div>
-	  <Navbar username={this.state.username}/>
-	  <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
-	  <RB.Grid fluid={true}>
-	    <RB.Row>
-	      <RB.Col lg={2} md={2} sm={1}></RB.Col>
-	      <RB.Col lg={8} md={8} sm={10}>
-
-		<RB.Row>
-		  <Sticky enabled={true} top={0} innerZ={1001}>
-		    <div className="panel panel-default generate-panel">
-		      <div className="panel-heading">
-			<ButtonToolbar
-			   temperature={this.state.temperature} 
-			   onTemperatureChange={this.onTemperatureChange}
-			   maxSeqLen={this.state.maxSeqLen}
-			   onSeqLenChange={this.onSeqLenChange}
-			   models={this.state.models}
-			   onGenerate={this.generate}/>
+      const {loading} = this.getDocState();
+      if (loading) { // is the current doc's editorState loading (being fetched from server)?
+	return <span>Loading editor</span>; // TODO: nicer component
+      } else { // get doc's editorState and render TextEditor
+	const {editorState} = this.getDocState();
+	return (
+	  <div>
+	    <Navbar
+	       username={this.state.username}
+	       isMonitor={this.state.isMonitor}
+	       activeDoc={this.state.docId}
+	       docs={this.state.docs}
+	       onSelectDoc={this.selectDoc}
+	       onSubmitScreenName={this.editDocName}
+	       onSubmitNewDoc={this.createDoc}
+	       onSubmitRemoveDoc={this.removeDoc}/>
+	    <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
+            <RB.Grid fluid={true}>
+	      <RB.Row>
+		<RB.Col lg={2} md={2} sm={1}></RB.Col>
+		<RB.Col lg={8} md={8} sm={10}>
+		  
+		  <RB.Row>
+		    <Sticky enabled={true} top={0} innerZ={1001}>
+		      <div className="panel panel-default generate-panel">
+			<div className="panel-heading">
+			  <ButtonToolbar
+			     temperature={this.state.temperature} 
+			     onTemperatureChange={this.onTemperatureChange}
+			     maxSeqLen={this.state.maxSeqLen}
+			     onSeqLenChange={this.onSeqLenChange}
+			     models={this.state.models}
+			     onGenerate={this.generate}/>
+			</div>
 		      </div>
-		    </div>
-		  </Sticky>
-		</RB.Row>
-
-		<RB.Row>
-		  <TextEditor
-		     editorState={this.state.editorState}
-		     onChange={this.onEditorChange}
-		     handleKeyCommand={this.handleKeyCommand}
-		     onTab={this.onTab}
-		     toggleInlineStyle={this.toggleInlineStyle}
-		     handleBeforeInput={this.handleBeforeInput}/>
-		  <Utils.Spacer/>
-		</RB.Row>
-
-		<RB.Row>
-    		  <Suggestions
-             ref="suggestions"
-    		     hyps={this.state.hyps}
-		     models={this.state.models}
-		     isCollapsed={this.state.suggestionsCollapsed}
-		     onCollapse={this.toggleSuggestions}
-    		     loadingHyps={this.state.loadingHyps}
-    		     onRegenerate={this.regenerate}
-    		     onHypSelect={this.insertHypAtCursor}
-		     onHypDismiss={this.dismissHyp}
-		     hasHadHyps={this.state.hasHadHyps}
-		     resetHyps={this.resetHyps}/>
-		</RB.Row>
-		
-	      </RB.Col>
-	      <RB.Col lg={2} md={2} sm={1}></RB.Col>
-	    </RB.Row>
-
-	  </RB.Grid>
-	</div>
-      );
+		    </Sticky>
+		  </RB.Row>
+		  
+		  <RB.Row>
+		    <TextEditor
+		       editorState={editorState}
+		       onChange={this.onEditorChange}
+		       handleKeyCommand={this.handleKeyCommand}
+		       onTab={this.onTab}
+		       toggleInlineStyle={this.toggleInlineStyle}
+		       handleBeforeInput={this.handleBeforeInput}/>
+		    <Utils.Spacer height="50px"/>
+		  </RB.Row>
+		  
+		  <RB.Row>
+    		    <Suggestions
+		       ref="suggestions"
+    		       hyps={this.state.hyps}
+		       elapsed={this.state.lastGenerationTime}
+		       models={this.state.models}
+		       isCollapsed={this.state.suggestionsCollapsed}
+		       onCollapse={this.toggleSuggestions}
+    		       loadingHyps={this.state.loadingHyps}
+    		       onRegenerate={this.regenerate}
+    		       onHypSelect={this.insertHypAtCursor}
+		       onHypDismiss={this.dismissHyp}
+		       hasHadHyps={this.state.hasHadHyps}
+		       resetHyps={this.resetHyps}/>
+		  </RB.Row>
+		  
+		</RB.Col>
+		<RB.Col lg={2} md={2} sm={1}></RB.Col>
+	      </RB.Row>
+	      
+	    </RB.Grid>
+          </div>
+	);
+      }
     }
   }
 };

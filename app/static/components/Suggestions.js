@@ -1,8 +1,10 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as RB from 'react-bootstrap';
-import Utils from './Utils';
 import { CSSTransitionGroup } from 'react-transition-group';
+
+import Utils from './Utils';
 
 
 class HypItem extends React.Component {
@@ -18,7 +20,7 @@ class HypItem extends React.Component {
 	      <td>
 		<RB.Button
 		   style={{border: "none", padding: "0", background: "none"}}
-		   onClick={(e) => onHypDismiss(hyp.generation_id)}>
+		   onClick={(e) => onHypDismiss(hyp.id)}>
                   <i className="fa fa-close fa-fw" style={{color:"#666666", fontSize: "20px"}}/>
 		</RB.Button>
               </td>
@@ -67,7 +69,8 @@ function Separator(props) {
 	  </tr>
 	</tbody>
       </RB.Table>
-    </RB.ListGroupItem>);
+    </RB.ListGroupItem>
+  );
 }
 
 function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
@@ -82,7 +85,7 @@ function makeHypItems(hyps, models, onHypSelect, onHypDismiss) {
     }
     hypItems.push(
       <HypItem
-	 key={hyp.generation_id}
+	 key={hyp.id}
 	 hyp={hyp}
 	 backgroundColor={`rgba(${r},${g},${b}, 0.5)`}
 	 onHypSelect={onHypSelect}
@@ -121,9 +124,7 @@ class RegenerateButton extends React.Component {
 
 class SuggestionList extends React.Component {
 
-	scrollUp() {
-		ReactDOM.findDOMNode(this).scrollTop = 0;
-	}		
+  scrollUp() {ReactDOM.findDOMNode(this).scrollTop = 0;}
 
   render () {
     const {hyps, models, onHypSelect, onHypDismiss} = this.props;
@@ -157,14 +158,16 @@ class Suggestions extends React.Component {
 		<RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
 		  <i className={caretClass}></i>
 		</RB.Button>
-		{(this.props.hyps.length > 0)
-		  ?
+		{(this.props.hyps.length > 0) ?
 		  <RB.Button disabled style={{cursor: "default", padding: "4px 10px"}}>
 		      <span>{this.props.hyps.length}</span>
-		    </RB.Button>
-		    :
-		    <span></span>
-		    }
+		  </RB.Button> :
+		  <span></span>}
+		{(this.props.hyps.length > 0) ?
+		  <RB.Button disabled style={{cursor: "default", padding: "4px 10px"}}>
+		      <span>Took {this.props.elapsed} secs</span>
+		  </RB.Button> :
+		  <span></span>}
 	      </RB.ButtonGroup>
 	    </RB.Col>
 	    <RB.Col md={6} sm={8} xs={9} className="pull-right">

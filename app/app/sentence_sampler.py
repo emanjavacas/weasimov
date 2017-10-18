@@ -5,34 +5,8 @@ import glob
 import subprocess
 import random
 
-import pandas as pd
 
 random.seed(1001)
-
-
-def _filter_filenames(meta, path, filters):
-    filenames = []
-    for fn in glob.glob(path+'/*.txt'):
-        me = meta.loc[os.path.splitext(os.path.basename(fn))[0]]
-        if me.empty:
-            continue
-        if 'authors' in filters and \
-           me['author:id'] not in filters['authors']:
-            continue
-        if 'titles' in filters and \
-           str(me['title:detail']).strip() not in filters['titles']:
-            continue
-        if 'genres' in filters:
-            match = False
-            for f in filters['genres']:
-                if f in me['categories'].lower():
-                    match = True
-                    continue
-            if not match:
-                continue
-        filenames.append(fn)
-
-    return filenames
 
 
 def filter_filenames(meta, path, filters):
@@ -59,12 +33,6 @@ def filter_filenames(meta, path, filters):
         filenames.append(fn)
 
     return filenames
-
-
-def _load_metadata(fn, sep=','):
-    df = pd.read_csv(fn, header=0, sep=',', dtype={'author:id': str})
-    df = df.set_index('filepath').fillna('')
-    return df
 
 
 def load_metadata(fn, sep=','):

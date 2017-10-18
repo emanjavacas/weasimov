@@ -16,12 +16,20 @@ li.list-group-hover.list-group-item:hover {
   background-color: #fff
 }
 
+.dropdown-menu>.active>a, .dropdown-menu>.active>a:hover .dropdown-menu>.active>a:focus {
+  background-color: #777;
+}
+
 /* Generate Panel */
 .generate-panel  {
   border-left: none;
   border-right: none;
   box-shadow: 0 2px 0px rgba(0,0,0,.05);
   padding: 0;
+}
+
+.sticky-inner-wrapper {
+  z-index: 999 !important;
 }
 
 /* Suggestions Panel */
@@ -263,6 +271,11 @@ li.list-group-hover.list-group-item:hover {
   font-size: 25px;
   color: #aaaaaa;
   font-weight: bold;
+}
+
+/* Document Form */
+.document-form .modal-dialog {
+  max-width: 310px;
 }
 
 /* MEDIA QUERIES */

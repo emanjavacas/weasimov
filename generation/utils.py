@@ -39,14 +39,15 @@ def parse_filter_file(fn, sep=';'):
 def filter_filenames(meta, path, filters):
     filenames = []
     for fn in glob.glob(path+'/*.txt'):
-        me = meta.loc[os.path.splitext(os.path.basename(fn))[0]]
-        if me.empty:
+        filepath = os.path.splitext(os.path.basename(fn))[0]
+        me = meta.get(filepath)
+        if me is None:
             continue
         if 'authors' in filters and \
            me['author:id'] not in filters['authors']:
             continue
         if 'titles' in filters and \
-           str(me['title:detail']).strip() not in filters['titles']:
+           me['title:detail'] not in filters['titles']:
             continue
         if 'genres' in filters:
             match = False
@@ -61,10 +62,15 @@ def filter_filenames(meta, path, filters):
     return filenames
 
 
-def load_metadata(fn):
-    df = pd.read_csv(fn, header=0, sep=',', dtype={'author:id': str})
-    df = df.set_index('filepath').fillna('')
-    return df
+def load_metadata(fn, sep=','):
+    by_filepath = {}
+    with open(fn, 'r') as f:
+        header = next(f).strip().split(sep)
+        for line in f:
+            row = line.strip().split(sep)
+            row_dict = {field: val for field, val in zip(header, row)}
+            by_filepath[row_dict['filepath']] = row_dict
+    return by_filepath
 
 
 def load_data(path='data/bigmama/',
@@ -135,20 +141,6 @@ def load_data(path='data/bigmama/',
                         yield l.strip().split()
                     elif level == 'char':
                         yield list(l.strip())
-
-
-def format_hyp(score, hyp, hyp_num, d):
-    """
-    Transform a hypothesis into a string for visualization purposes
-
-    score: float, normalized probability
-    hyp: list of integers
-    hyp_num: int, index of the hypothesis
-    d: Dict, dictionary used for fitting the vocabulary
-    """
-    return '\n* [{hyp}] [Score:{score:.3f}]: {sent}'.format(
-        hyp=hyp_num, score=score/len(hyp),
-        sent=' '.join([d.vocab[c] for c in hyp]))
 
 
 def make_lm_save_hook(d, args):

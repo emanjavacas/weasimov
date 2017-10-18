@@ -22,38 +22,10 @@ from seqmod import utils as u
 from seqmod.misc.trainer import CLMTrainer
 from seqmod.misc.loggers import StdLogger, VisdomLogger
 from seqmod.misc.optimizer import Optimizer
-from seqmod.misc.dataset import Dict, BlockDataset
+from seqmod.misc.dataset import BlockDataset
 from seqmod.misc.early_stopping import EarlyStopping
 
-from utils import load_data, format_hyp, make_lm_save_hook, save_model
-
-
-# check hook
-def make_clm_hook(d, max_seq_len=200, gpu=False, samples=5,
-                  method='sample', temperature=1, batch_size=10):
-    lang_d, *conds_d = d
-    sampled_conds = []
-    for _ in range(samples):
-        sample = [d.index(random.sample(d.vocab, 1)[0]) for d in conds_d]
-        sampled_conds.append(sample)
-
-    def hook(trainer, epoch, batch_num, checkpoint):
-        trainer.log('info', 'Generating text...')
-        for conds in sampled_conds:
-            conds_str = ''
-            for idx, (cond_d, sampled_c) in enumerate(zip(conds_d, conds)):
-                conds_str += (str(cond_d.vocab[sampled_c]) + '; ')
-            trainer.log("info", "\n***\nConditions: " + conds_str)
-            scores, hyps = trainer.model.generate(
-                lang_d, max_seq_len=max_seq_len, gpu=gpu,
-                method=method, temperature=temperature,
-                batch_size=batch_size, conds=conds)
-            hyps = [u.format_hyp(score, hyp, hyp_num + 1, lang_d)
-                    for hyp_num, (score, hyp) in enumerate(zip(scores, hyps))]
-            trainer.log("info", ''.join(hyps) + "\n")
-        trainer.log("info", '***\n')
-
-    return hook
+from utils import make_lm_save_hook, save_model
 
 
 if __name__ == '__main__':
@@ -141,13 +113,13 @@ if __name__ == '__main__':
         model.parameters(), args.optim, args.learning_rate, args.max_grad_norm,
         lr_decay=args.learning_rate_decay, start_decay_at=args.start_decay_at,
         decay_every=args.decay_every)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.NLLLoss()
 
     # hooks
     early_stopping = None
     if args.early_stopping > 0:
         early_stopping = EarlyStopping(args.early_stopping)
-    check_hook = make_clm_hook(
+    check_hook = u.make_clm_hook(
         d, max_seq_len=args.max_seq_len, samples=5, gpu=args.gpu,
         method=args.decoding_method, temperature=args.temperature)
     # save hooks
@@ -175,7 +147,8 @@ if __name__ == '__main__':
             trainer.log("info", "Full dataset epoch [%d]" % epoch)
             trainer.add_loggers(std_logger, visdom_logger)
             trainer.add_hook(check_hook, hooks_per_epoch=args.hooks_per_epoch)
-            trainer.add_hook(model_save_hook, hooks_per_epoch=args.hooks_per_epoch)
+            trainer.add_hook(
+                model_save_hook, hooks_per_epoch=args.saves_per_epoch)
             trainer.train(1, args.checkpoint, gpu=args.gpu)
 
     if args.save:

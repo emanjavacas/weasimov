@@ -27,9 +27,8 @@ from seqmod.misc.optimizer import Optimizer
 from seqmod.misc.dataset import Dict, BlockDataset
 from seqmod.misc.early_stopping import EarlyStopping
 
-from utils import load_data
-from train import (make_lm_check_hook, make_lm_save_hook,
-                  save_model, load_from_file)
+from utils import load_data, make_lm_save_hook
+from train import (make_lm_check_hook, save_model, load_from_file)
 
 
 if __name__ == '__main__':
@@ -145,7 +144,7 @@ if __name__ == '__main__':
         model.parameters(), args.optim, args.learning_rate, args.max_grad_norm,
         lr_decay=args.learning_rate_decay, start_decay_at=args.start_decay_at,
         decay_every=args.decay_every)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.NLLLoss()
 
     # create trainer
     trainer = LMTrainer(model, {"train": train, "test": test, "valid": valid},

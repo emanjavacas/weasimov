@@ -27,7 +27,7 @@ from seqmod.misc.optimizer import Optimizer
 from seqmod.misc.dataset import Dict, BlockDataset
 from seqmod.misc.early_stopping import EarlyStopping
 
-from utils import load_data, format_hyp, make_lm_save_hook, save_model
+from utils import load_data, make_lm_save_hook, save_model
 
 
 def load_from_file(path):
@@ -52,8 +52,6 @@ def make_lm_check_hook(d, max_seq_len=25, gpu=False,
     fpath = os.sep.join((dpath, 'seed-sentences.txt'))
     seed_texts = [l.strip() for l in open(fpath, 'r')]
     temperatures = np.linspace(0.1, temperature, nb_temperatures)
-    s = re.compile(r' +')
-    ss = re.compile(r"(?<=\S)\s(?=\S)")
 
     def hook(trainer, epoch, batch_num, checkpoint):
         trainer.log("info", "Checking training...")
@@ -68,13 +66,10 @@ def make_lm_check_hook(d, max_seq_len=25, gpu=False,
             trainer.log("info", "Temperature at " + "%.2f" % temp)
             scores, hyps = trainer.model.generate(
                 d, seed_texts=seed_texts, max_seq_len=max_seq_len, gpu=gpu,
-                method=method, temperature=temp, width=width,
-                eos=True, bos=True)
-            hyps = [format_hyp(score, hyp, '...'+s.sub('  ', st)[-25:], d)
-                    for hyp_num, (score, st, hyp)
-                    in enumerate(zip(scores, seed_texts, hyps))]
-            hyps = [ss.sub('', h) for h in hyps]
-            hyps = [s.sub(' ', h) for h in hyps]
+                method=method, temperature=temp, width=width)
+            hyps = [u.format_hyp(score, hyp, hyp_num, d, level='char')
+                    for hyp_num, (score, hyp)
+                    in enumerate(zip(scores, hyps))]
             trainer.log("info", '\n***' + ''.join(hyps) + "\n***")
 
     return hook
@@ -168,25 +163,29 @@ if __name__ == '__main__':
         d = d or u.load_model(args.dict_path)
     else:
         print("Loading data...")
-        d = d or Dict(max_size=args.max_size, min_freq=args.min_freq,
-                      eos_token=u.EOS, bos_token=u.BOS)
+        d = d or Dict(
+            max_size=args.max_size, min_freq=args.min_freq, eos_token=u.EOS)
+
+        def examples():
+            return load_data(
+                path=args.corpus, level=args.level,
+                filters=args.filter_file,
+                skip_head_lines=args.skip_head_lines,
+                skip_tail_lines=args.skip_tail_lines)
+
         if not d.fitted:
             print("Fitting dictionary...")
-            d.fit(load_data(path=args.corpus, level=args.level,
-                            filters=args.filter_file,
-                            skip_head_lines=args.skip_head_lines,
-                            skip_tail_lines=args.skip_tail_lines))
+            d.fit(examples())
+
         print("Transforming data...")
-        data = d.transform(
-            load_data(path=args.corpus, level=args.level,
-                      filters=args.filter_file,
-                      skip_head_lines=args.skip_head_lines,
-                      skip_tail_lines=args.skip_tail_lines))
+        data = d.transform(examples())
         data = np.array([c for s in data for c in s], dtype=np.int32)
+
         if args.save_data:
             np.save(args.data_path + '.npy', data)
             u.save_model(d, args.dict_path + '.dict')
         data = torch.LongTensor(data.astype(np.int64))
+
     print("Splitting dataset...")
     train, valid, test = BlockDataset.splits_from_data(
         data, d, args.batch_size, args.bptt, gpu=args.gpu,
@@ -220,7 +219,7 @@ if __name__ == '__main__':
         model.parameters(), args.optim, args.learning_rate, args.max_grad_norm,
         lr_decay=args.learning_rate_decay, start_decay_at=args.start_decay_at,
         decay_every=args.decay_every)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.NLLLoss()
 
     # create trainer
     trainer = LMTrainer(model, {"train": train, "test": test, "valid": valid},
@@ -239,14 +238,14 @@ if __name__ == '__main__':
 
     # save hooks:
     model_save_hook = make_lm_save_hook(d, args)
-    trainer.add_hook(model_save_hook, hooks_per_epoch=args.hooks_per_epoch)
+    trainer.add_hook(model_save_hook, hooks_per_epoch=args.saves_per_epoch)
 
     # loggers
     if args.visdom_server is not None:
         visdom_logger = VisdomLogger(
             log_checkpoints=args.log_checkpoints, title=args.prefix,
             env='weasimov', server='http://146.175.11.197')
-    
+
         trainer.add_loggers(StdLogger(), visdom_logger)
     else:
         trainer.add_loggers(StdLogger())

@@ -48,8 +48,8 @@ def standardize_seed(seed):
     return ''.join(c for c in seed.translate(REPLACER) if c in VOCAB)
 
 
-def format_seed(seed, artificial_break='<Art-break>', bos='<bos>', eos='<eos>'):
-    _seed = f'{seed} {artificial_break}'  # TODO BOS
+def format_seed(seed, eos_token, bos_token, artificial_break='<Art-break>'):
+    _seed = f'{seed} {artificial_break}'
     seed_with_final_stop = False
     sents = nltk.sent_tokenize(_seed, language='dutch')
     if sents[-1].strip() == artificial_break:
@@ -59,11 +59,20 @@ def format_seed(seed, artificial_break='<Art-break>', bos='<bos>', eos='<eos>'):
         sents[-1] = sents[-1].replace(f' {artificial_break}', '')
     output = []
     for sent in sents[:-1]:
-        output += [bos] + list(sent.strip()) + [eos]
+        if bos_token:
+            output += [bos_token] + list(sent.strip())
+        if eos_token:
+            output += list(sent.strip()) + [eos_token]
     if seed_with_final_stop:
-        output += [bos] + list(sents[-1].strip()) + [eos]
+        if bos_token:
+            output += [bos_token] + list(sents[-1].strip())
+        if eos_token:
+            output += list(sents[-1].strip()) + [eos_token]
     else:
-        output += [bos] + list(sents[-1].strip())
+        if bos_token:
+            output += [bos_token] + list(sents[-1].strip())
+        else:
+            output += list(sents[-1].strip())
     if seed.endswith(' ') and not seed_with_final_stop:
         output += [' ']
     return output
@@ -131,8 +140,7 @@ class Synthesizer(object):
     def sample(self, model_name, seed_texts=None,
                max_seq_len=100, max_tries=1, temperature=1.0,
                method='sample', batch_size=5, ignore_eos=True, **kwargs):
-        """Samples a sentence.
-
+        """
         Samples a single sentence from a single model.
 
         Parameters
@@ -155,7 +163,6 @@ class Synthesizer(object):
                 * `'sample'`
                 * `'argmax'`
         batch_size : int (default = 10)
-            The sizes of the batches.
         ignore_eos : bool (default = False)
             Whether to ignore the end-of-sentence symbol.
 
@@ -169,25 +176,31 @@ class Synthesizer(object):
          ...]
 
         """
+
         if not self.models:
             raise ValueError('Models have not been set yet.')
+        d, m = self.dicts[model_name], self.models[model_name]
 
         bos, eos = False, False  # default to not prefix <bos> suffix <eos>
         if not seed_texts and self.sentence_sampler is not None:
             try:
                 sent = self.sentence_sampler.sample(min_len=25, filters=None)
                 seed_texts = [sent]
-                bos, eos = True, True
+                eos = True
             except:
                 print("Couldn't load default seed")
             ignore_eos = True
         else:
-            seed_texts = [format_seed(standardize_seed(s)) for s in seed_texts]
+            eos_token = d.vocab[d.get_eos()] if d.get_eos() else None
+            bos_token = d.vocab[d.get_bos()] if d.get_bos() else None
+            seed_texts = [
+                format_seed(standardize_seed(s), eos_token, bos_token)
+                for s in seed_texts]
 
         def clean_hyp(hyp):
             text = ''.join(d.vocab[c] for c in hyp) \
-                     .replace(d.bos_token, '') \
                      .replace(d.eos_token, ' ') \
+                     .replace(d.bos_token or '', '') \
                      .replace('<par>', '')
             # Remove quote artifacts at beginning of lines.
             if text.strip().startswith("' '"):
@@ -197,10 +210,9 @@ class Synthesizer(object):
         def normalize_hyp(hyp):
             bos, eos, par, found = [], [], [], 0
             for idx, c in enumerate(hyp):
-                if c == d.get_bos():
+                if d.get_bos() is not None and c == d.get_bos():
                     bos.append(idx - found)
-                    found += 1
-                elif c == d.get_eos():
+                elif d.get_eos() is not None and c == d.get_eos():
                     eos.append(idx - found)
                     found += 1
                 elif c == d.s2i.get('<par>'):
@@ -218,7 +230,6 @@ class Synthesizer(object):
                                  if h[-1] == d.get_eos()])
             return list(scores), list(hyps)
 
-        d, m = self.dicts[model_name], self.models[model_name]
         result = []
 
         scores, hyps = m.generate(
