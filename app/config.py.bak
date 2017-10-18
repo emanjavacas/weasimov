@@ -6,7 +6,12 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 MODEL_DIR = os.path.join(basedir, 'data/models/')
 
 # Database
-SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'weasimov.db') + '?check_same_thread=False'
+if os.environ.get("WEASIMOV_DB_URL") is None:
+    print("Falling back to SQLite DB.")
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'weasimov.db') + '?check_same_thread=False'
+else:
+    print("Using MySQL")
+    SQLALCHEMY_DATABASE_URI = os.environ['WEASIMOV_DB_URL']
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
 # Sentence sampler
