@@ -3,12 +3,13 @@ import datetime
 import json
 
 from app import db
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
 
 class JSONEncodedDict(db.TypeDecorator):
     "Represents an immutable structure as a json-encoded string."
 
-    impl = db.VARCHAR
+    impl = MEDIUMTEXT
 
     def process_bind_param(self, value, dialect):
         if value is not None:
@@ -34,7 +35,7 @@ class User(db.Model):
     password = db.Column(db.String(64), unique=False)
     session = db.Column(JSONEncodedDict)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    active = db.Column(db.Boolean, default=False)
+    active = db.Column(db.SmallInteger, default=False)
 
     def is_authenticated(self):
         return True
@@ -63,8 +64,8 @@ class Doc(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
-    screen_name = db.Column(db.String, default='Untitled Document')
-    active = db.Column(db.Boolean, default=True)
+    screen_name = db.Column(db.String(120), default='Untitled Document')
+    active = db.Column(db.SmallInteger, default=True)
     last_modified = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
@@ -146,14 +147,14 @@ class Generation(db.Model):
     user_id = db.Column(db.Integer)
     seed_doc_id = db.Column(db.Integer)
     model = db.Column(db.String(120))
-    seed = db.Column(db.String)
+    seed = db.Column(db.String(500))
     temperature = db.Column(db.Float)
     max_seq_len = db.Column(db.Integer)
-    text = db.Column(db.String)
+    text = db.Column(db.String(500))
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     action_doc_id = db.Column(db.Integer)
     draft_entity_id = db.Column(db.String(64), default='')
-    selected = db.Column(db.Boolean, default=False)
+    selected = db.Column(db.SmallInteger, default=False)
     selected_timestamp = db.Column(db.DateTime)
-    dismissed = db.Column(db.Boolean, default=False)
+    dismissed = db.Column(db.SmallInteger, default=False)
     dismissed_timestamp = db.Column(db.DateTime)
