@@ -6,6 +6,7 @@ import flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_socketio import SocketIO
+from flask_bcrypt import Bcrypt
 
 app = flask.Flask(
     __name__,
@@ -24,7 +25,10 @@ db = SQLAlchemy(app)
 lm = LoginManager()
 lm.session_protection = 'strong'
 lm.init_app(app)
-lm.login_view = 'login'
+lm.login_view = 'register'
+
+# bcrypt
+bcrypt = Bcrypt(app)
 
 # Services
 model_dir = app.config['MODEL_DIR']

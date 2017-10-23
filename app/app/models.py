@@ -2,8 +2,13 @@
 import datetime
 import json
 
-from app import db
+from app import app, db, bcrypt
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
+from sqlalchemy.ext.hybrid import hybrid_property
+
+
+if not app.config['USE_MYSQL']:
+    MEDIUMTEXT = db.VARCHAR
 
 
 class JSONEncodedDict(db.TypeDecorator):
@@ -32,7 +37,7 @@ class User(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True)
-    password = db.Column(db.String(64), unique=False)
+    _password = db.Column(db.String(64), unique=False)
     session = db.Column(JSONEncodedDict)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     active = db.Column(db.SmallInteger, default=False)
@@ -48,6 +53,17 @@ class User(db.Model):
 
     def get_id(self):
         return self.id
+
+    @hybrid_property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def _set_password(self, plaintext):
+        self._password = bcrypt.generate_password_hash(plaintext)
+
+    def is_correct_password(self, plaintext):
+        return bcrypt.check_password_hash(self._password, plaintext)
 
     def __repr__(self):
         return '<User(%r)>' % self.username
