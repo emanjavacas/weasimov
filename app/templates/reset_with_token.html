@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center" style="padding:50px 0">
+    <div class="login-message">nieuw wachtwoord</div>
+    <div class="login-form-1">
+        <form action="{{ url_for('reset_with_token', token=token) }}" method="POST" class="text-left">
+            <div class="login-form-main-message"></div>
+            <div class="main-login-form">
+                <div class="login-group">
+                    <div class="form-group">
+                    {{ form.password.label(class="sr-only") }} {{ form.password(class="form-control", placeholder="password") }}
+                    {{ form.csrf_token }}
+                    </div>
+                </div>
+                <button type="submit" class="login-button" id="reset-button">
+                <i class="fa fa-chevron-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
