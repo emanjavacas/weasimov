@@ -13,10 +13,10 @@ class LoginForm(Form):
     def validate_fields(self):
         user = self.get_user()
         if user is None:
-            self.username.errors = ('Jij bestaat niet.',)
+            self.username.errors = ('Opgegeven gebruikersnaam is onbekend.',)
             return False
         if user.password != self.password.data:
-            self.password.errors = ('Verkeerd wachtwoord.',)
+            self.password.errors = ('Opgegeven wachtwoord is onbekend.',)
             return False
         return True
 
@@ -31,7 +31,7 @@ class RegisterForm(Form):
 
     def validate_fields(self):
         if not self.available_username():
-            self.username.errors = ('Deze naam is bezet.',)
+            self.username.errors = ('Deze naam is al in gebruik.',)
             return False
         if self.password.data != self.cpassword.data:
             self.cpassword.errors = ('Wachtwoorden zijn niet hetzelfde', )

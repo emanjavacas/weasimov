@@ -113,7 +113,7 @@ class RegenerateButton extends React.Component {
 	   onClick={this.props.onRegenerate}
 	   bsSize="sm"
 	   className="pull-right" >
-	  <i className="fa fa-refresh"/>
+	  <i className="fa fa-refresh" id="refresh-button"/>
       	</RB.Button>
       );
     }
