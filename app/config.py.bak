@@ -10,9 +10,11 @@ class Config:
     if os.environ.get("WEASIMOV_DB_URL") is None:
         print("Falling back to SQLite DB.")
         SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'weasimov.db') + '?check_same_thread=False'
+        USE_MYSQL = False
     else:
         print("Using MySQL")
         SQLALCHEMY_DATABASE_URI = os.environ['WEASIMOV_DB_URL']
+        USE_MYSQL = True
     SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
     # Sentence sampler

@@ -52,8 +52,7 @@ class Agent:
         self.fnames = glob.glob(datadir + '/*.txt')
 
     def sign_up(self):
-        self.browser.click_link_by_text("registreer")
-        username = random_username()
+        username = random_email_address()
         password = random_string()
         self.browser.fill_form(
             {"username": username, "password": password, "cpassword": password})
