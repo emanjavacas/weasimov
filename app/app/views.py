@@ -54,8 +54,6 @@ def login():
     if flask.g.user is not None and flask.g.user.is_authenticated:
         return flask.redirect(flask.url_for('index'))
     form = LoginForm()
-    if flask.request.method == 'GET':
-        return flask.render_template('login.html', title='Sign in', form=form)
     if form.validate_on_submit() and form.validate_fields():
         flask.session['remember_me'] = form.remember_me.data
         flask_login.login_user(form.get_user(), remember=form.remember_me.data)
@@ -72,9 +70,6 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-    if flask.request.method == 'GET':
-        return flask.render_template(
-            'register.html', title='Sign In', form=form)
     if form.validate_on_submit() and form.validate_fields():
         user = User(username=form.username.data,
                     password=form.password.data)

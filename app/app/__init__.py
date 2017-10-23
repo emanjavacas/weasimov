@@ -13,7 +13,7 @@ app = flask.Flask(
     template_folder='../templates')
 
 # Configure
-app.config.from_object('config')
+app.config.from_object('config.Config')
 
 # Database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
