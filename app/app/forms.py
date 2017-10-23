@@ -1,12 +1,12 @@
 from flask_wtf import Form
 from wtforms import StringField, TextAreaField, Field, PasswordField, BooleanField, RadioField
 from wtforms.widgets import TextArea
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, Email
 from .models import User
 
 
 class LoginForm(Form):
-    username = StringField('username', validators=[DataRequired()])
+    username = StringField('username', validators=[DataRequired(), Email()])
     password = PasswordField('password', validators=[DataRequired()])
     remember_me = BooleanField('remember_me', default=False)
 
@@ -15,7 +15,7 @@ class LoginForm(Form):
         if user is None:
             self.username.errors = ('Opgegeven gebruikersnaam is onbekend.',)
             return False
-        if user.password != self.password.data:
+        if not user.is_correct_password(self.password.data):
             self.password.errors = ('Opgegeven wachtwoord is onbekend.',)
             return False
         return True
@@ -25,7 +25,7 @@ class LoginForm(Form):
 
 
 class RegisterForm(Form):
-    username = StringField('username', validators=[DataRequired()])
+    username = StringField('username', validators=[DataRequired(), Email()])
     password = PasswordField('password', validators=[DataRequired()])
     cpassword = PasswordField('confirm password', validators=[DataRequired()])
 

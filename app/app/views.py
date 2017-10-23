@@ -55,16 +55,15 @@ def login():
         return flask.redirect(flask.url_for('index'))
     form = LoginForm()
     if form.validate_on_submit() and form.validate_fields():
-        flask.session['remember_me'] = form.remember_me.data
-        flask_login.login_user(form.get_user(), remember=form.remember_me.data)
-        # set active
         user = form.get_user()
+        flask.session['remember_me'] = form.remember_me.data
+        flask_login.login_user(user, remember=form.remember_me.data)
         user.active = True
         db.session.commit()
         # websocket
         socketio.emit('login', {'user_id': user.id}, namespace='/monitor')
-        return flask.redirect(flask.url_for("index"))
-    return flask.render_template("login.html", title='Sign in', form=form)
+        return flask.redirect(flask.url_for('index'))
+    return flask.render_template('login.html', title='Sign in', form=form)
 
 
 @app.route('/register', methods=['GET', 'POST'])
