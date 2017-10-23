@@ -116,10 +116,10 @@ class Agent:
         return True
 
 
-def simulate(url, n_agents=5, driver='phantomjs'):
+def simulate(url, n_agents=5, driver='phantomjs', debug=False):
     with concurrent.futures.ThreadPoolExecutor(max_workers=n_agents) as executor:
         for i in range(n_agents):
-            executor.submit(Agent(url=url, driver=driver).play)
+            executor.submit(Agent(url=url, driver=driver, debug=debug).play)
 
 
 if __name__ == '__main__':
@@ -128,6 +128,7 @@ if __name__ == '__main__':
     parser.add_argument('--agents', type=int, default=5)
     parser.add_argument(
         '--driver', default='phantomjs',
-        options=['chrome', 'firefox', 'phantomjs', 'zope.testbrowser', 'django'])
+        choices=['chrome', 'firefox', 'phantomjs', 'zope.testbrowser', 'django'])
+    parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()
-    simulate(args.url, n_agents=args.agents, driver=args.driver)
+    simulate(args.url, n_agents=args.agents, driver=args.driver, debug=args.debug)
