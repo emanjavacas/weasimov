@@ -33,6 +33,14 @@ class Config:
         'fine_robot_large.LSTM.1l.4096h.64e.256b.1.87.pt': 'Robot Ik'
     }
 
+    # Mail settings
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = 'weasimov@gmail.com'
+    MAIL_PASSWORD = os.environ['ASI_MAIL_PASSWORD']
+
     # Defaults
     DEFAULTS = {
         "temperature": 0.35,

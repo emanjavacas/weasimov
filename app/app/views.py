@@ -13,7 +13,8 @@ from sqlalchemy import desc, and_
 from app import app, db, lm
 from . import socketio
 from .models import User, Doc, Text, Edit, Generation
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, RegisterForm, EmailForm, PasswordForm
+from .utils import send_email, ts
 
 
 def get_colors():
@@ -473,3 +474,34 @@ def on_leave(data):
     leave_room(data['room'])
     print("{username} has left room {room}".format(
         username=username, room=data['room']))
+
+
+@app.route('/reset', methods=['GET', 'POST'])
+def reset():
+    form = EmailForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.email.data).first()
+        if user is None:
+            form.email.errors = ('Opgegeven email-adres is onbekend.')
+            return flask.render_template('reset.html', form=form)
+        subject = "Wachtwoord vergeten"
+        token = ts.dumps(user.username, salt='recover-key')
+
+        recover_url = flask.url_for('reset_with_token', token=token, _external=True)
+        html = flask.render_template('recover_email.html', recover_url=recover_url)
+        send_email(user.username, subject, html)
+        return flask.redirect(flask.url_for('index'))
+    return flask.render_template('reset.html', form=form)
+
+
+@app.route('/reset/<token>', methods=['GET', 'POST'])
+def reset_with_token(token):
+    email = ts.loads(token, salt="recover-key", max_age=86400)
+    form = PasswordForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=email).first()
+        user.password = form.password.data
+        db.session.add(user)
+        db.session.commit()
+        return flask.redirect(flask.url_for('login'))
+    return flask.render_template('reset_with_token.html', form=form, token=token)

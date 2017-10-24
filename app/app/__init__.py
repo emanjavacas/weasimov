@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_bcrypt import Bcrypt
+from flask_mail import Mail
 
 app = flask.Flask(
     __name__,
@@ -29,6 +30,9 @@ lm.login_view = 'register'
 
 # bcrypt
 bcrypt = Bcrypt(app)
+
+# mail
+mail = Mail(app)
 
 # Services
 model_dir = app.config['MODEL_DIR']
