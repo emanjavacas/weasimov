@@ -26,19 +26,13 @@ class TextEditor extends React.Component {
 
     return (
       <div className="RichEditor-root">
-	<Sticky enabled={true} top={70} innerZ={1001}>
-          <InlineStyleControls
-             editorState={editorState}
-             onToggle={this.props.toggleInlineStyle}
-             />
-	</Sticky>
         <div className={className} onClick={this.focus}>
           <Editor
              editorState={editorState}
              handleKeyCommand={this.props.handleKeyCommand}
              onChange={this.props.onChange}
              onTab={this.props.onTab}
-             placeholder="Bieb bieb..."
+             placeholder="Begin hier met schrijven..."
              ref="editor"
              spellCheck={false}
 	     handleBeforeInput={this.props.handleBeforeInput}/>

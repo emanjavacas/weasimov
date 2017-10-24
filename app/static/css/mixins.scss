@@ -6,6 +6,12 @@
 	background: -o-linear-gradient($stop, $start);
 }
 
+@mixin padding() {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
 @mixin rounded($r: 5px) {
 	-webkit-border-radius: $r;
 	-moz-border-radius: $r;

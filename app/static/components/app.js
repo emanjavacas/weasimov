@@ -279,7 +279,8 @@ class App extends React.Component {
       this.onGenerationError);
     this.setState({loadingHyps: true});
   }
-
+  
+  /* GENERATE */
   generate(model) {
     const {editorState} = this.getDocState();
     const currentContent = editorState.getCurrentContent();
@@ -423,76 +424,68 @@ class App extends React.Component {
     } else {
       const {loading} = this.getDocState();
       if (loading) { // is the current doc's editorState loading (being fetched from server)?
-	return <span>Loading editor</span>; // TODO: nicer component
+        return <span>Loading editor</span>; // TODO: nicer component
       } else { // get doc's editorState and render TextEditor
-	const {editorState} = this.getDocState();
-	return (
-	  <div>
-	    <Navbar
-	       username={this.state.username}
-	       isMonitor={this.state.isMonitor}
-	       activeDoc={this.state.docId}
-	       docs={this.state.docs}
-	       onSelectDoc={this.selectDoc}
-	       onSubmitScreenName={this.editDocName}
-	       onSubmitNewDoc={this.createDoc}
-	       onSubmitRemoveDoc={this.removeDoc}/>
-	    <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
+        const {editorState} = this.getDocState();
+        return (
+          <div>
+            <Navbar
+              username={this.state.username}
+              isMonitor={this.state.isMonitor}
+              activeDoc={this.state.docId}
+              docs={this.state.docs}
+              onSelectDoc={this.selectDoc}
+              onSubmitScreenName={this.editDocName}
+              onSubmitNewDoc={this.createDoc}
+              onSubmitRemoveDoc={this.removeDoc}/>
+            <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
             <RB.Grid fluid={true}>
-	      <RB.Row>
-		<RB.Col lg={2} md={2} sm={1}></RB.Col>
-		<RB.Col lg={8} md={8} sm={10}>
-		  
-		  <RB.Row>
-		    <Sticky enabled={true} top={0} innerZ={1001}>
-		      <div className="panel panel-default generate-panel">
-			<div className="panel-heading">
-			  <ButtonToolbar
-			     temperature={this.state.temperature} 
-			     onTemperatureChange={this.onTemperatureChange}
-			     maxSeqLen={this.state.maxSeqLen}
-			     onSeqLenChange={this.onSeqLenChange}
-			     models={this.state.models}
-			     onGenerate={this.generate}/>
-			</div>
-		      </div>
-		    </Sticky>
-		  </RB.Row>
-		  
-		  <RB.Row>
-		    <TextEditor
-		       editorState={editorState}
-		       onChange={this.onEditorChange}
-		       handleKeyCommand={this.handleKeyCommand}
-		       onTab={this.onTab}
-		       toggleInlineStyle={this.toggleInlineStyle}
-		       handleBeforeInput={this.handleBeforeInput}/>
-		    <Utils.Spacer height="50px"/>
-		  </RB.Row>
-		  
-		  <RB.Row>
-    		    <Suggestions
-		       ref="suggestions"
-    		       hyps={this.state.hyps}
-		       elapsed={this.state.lastGenerationTime}
-		       models={this.state.models}
-		       isCollapsed={this.state.suggestionsCollapsed}
-		       onCollapse={this.toggleSuggestions}
-    		       loadingHyps={this.state.loadingHyps}
-    		       onRegenerate={this.regenerate}
-    		       onHypSelect={this.insertHypAtCursor}
-		       onHypDismiss={this.dismissHyp}
-		       hasHadHyps={this.state.hasHadHyps}
-		       resetHyps={this.resetHyps}/>
-		  </RB.Row>
-		  
-		</RB.Col>
-		<RB.Col lg={2} md={2} sm={1}></RB.Col>
-	      </RB.Row>
-	      
-	    </RB.Grid>
+              <RB.Row className="mainrow">
+                <RB.Col lg={6} md={6} sm={1}>
+                  <TextEditor
+                    editorState={editorState}
+                    onChange={this.onEditorChange}
+                    handleKeyCommand={this.handleKeyCommand}
+                    onTab={this.onTab}
+                    toggleInlineStyle={this.toggleInlineStyle}
+                    handleBeforeInput={this.handleBeforeInput}/>
+                </RB.Col>
+                <RB.Col lg={6} md={6} sm={1}>
+                  <RB.Row>
+                    <Sticky enabled={true} top={0} innerZ={1001}>
+                      <div className="panel panel-default generate-panel">
+                        <div className="panel-heading">
+                          <ButtonToolbar
+                            temperature={this.state.temperature} 
+                            onTemperatureChange={this.onTemperatureChange}
+                            maxSeqLen={this.state.maxSeqLen}
+                            onSeqLenChange={this.onSeqLenChange}
+                            models={this.state.models}
+                            onGenerate={this.generate}/>
+                        </div>
+                      </div>
+                    </Sticky>
+                  </RB.Row>
+                  <RB.Row>
+                    <Suggestions
+                      ref="suggestions"
+                      hyps={this.state.hyps}
+                      elapsed={this.state.lastGenerationTime}
+                      models={this.state.models}
+                      isCollapsed={this.state.suggestionsCollapsed}
+                      onCollapse={this.toggleSuggestions}
+                      loadingHyps={this.state.loadingHyps}
+                      onRegenerate={this.regenerate}
+                      onHypSelect={this.insertHypAtCursor}
+                      onHypDismiss={this.dismissHyp}
+                      hasHadHyps={this.state.hasHadHyps}
+                      resetHyps={this.resetHyps}/>
+                  </RB.Row>
+                </RB.Col>
+              </RB.Row>
+            </RB.Grid>
           </div>
-	);
+        );
       }
     }
   }

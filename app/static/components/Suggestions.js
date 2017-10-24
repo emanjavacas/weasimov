@@ -149,15 +149,11 @@ class Suggestions extends React.Component {
     const collapsedClass = this.props.isCollapsed ? 'suggestions-panel-down' : 'suggestions-panel-up';
     const caretClass = this.props.isCollapsed ? 'fa fa-caret-up' : 'fa fa-caret-down';
     return (
-      <div className={`panel panel-default suggestions-panel ${collapsedClass}`}
-	   style={{visibility: hasHyps ? "visible" : "hidden"}}>
+      <div className={`panel panel-default suggestions-panel ${collapsedClass}`}>
 	<div className="panel-heading">
 	  <RB.Row>
 	    <RB.Col md={6} sm={4} xs={3}>
 	      <RB.ButtonGroup>
-		<RB.Button bsSize="sm" onClick={() => this.props.onCollapse()}>
-		  <i className={caretClass}></i>
-		</RB.Button>
 		{(this.props.hyps.length > 0) ?
 		  <RB.Button disabled style={{cursor: "default", padding: "4px 10px"}}>
 		      <span>{this.props.hyps.length}</span>

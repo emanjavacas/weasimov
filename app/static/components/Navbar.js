@@ -211,26 +211,6 @@ class Navbar extends React.Component {
 	  <RB.Navbar.Toggle/>
 	</RB.Navbar.Header>
 	<RB.Navbar.Collapse>
-	  {/* <RB.ButtonGroup style={{marginTop:"7px", display: "inline-flex"}}>
-	    <ScreenNameInput
-	       screenName={this.props.docs[this.props.activeDoc].screen_name}
-	       onSubmit={this.props.onSubmitScreenName}/>
-	    <RB.DropdownButton
-	       title=" "
-	       id="nav-dropdown"
-	       open={this.state.dropdownOpen}
-	       onToggle={this.toggleDropdown}
-	       style={{zIndex: 9999999}}
-	       pullRight>
-	      {makeDocItems(this.props.docs, this.props.activeDoc, this.onSelectDoc)}
-	    </RB.DropdownButton>
-	    <RB.Button onClick={this.toggleNewDocModal}>
-	      <i className="fa fa-file" style={{fontSize: "16px"}}/>
-	    </RB.Button>
-	    <RB.Button onClick={this.toggleRemoveDocModal}>
-	      <i className="fa fa-trash-o" style={{fontSize: "16px"}}/>
-	    </RB.Button>
-	  </RB.ButtonGroup> */}
 	  <RB.ButtonGroup className="pull-right" style={{marginTop:"7px"}}>
 	    <RB.Button href={(this.props.isMonitor) ? "/monitor" : null}>
 	      {this.props.username || "loading"}
