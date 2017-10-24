@@ -1,0 +1,116 @@
+
+@import url('https://fonts.googleapis.com/css?family=Cabin:400,400i,600,600i');
+
+html, body, div, input, button {
+	font-family: "Cabin","Helvetica", sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+$red: #CC3035;
+$red2: #AA1217;
+
+.opening {
+	position:absolute;
+	@include gr($red,$red2,$red);
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	.topbar {
+		height:0rem;
+		background:#000;
+		position: absolute;
+		width:100%;
+		text-align: left;
+		.nlleest {
+			display: inline-block;
+			margin:3rem;
+			height:5rem;
+			width:5rem;
+			background: url('images/NLL-logo.png') no-repeat center;
+			background-size:contain;
+		}
+		.loginlink {
+			color:rgba(#fff,0.5);
+			float:right;
+			margin:4rem;
+			text-decoration: none;
+			font-size:2rem;
+			&:hover {
+				color:#fff;
+			}
+		}
+	}
+	.kop {
+		color:#fff;
+		height:40vh;
+		&:before {
+			content:"";
+			height:40vh;
+			width:1px;
+			display:inline-block;
+			vertical-align: middle;
+		}
+		.vcenter {
+			display:inline-block;
+			vertical-align: middle;
+			float:none;
+		}
+		h1 {
+			font-size:4em;
+		}
+	}
+	form {
+		max-width:28rem;
+		margin: 0 auto;
+		input.form-control {
+			background:rgba(#fff,0.25);
+			border:0;
+			font-size:2rem;
+			padding:0.25em 1em;
+			height:auto;
+			color:#fff;
+			outline:none;
+			@include placeholder {
+				color:rgba(#fff,0.5);
+			}
+			&:focus {
+				border:0;
+				background:darken($red,15);
+				@include shadow(none);
+			}
+		}
+		.help-block {
+			display: block;
+			padding:0.5em;
+			font-style:italic;
+			color:darken($red,20);
+			text-align: center;
+		}
+		.etc-login-form {
+			color:darken($red,20);
+			text-align: center;
+			a {
+				text-decoration: underline;
+				color:darken($red,20);
+				&:hover {
+					color:darken($red,30);
+				}
+			}
+		}
+		button {
+			border:0;
+			background:darken($red,10);
+			font-size:2rem;
+			color:rgba(#fff,0.5);
+			padding: 0.25em 1em;
+			margin:1rem auto;
+			display: block;
+			&:hover {
+				color:#fff;
+				background:darken($red,15);
+			}
+		}
+	}
+}

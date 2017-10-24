@@ -1,0 +1,43 @@
+@mixin gr($color: #F5F5F5, $start: #EEE, $stop: #FFF, $percent:0) {
+	background: $color;
+	background: -webkit-gradient(linear, left bottom, left top, color-stop($percent, $start), color-stop(1, $stop));
+	background: -ms-linear-gradient(bottom, $start, $stop);
+	background: -moz-linear-gradient(center bottom, $start $percent*100%, $stop 100%);
+	background: -o-linear-gradient($stop, $start);
+}
+
+@mixin rounded($r: 5px) {
+	-webkit-border-radius: $r;
+	-moz-border-radius: $r;
+	border-radius: $r;
+}
+
+@mixin shadow($content...) {
+	-webkit-box-shadow: $content;
+	-moz-box-shadow: $content;
+	box-shadow: $content;
+}
+
+@mixin optional-at-root($sel) {
+  @at-root #{if(not &, $sel, selector-append(&, $sel))} {
+    @content;
+  }
+}
+
+@mixin placeholder {
+  @include optional-at-root('::-webkit-input-placeholder') {
+    @content;
+  }
+
+  @include optional-at-root(':-moz-placeholder') {
+    @content;
+  }
+
+  @include optional-at-root('::-moz-placeholder') {
+    @content;
+  }
+
+  @include optional-at-root(':-ms-input-placeholder') {
+    @content;
+  }
+}
