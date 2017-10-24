@@ -1,24 +1,28 @@
-import sys; sys.path.append('../app')
+import argparse
 import collections
 import itertools
+import json
+import sqlite3
 
-from palettable.colorbrewer.qualitative import Pastel2_8
-import jinja2
 import distance
-
-from app import db, models
+import jinja2
+import palettable.colorbrewer.qualitative
+import pandas as pd
 
 
 def colors():
-    color_palette = itertools.cycle(Pastel2_8.colors)
+    color_palette = itertools.cycle(palettable.colorbrewer.qualitative.Pastel2_8.colors)
     return lambda: next(color_palette)
 
 
-def get_current_text(username):
-    user_id = models.User.query.filter_by(username=username).first().id
-    text = models.Text.query.filter_by(user_id=user_id).order_by(
-        models.Text.timestamp.desc()).first().text
-    return text
+def get_current_text(username, db):
+    connection = sqlite3.connect(db)
+    cursor = connection.cursor()
+    userid = cursor.execute('SELECT id FROM user WHERE username=?', (username,)).fetchone()[0]
+    cursor.execute('SELECT text FROM text WHERE user_id=? ORDER BY date(timestamp) DESC Limit 1', (userid,))
+    text = cursor.fetchone()[0]
+    connection.close()
+    return json.loads(text)
 
 
 class Converter:
@@ -73,7 +77,11 @@ class Converter:
 
 
 if __name__ == '__main__':
-    draft_doc = get_current_text("ronald")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('username')
+    parser.add_argument('database')
+    args = parser.parse_args()
+    draft_doc = get_current_text(args.username, args.database)
     c = Converter(draft_doc['blocks'], draft_doc['entityMap'])
     with open("G.html", "w") as out:
         out.write(c.render())
