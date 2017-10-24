@@ -2,7 +2,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="text-center" style="padding:50px 0">
+<div class="text-center opening">
+    <div class='topbar'>
+        <a href='http://www.nederlandleest.nl' class='nlleest' target="_blank"></a>
+        <a href='/login' class='loginlink'>login</a>
+        <a href='/login' class='loginlink'>registreer</a>
+    </div>
+    <div class="row kop">
+        <div class='vcenter'>
+            <h1>AsiBot</h1>
+            <h3>Schrijf samen met een robot</h3>
+        </div>
+    </div>
     <div class="login-message">reset wachtwoord</div>
     <div class="login-form-1">
         <form action="" method="POST" name="reset" class="text-left">
@@ -13,13 +24,11 @@
                     <div class="form-group">
                     {{ form.email.label(class="sr-only")}} {{ form.email(class="form-control", placeholder="email-adres") }}
                     {% if form.email.errors %} 
-                        <span class="help-block" style="color: brown">{{ form.email.errors }}</span>
+                        <span class="help-block">{{ form.email.errors }}</span>
                     {% endif %} 
                     </div>
                 </div>
-                <button type="submit" class="login-button" id="reset-button">
-                    <i class="fa fa-chevron-right"></i>
-                </button>
+                <button type="submit" class="login-button" id="reset-button">reset</button>
             </div>
         </form>
     </div>

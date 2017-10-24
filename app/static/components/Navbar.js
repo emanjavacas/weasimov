@@ -211,7 +211,7 @@ class Navbar extends React.Component {
 	  <RB.Navbar.Toggle/>
 	</RB.Navbar.Header>
 	<RB.Navbar.Collapse>
-	  <RB.ButtonGroup style={{marginTop:"7px", display: "inline-flex"}}>
+	  {/* <RB.ButtonGroup style={{marginTop:"7px", display: "inline-flex"}}>
 	    <ScreenNameInput
 	       screenName={this.props.docs[this.props.activeDoc].screen_name}
 	       onSubmit={this.props.onSubmitScreenName}/>
@@ -230,14 +230,14 @@ class Navbar extends React.Component {
 	    <RB.Button onClick={this.toggleRemoveDocModal}>
 	      <i className="fa fa-trash-o" style={{fontSize: "16px"}}/>
 	    </RB.Button>
-	  </RB.ButtonGroup>
+	  </RB.ButtonGroup> */}
 	  <RB.ButtonGroup className="pull-right" style={{marginTop:"7px"}}>
 	    <RB.Button href={(this.props.isMonitor) ? "/monitor" : null}>
 	      {this.props.username || "loading"}
             </RB.Button>
 	    <RB.Button href="logout">
-	      <i className="fa fa-sign-out" style={{fontSize: "16px"}}/>
-            </RB.Button>
+	      <i className="fa" style={{fontSize: "16px"}}/>
+            uitloggen</RB.Button>
 	  </RB.ButtonGroup>
 	</RB.Navbar.Collapse>
       </RB.Navbar>
