@@ -77,8 +77,11 @@ def register():
         db.session.flush()
         doc = Doc(user_id=user.id)
         db.session.add(doc)
+        user.active = True
         db.session.commit()
-        return flask.redirect(flask.url_for('login'))
+        flask_login.login_user(user)
+        socketio.emit('login', {'user_id': user.id}, namespace='/monitor')
+        return flask.redirect(flask.url_for('index'))
     return flask.render_template('register.html', title='Sign Up', form=form)
 
 
