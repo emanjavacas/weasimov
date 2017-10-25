@@ -195,31 +195,32 @@ class Navbar extends React.Component {
   render() {
     return (
       <RB.Navbar>
-	<NewDocModal
-	   show={this.state.showNewDocModal}
-	   close={this.toggleNewDocModal}
-	   onSubmit={this.props.onSubmitNewDoc}/>
-	<RemoveDocModal
-	   show={this.state.showRemoveDocModal}
-	   close={this.toggleRemoveDocModal}
-	   doc={this.props.docs[this.props.activeDoc]}
-	   onSubmit={this.props.onSubmitRemoveDoc}/>
-	<RB.Navbar.Header>
-	  <RB.Navbar.Brand>
+        <NewDocModal
+          show={this.state.showNewDocModal}
+          close={this.toggleNewDocModal}
+          onSubmit={this.props.onSubmitNewDoc}/>
+        <RemoveDocModal
+          show={this.state.showRemoveDocModal}
+          close={this.toggleRemoveDocModal}
+          doc={this.props.docs[this.props.activeDoc]}
+          onSubmit={this.props.onSubmitRemoveDoc}/>
+        <RB.Navbar.Header>
+          <RB.Navbar.Brand>
+            {/* <a href="http://www.nederlandleest.nl" className="nlllogo"></a> */}
             <a href="#">AsiBot</a>
-	  </RB.Navbar.Brand>
-	  <RB.Navbar.Toggle/>
-	</RB.Navbar.Header>
-	<RB.Navbar.Collapse>
-	  <RB.ButtonGroup className="pull-right" style={{marginTop:"7px"}}>
-	    <RB.Button href={(this.props.isMonitor) ? "/monitor" : null}>
-	      {this.props.username || "loading"}
-            </RB.Button>
-	    <RB.Button href="logout">
-	      <i className="fa" style={{fontSize: "16px"}}/>
-            uitloggen</RB.Button>
-	  </RB.ButtonGroup>
-	</RB.Navbar.Collapse>
+          </RB.Navbar.Brand>
+          <RB.Navbar.Toggle/>
+        </RB.Navbar.Header>
+        <RB.Navbar.Collapse>
+          <RB.ButtonGroup className="pull-right" style={{marginTop:"7px"}}>
+            <RB.Button href={(this.props.isMonitor) ? "/monitor" : null}>
+              {this.props.username || "loading"}
+                  </RB.Button>
+            <RB.Button href="logout">
+              <i className="fa" style={{fontSize: "16px"}}/>
+                  uitloggen</RB.Button>
+          </RB.ButtonGroup>
+        </RB.Navbar.Collapse>
       </RB.Navbar>
     );
   }

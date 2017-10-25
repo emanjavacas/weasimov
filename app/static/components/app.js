@@ -281,7 +281,10 @@ class App extends React.Component {
   }
   
   /* GENERATE */
-  generate(model) {
+  generate(models) {
+    for(var i in models){
+      if(models[i].active) var model = models[i].path;
+    }
     const {editorState} = this.getDocState();
     const currentContent = editorState.getCurrentContent();
     const selection = editorState.getSelection();
@@ -441,7 +444,7 @@ class App extends React.Component {
             <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
             <RB.Grid fluid={true}>
               <RB.Row className="mainrow">
-                <RB.Col lg={6} md={6} sm={1}>
+                <RB.Col lg={7} md={7} sm={7}>
                   <TextEditor
                     editorState={editorState}
                     onChange={this.onEditorChange}
@@ -450,23 +453,18 @@ class App extends React.Component {
                     toggleInlineStyle={this.toggleInlineStyle}
                     handleBeforeInput={this.handleBeforeInput}/>
                 </RB.Col>
-                <RB.Col lg={6} md={6} sm={1}>
-                  <RB.Row>
-                    <Sticky enabled={true} top={0} innerZ={1001}>
-                      <div className="panel panel-default generate-panel">
-                        <div className="panel-heading">
-                          <ButtonToolbar
-                            temperature={this.state.temperature} 
-                            onTemperatureChange={this.onTemperatureChange}
-                            maxSeqLen={this.state.maxSeqLen}
-                            onSeqLenChange={this.onSeqLenChange}
-                            models={this.state.models}
-                            onGenerate={this.generate}/>
-                        </div>
-                      </div>
-                    </Sticky>
-                  </RB.Row>
-                  <RB.Row>
+                <RB.Col lg={5} md={5} sm={5}>
+                  <div className="panel">
+                    <ButtonToolbar
+                      temperature={this.state.temperature} 
+                      onTemperatureChange={this.onTemperatureChange}
+                      maxSeqLen={this.state.maxSeqLen}
+                      onSeqLenChange={this.onSeqLenChange}
+                      models={this.state.models}
+                      onGenerate={this.generate}
+                      loadingHyps={this.state.loadingHyps}
+                      elapsed={this.state.lastGenerationTime}
+                      />
                     <Suggestions
                       ref="suggestions"
                       hyps={this.state.hyps}
@@ -480,7 +478,7 @@ class App extends React.Component {
                       onHypDismiss={this.dismissHyp}
                       hasHadHyps={this.state.hasHadHyps}
                       resetHyps={this.resetHyps}/>
-                  </RB.Row>
+                  </div>
                 </RB.Col>
               </RB.Row>
             </RB.Grid>

@@ -10,149 +10,218 @@ html, body, div, input, button {
 $red: #CC3035;
 $red2: #AA1217;
 
-.opening {
-	position:absolute;
-	@include gr($red,$red2,$red);
-	top:0;
-	left:0;
-	width:100%;
-	height:100%;
-	.topbar {
-		height:0rem;
-		background:#000;
-		position: absolute;
-		width:100%;
-		text-align: left;
-		.nlleest {
-			display: inline-block;
-			margin:3rem;
-			height:5rem;
-			width:5rem;
-			background: url('images/NLL-logo.png') no-repeat center;
-			background-size:contain;
-		}
-		.loginlink {
-			color:rgba(#fff,0.5);
-			float:right;
-			margin:4rem;
-			text-decoration: none;
-			font-size:2rem;
-			&:hover {
-				color:#fff;
-			}
-		}
-	}
-	.kop {
-		color:#fff;
-		height:40vh;
-		&:before {
-			content:"";
-			height:40vh;
-			width:1px;
-			display:inline-block;
-			vertical-align: middle;
-		}
-		.vcenter {
-			display:inline-block;
-			vertical-align: middle;
-			float:none;
-		}
-		h1 {
-			font-size:4em;
-		}
-	}
-	form {
-		max-width:28rem;
-		margin: 0 auto;
-		input.form-control {
-			background:rgba(#fff,0.25);
-			border:0;
-			font-size:2rem;
-			padding:0.25em 1em;
-			height:auto;
-			color:#fff;
-			outline:none;
-			@include placeholder {
-				color:rgba(#fff,0.5);
-			}
-			&:focus {
-				border:0;
-				background:darken($red,15);
-				@include shadow(none);
-			}
-		}
-		.help-block {
-			display: block;
-			padding:0.5em;
-			font-style:italic;
-			color:darken($red,20);
-			text-align: center;
-		}
-		.etc-login-form {
-			color:darken($red,20);
-			text-align: center;
-			a {
-				text-decoration: underline;
-				color:darken($red,20);
-				&:hover {
-					color:darken($red,30);
-				}
-			}
-		}
-		button {
-			border:0;
-			background:darken($red,10);
-			font-size:2rem;
-			color:rgba(#fff,0.5);
-			padding: 0.25em 1em;
-			margin:1rem auto;
-			display: block;
-			&:hover {
-				color:#fff;
-				background:darken($red,15);
-			}
-		}
-	}
-}
-
 body {
-	background: #ddd;
+	background: rgb(53, 55, 59);
 }
 
 .navbar {
 	margin:0;
 	background:transparent;
 	border:0;
+	.navbar-brand {
+		width:22rem;
+		// padding:0.25em;
+		.nlllogo {
+			display:inline-block;
+			height:7rem;
+			width:7rem;
+			top:0;
+			left:0;
+			margin:2rem;
+			background:url(images/NLL-logo.png) no-repeat center;
+			background-size:contain;
+			vertical-align: middle;
+			margin-right:1em;
+			position: fixed;
+			opacity: 0.3;
+		}
+	}
 	.btn-group {
 		.btn-default {
 			border:0;
 			background:transparent;
+			color:rgba(#ccc,0.3);
 			&:hover {
-				text-decoration: underline;
+				color:rgba(#ccc,1);
 			}
 		}
 	}
 }
 
 .RichEditor-root {
-	background: #fff;
+	background: #f0f0f0;
 	padding:4rem;
-	font-size:1.5rem;
+	font-size:2rem;
 	line-height: 1.8em;
 	height:100%;
 	overflow: auto;
 	padding-bottom:50vh;
+	@include rounded(3px);
 }
 
 .mainrow {
 	width:100%;
-	padding: 0 2rem;
+	padding: 0;
 	@include padding();
 	margin:0 auto;
-	max-width:1400px;
-	height:calc(100vh - 8rem);
+	max-width:1200px;
+	height:calc(100vh - 7rem);
 	> div {
 		height:100%;
+	}
+}
+
+.panel {
+	background:transparent;
+	height:100%;
+	border-top:2rem solid transparent;
+	display: flex;
+	-webkit-display:flex;
+	-webkit-flex-direction: column;
+	flex-direction: column;
+	.generate-bar {
+		height:auto;
+	}
+	.suggestions-panel {		
+		height:100%;
+		background:rgba(#000,0.1);
+		overflow:auto;
+		display: flex;
+		-webkit-display:flex;
+		-webkit-flex-direction: column;
+		flex-direction: column;
+		> div:first-child {
+			height:100%;
+			overflow: auto;
+		}
+	}
+	.buttonname {
+		outline:none;
+		display: inline-block;
+		width:auto;
+		float:none;
+		text-align: left;
+		margin:0 0.5em 0.5em 0.5em;
+		@include padding();
+		@include shadow(0 2px 1px rgba(#000,0.3));
+		&:active {
+			outline:none;
+		}
+		span {
+			// width:3rem;
+			display: inline-block;
+			opacity: 0.1;
+			margin-right:0.4em;
+			font-size:1.5em;
+			vertical-align: middle;
+			color:rgba(#000,0.5);
+			display:none;
+		}
+		&.notselected {
+			opacity:0.3;
+		}
+		&.selected {
+			span {
+				opacity:1;
+			}
+		}
+		&:hover {
+			opacity:1;
+		}
+	}
+	.sliders {
+		padding: 2rem 0;
+		.btn-group {
+			span {
+				width:12rem;
+				color:#ccc;
+			}
+			.rc-slider-rail {
+				background:#222;
+			}
+			.rc-slider-track {
+				background:$red;
+			}
+			.rc-slider-handle {
+				border-color:$red;
+			}
+			.rc-slider span.label {
+				background:#222;
+			}
+		}
+	}
+	.btn {
+		background:rgba(#000,0.3);
+		border:0;
+		color:#ccc;
+		&:hover {
+			background:rgba(#000,0.5);
+			color:#ccc;
+		}
+		&:active {
+			outline:none;
+		}
+	}
+	.genereer {
+		outline:none;
+		display:block;
+		margin:0 auto;
+		font-size:2rem;
+		&.disabled {
+			cursor:auto;
+			background:rgba(#000,0.1);
+			color:rgba(#fff,0.3);
+		}
+	}
+	.suggestions-panel {
+		height:100%;
+		.row {
+			margin:0;
+		}
+	}
+	.suggestie {
+		position: relative;
+		background:rgba(#000,0.1);
+		padding:1rem 1rem 1rem 3rem;
+		border-bottom:1px solid rgba(#000,0.1);
+		cursor:pointer;
+		span {
+			width:1.5rem;
+			opacity: 0.1;
+			height:100%;
+			position:absolute;
+			top:0;
+			left:0;
+			margin:1.35rem 1rem;
+		}
+		&:last-child {
+			border:0;
+		}
+		&:hover {
+			background:rgba(#000,0.3);
+			span {
+				opacity: 1;
+			}
+		}
+	}
+	&.invisible {
+		display:none;
+	}
+	.verwijder {
+		background:rgba(#000,0.1);
+		margin:0 !important;
+		width:100%;
+		padding:0.5em 1em;
+		color:rgba(#ccc,0.3);
+		outline:none;
+		&:active {
+			outline:none;
+			background:rgba(#000,0.8);
+		}
+		&:hover {
+			color:rgba(#ccc,1);
+		}
+		
 	}
 }
 
