@@ -4,7 +4,8 @@
 {% block content %}
 <div class="text-center opening">
     <div class='topbar'>
-        <a href='http://www.nederlandleest.nl' class='nlleest' target="_blank"></a>
+        <a href='http://www.nederlandleest.nl' class='logo nlleest' target="_blank"></a>
+        <a href='http://www.ad.nl' class='logo algdag' target="_blank"></a>
         <a href='/login' class='loginlink'>login</a>
     </div>
     <div class="row kop">
@@ -20,7 +21,7 @@
                 <div class="">
                     {{ form.hidden_tag() }}
                     <div class="form-group">
-                    {{ form.username.label(class="sr-only")}} {{ form.username(class="form-control", placeholder="emailadres") }}
+                    {{ form.username.label(class="sr-only")}} {{ form.username(class="form-control", placeholder="e-mailadres") }}
                     {% if form.username.errors %} 
                     {% for error in form.username.errors %}
                         <span class="help-block">{{ error }}</span>
@@ -39,6 +40,11 @@
                 <button type="submit">start</button>
             </div>
         </form>
+    </div>
+    <div class='credits'>
+        <p>
+            AsiBot is ontwikkeld middels een samenwerking van <a href="https://www.meertens.knaw.nl" target="_blank">Meertens Instituut, Amsterdam</a> en <a href="https://www.uantwerpen.be/" target="_blank">Universiteit Antwerpen</a><Br><a href="https://www.uantwerpen.be/en/rg/digitalhumanities/" target="_blank">ACDC</a> Antwerp Center for Digital Humanities, en <a href="https://www.clips.uantwerpen.be/" target="_blank">CLiPS</a> Computational Linguistics Group.
+        </p>
     </div>
 </div>
 {% endblock %}

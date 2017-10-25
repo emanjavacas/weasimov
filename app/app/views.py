@@ -49,6 +49,9 @@ def load_user(id):
 def before_request():
     flask.g.user = flask_login.current_user
 
+@app.route('/giphart', methods=['GET', 'POST'])
+def giphart():
+    return flask.render_template('G.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -66,9 +69,10 @@ def login():
         return flask.redirect(flask.url_for('index'))
     return flask.render_template('login.html', title='Sign in', form=form)
 
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if flask.g.user is not None and flask.g.user.is_authenticated:
+        return flask.redirect(flask.url_for('index'))
     form = RegisterForm()
     if form.validate_on_submit() and form.validate_fields():
         user = User(username=form.username.data,

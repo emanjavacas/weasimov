@@ -66,6 +66,7 @@ body {
 	margin:0 auto;
 	max-width:1200px;
 	height:calc(100vh - 7rem);
+	min-height:50rem;
 	> div {
 		height:100%;
 	}
@@ -145,8 +146,8 @@ body {
 			.rc-slider-handle {
 				border-color:$red;
 			}
-			.rc-slider span.label {
-				background:#222;
+			span.label {
+				background:#222 !important;
 			}
 		}
 	}
@@ -171,6 +172,7 @@ body {
 			cursor:auto;
 			background:rgba(#000,0.1);
 			color:rgba(#fff,0.3);
+			pointer-events: none;
 		}
 	}
 	.suggestions-panel {
@@ -221,7 +223,5 @@ body {
 		&:hover {
 			color:rgba(#ccc,1);
 		}
-		
 	}
 }
-

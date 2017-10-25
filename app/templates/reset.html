@@ -4,17 +4,17 @@
 {% block content %}
 <div class="text-center opening">
     <div class='topbar'>
-        <a href='http://www.nederlandleest.nl' class='nlleest' target="_blank"></a>
+        <a href='http://www.nederlandleest.nl' class='logo nlleest' target="_blank"></a>
+        <a href='http://www.ad.nl' class='logo algdag' target="_blank"></a>
         <a href='/login' class='loginlink'>login</a>
         <a href='/login' class='loginlink'>registreer</a>
     </div>
     <div class="row kop">
         <div class='vcenter'>
             <h1>AsiBot</h1>
-            <h3>Schrijf samen met een robot</h3>
+            <h3>Reset je wachtwoord</h3>
         </div>
     </div>
-    <div class="login-message">reset wachtwoord</div>
     <div class="login-form-1">
         <form action="" method="POST" name="reset" class="text-left">
             <div class="login-form-main-message"></div>
@@ -22,7 +22,7 @@
                 <div class="login-group">
                     {{ form.hidden_tag() }}
                     <div class="form-group">
-                    {{ form.email.label(class="sr-only")}} {{ form.email(class="form-control", placeholder="email-adres") }}
+                    {{ form.email.label(class="sr-only")}} {{ form.email(class="form-control", placeholder="e-mailadres") }}
                     {% if form.email.errors %} 
                         <span class="help-block">{{ form.email.errors }}</span>
                     {% endif %} 

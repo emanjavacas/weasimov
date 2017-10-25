@@ -85,7 +85,7 @@ class ButtonToolbar extends React.Component {
 					<RB.Button
 						className={["genereer",this.props.loadingHyps ? 'disabled' : ''].join(" ")}
 						onClick={() => this.props.onGenerate(models)}>
-							{this.props.loadingHyps ? 'suggesties aan het laden...' : 'genereer suggesties'}
+							{this.props.loadingHyps ? 'AsiBot suggesties aan het laden...' : 'genereer suggesties'}
 					</RB.Button>
 					<label>{this.props.elapsed}</label>
 				</div>

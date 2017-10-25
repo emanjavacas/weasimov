@@ -4,13 +4,14 @@
 
 <div class="text-center opening">
     <div class='topbar'>
-        <a href='http://www.nederlandleest.nl' class='nlleest' target="_blank"></a>
+        <a href='http://www.nederlandleest.nl' class='logo nlleest' target="_blank"></a>
+        <a href='http://www.ad.nl' class='logo algdag' target="_blank"></a>
         <a href='/register' class='loginlink'>registreer</a>
     </div>
     <div class="row kop">
         <div class='vcenter'>
             <h1>AsiBot</h1>
-            <h3>Schrijf samen met een robot</h3>
+            <h3>Welkom terug</h3>
         </div>
     </div>
     <div class="login-form-1">
@@ -22,7 +23,7 @@
                     <fieldset>
                     <div class="form-group">
                         <label for="name" class="sr-only">{{ form.username.label }}</label>
-                        {{ form.username(class="form-control", placeholder="username") }}
+                        {{ form.username(class="form-control", placeholder="e-mailadres") }}
                         {% if form.username.errors %}
                         {% for error in form.username.errors %}
                             <span class="help-block">{{ error }}</span>
@@ -47,7 +48,8 @@
                 <button class="login-button" type="submit">login</button>
             </div>
             <div class="etc-login-form">
-				<p>Nieuw bij Asibot? <a href="{{ url_for('register') }}">Registreer hier</a></p>
+                <p>Wachtwoord vergeten?<br><a href="{{ url_for('reset') }}">Reset je wachtwoord hier</a></p>
+                
 			</div>
         </form>
     </div>
