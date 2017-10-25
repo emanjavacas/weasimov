@@ -32,7 +32,8 @@
 	}
 	.kop {
 		color:#fff;
-		height:40vh;
+		height:33vh;
+		min-height:200px;
 		&:before {
 			content:"";
 			height:40vh;
@@ -87,17 +88,41 @@
 				}
 			}
 		}
+		.login-group-checkbox {
+			input {
+				display:none;
+			}
+			label {
+				font-weight:normal;
+				// background:darken($red,10);
+				padding:0em 1em;
+				color:rgba(#000,0.2);
+				cursor:pointer;
+				@include rounded(3px);
+				display:block;
+				margin:0 auto;
+				text-align:center;
+			}
+			input:checked + label {
+				// background:darken($red,15);
+				color:rgba(#000,0.8);
+			}
+		}
 		button {
 			border:0;
 			background:darken($red,10);
 			font-size:2rem;
 			color:rgba(#fff,0.5);
 			padding: 0.25em 1em;
-			margin:1rem auto;
+			margin:1rem auto 2rem auto;
 			display: block;
+			outline:none;
 			&:hover {
 				color:#fff;
 				background:darken($red,15);
+			}
+			&:active { 
+				outline:none;
 			}
 		}
 	}
