@@ -343,6 +343,9 @@ body {
 		margin:4rem auto;
 		width:auto;
 		@include padding();
+		p a {
+			text-decoration: none;
+		}
 	}
 	p, ul {
 		width:auto;
