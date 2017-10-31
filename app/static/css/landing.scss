@@ -5,11 +5,18 @@
 	left:0;
 	width:100%;
 	min-height:100%;
+	overflow: hidden;
+	padding-bottom:8rem;
+	a {
+		color:#fff;
+		text-decoration: underline;
+	}
 	.topbar {
 		background:transparent;
 		width:100%;
 		text-align: left;
 		padding:3rem;
+		margin-bottom:2rem;
 		.logo {
 			display: inline-block;
 			margin:0rem;
@@ -19,6 +26,8 @@
 			background-repeat: no-repeat;
 			background-position: center;
 			background-size: contain;
+			// vertical-align: bottom;
+			vertical-align: middle;
 			&.nlleest {
 				background-image: url("images/NLL-logo.png");
 			}
@@ -26,15 +35,25 @@
 				background-image: url("images/algemeendagbladlogo.png");
 			}
 		}
+		.credits,
 		.loginlink {
 			color:rgba(#fff,0.5);
-			float:right;
-			margin:1rem;
 			text-decoration: none;
 			font-size:2rem;
+			vertical-align: middle;
 			&:hover {
 				color:#fff;
 			}
+		}
+		.credits {
+			cursor:pointer;
+			height:auto;
+			vertical-align: middle;
+		}
+		.loginlink {
+			float:right;
+			margin:1rem;
+			
 		}
 		@media (max-width:800px){
 			padding:1rem;
@@ -45,6 +64,10 @@
 			.loginlink {
 				margin:.5rem;
 				font-size:1.5rem;
+			}
+			.credits {
+				font-size:1.5rem;
+				height:auto;
 			}
 		}
 	}
@@ -58,6 +81,18 @@
 		}
 		h1 {
 			font-size:4em;
+		}
+		h6 {
+			margin: 1em auto 1em auto;
+			font-size:1.25em;
+			color: rgba(#fff,0.5);
+			a {
+				color:inherit;
+				cursor: pointer;
+				&:hover {
+					color:#fff;
+				}
+			}
 		}
 	}
 	form {
@@ -134,32 +169,6 @@
 			&:active { 
 				outline:none;
 			}
-		}
-	}
-}
-
-.credits {
-	position: fixed;
-	bottom:0;
-	left:0;
-	width:100%;
-	padding:1rem;
-	p {
-		color:rgba(#000,0.3);
-		max-width: 48em;
-		margin:0 auto;
-	}
-	@media (max-height:600px){
-		position: relative;
-		bottom:auto;
-		left:auto;
-		margin-top:8rem;
-	}
-	a {
-		color:inherit;
-		text-decoration: underline;
-		&:hover {
-			color:#ccc;
 		}
 	}
 }

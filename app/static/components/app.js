@@ -293,7 +293,7 @@ class App extends React.Component {
       let focusBlock = currentContent.getBlockForKey(selection.anchorKey);
       seed = focusBlock.getText();
       seed = seed.substring(
-        Math.max(selection.focusOffset - 200, 0), selection.focusOffset);
+        Math.max(selection.focusOffset - 100, 0), selection.focusOffset);
     }
     if (seed.trim().length == 0) {
       const startKey = currentContent.getFirstBlock().getKey();
@@ -310,8 +310,8 @@ class App extends React.Component {
 	      return null;
 	    }
           }).join('\n');
-      if (seed.length > 200) {
-        seed = seed.substring(seed.length - 200);
+      if (seed.length > 100) {
+        seed = seed.substring(seed.length - 100);
       }
     }
     this.launchGeneration(seed, model);
@@ -363,7 +363,7 @@ class App extends React.Component {
       const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
       const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
       const edit = jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS());
-      Utils.saveChange(edit, this.state.docId);
+      // Utils.saveChange(edit, this.state.docId);
     }
     this.setDocState('editorState', newEditorState);
   }
@@ -421,6 +421,10 @@ class App extends React.Component {
     return false;
   }
 
+  toggleCredits() {
+    console.log("toggle credits");
+  }
+
   render() {
     if (!this.state.init) {
       return <Utils.LoadingApp/>;
@@ -453,7 +457,7 @@ class App extends React.Component {
                     toggleInlineStyle={this.toggleInlineStyle}
                     handleBeforeInput={this.handleBeforeInput}/>
                 </RB.Col>
-                <RB.Col lg={5} md={5} sm={5}>
+                <RB.Col lg={5} md={5} sm={5} className="asibotpanel">
                   <div className="panel">
                     <ButtonToolbar
                       temperature={this.state.temperature} 
@@ -488,7 +492,6 @@ class App extends React.Component {
     }
   }
 };
-
 
 ReactDOM.render(<App/>, document.getElementById('app'));
 

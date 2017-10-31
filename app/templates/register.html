@@ -5,13 +5,19 @@
 <div class="text-center opening">
     <div class='topbar'>
         <a href='http://www.nederlandleest.nl' class='logo nlleest' target="_blank"></a>
-        <a href='http://www.ad.nl' class='logo algdag' target="_blank"></a>
+        <a class='logo credits' id="togglecredits">credits</a>
         <a href='/login' class='loginlink'>login</a>
+        <script>
+            $("#togglecredits").on("click",function(){
+                $("body").toggleClass("credits");
+            });
+        </script>
     </div>
     <div class="row kop">
         <div class='vcenter'>
             <h1>AsiBot</h1>
             <h3>Schrijf samen met een robot</h3>
+            <h6>Doe mee aan de <a>schrijfwedstrijd</a></h6>
         </div>
     </div>
     <div class="login-form-1">
@@ -41,10 +47,6 @@
             </div>
         </form>
     </div>
-    <div class='credits'>
-        <p>
-            AsiBot is ontwikkeld middels een samenwerking van <a href="https://www.meertens.knaw.nl" target="_blank">Meertens Instituut, Amsterdam</a> en <a href="https://www.uantwerpen.be/" target="_blank">Universiteit Antwerpen</a><Br><a href="https://www.uantwerpen.be/en/rg/digitalhumanities/" target="_blank">ACDC</a> Antwerp Center for Digital Humanities, en <a href="https://www.clips.uantwerpen.be/" target="_blank">CLiPS</a> Computational Linguistics Group.
-        </p>
-    </div>
+    {% include "credits.html" %}        
 </div>
 {% endblock %}

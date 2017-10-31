@@ -172,56 +172,60 @@ class Navbar extends React.Component {
     this.toggleNewDocModal = () => this.setState({showNewDocModal: !this.state.showNewDocModal});
     this.toggleRemoveDocModal = () => {
       if (Object.keys(this.props.docs).length === 1) {
-	console.log("This is your last doc, you can't remove it");
-	return;
+        console.log("This is your last doc, you can't remove it");
+        return;
       }
       this.setState({showRemoveDocModal: !this.state.showRemoveDocModal});
     };
     this.toggleDropdown = (newValue) => {
       this.setState({
-	dropdownOpen: (newValue === null) ? !this.state.dropdownOpen : newValue
+        dropdownOpen: (newValue === null) ? !this.state.dropdownOpen : newValue
       });
     };
+    this.togglecredits = () => {
+      $("body").removeClass("menu");
+      $("body").toggleClass("credits");
+    }
+    this.togglehelp = () => {
+      $("body").removeClass("menu");
+      $("body").toggleClass("help");
+    }
+    this.togglemenu = () => {
+      $("body").toggleClass("menu");
+    }
+    this.toggleasibot = () => {
+      $("body").toggleClass("asibotopen");
+    }
     this.onSelectDoc = (docId) => {
       if (docId === this.props.activeDoc) { // don't do anything if selecting same doc
-	this.toggleDropdown(false);
-      } else {
-  this.props.onSelectDoc(docId);
-  this.toggleDropdown(false);
+        this.toggleDropdown(false);
+            } else {
+        this.props.onSelectDoc(docId);
+        this.toggleDropdown(false);
       }
     };
   }
 
+  
+
   render() {
     return (
-      <RB.Navbar>
-        <NewDocModal
-          show={this.state.showNewDocModal}
-          close={this.toggleNewDocModal}
-          onSubmit={this.props.onSubmitNewDoc}/>
-        <RemoveDocModal
-          show={this.state.showRemoveDocModal}
-          close={this.toggleRemoveDocModal}
-          doc={this.props.docs[this.props.activeDoc]}
-          onSubmit={this.props.onSubmitRemoveDoc}/>
-        <RB.Navbar.Header>
-          <RB.Navbar.Brand>
-            {/* <a href="http://www.nederlandleest.nl" className="nlllogo"></a> */}
-            <a href="#">AsiBot</a>
-          </RB.Navbar.Brand>
-          <RB.Navbar.Toggle/>
-        </RB.Navbar.Header>
-        <RB.Navbar.Collapse>
-          <RB.ButtonGroup className="pull-right" style={{marginTop:"7px"}}>
-            <RB.Button href={(this.props.isMonitor) ? "/monitor" : null}>
-              {this.props.username || "loading"}
-                  </RB.Button>
-            <RB.Button href="logout">
-              <i className="fa" style={{fontSize: "16px"}}/>
-                  uitloggen</RB.Button>
-          </RB.ButtonGroup>
-        </RB.Navbar.Collapse>
-      </RB.Navbar>
+      <div id="navbar">
+        <RB.Button className="menutoggle" onClick={this.togglemenu}>MENU</RB.Button>
+        <RB.Button onClick={this.toggleasibot} className="asibotsuggesties right">
+            AsiBot suggesties
+            <i className="fa fa-caret-right" style={{fontSize: "16px"}}/>
+          </RB.Button>
+        <div id="burgerfold">
+          <RB.Button className="mobilehide">Asibot</RB.Button>
+          <RB.Button onClick={this.togglecredits}>credits</RB.Button>
+          <RB.Button onClick={this.togglehelp}>help</RB.Button>
+          <RB.Button className="mobilehide right" href={(this.props.isMonitor) ? "/monitor" : null}>
+            {this.props.username || "loading"}
+          </RB.Button>
+          <RB.Button href="logout" className="right">uitloggen</RB.Button>
+        </div>
+      </div>
     );
   }
 }

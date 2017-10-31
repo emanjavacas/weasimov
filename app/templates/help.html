@@ -1,0 +1,25 @@
+<div id="help" class="overlay">
+    <div id="close" class='sluitcredits'>sluit</div>
+    <div id='wrap'>
+        <p>Voor een goede samenwerking met AsiBot, raden we aan eerst zelf te beginnen met schrijven in het tekstveld. Met name halverwege een zin kan AsiBot met interessante suggesties komen.</p>
+        <p>Je kunt de suggesties iets sturen door middel van drie parameters:</p>
+        <ul>
+            <li>De type robot. Klik hiervoor op een van de namen aan de rechterzijde.</li>
+            <li>De creativiteit</li>
+            <li>Het aantal karakters</li>
+        </ul>
+        <p>Klik op "genereer suggesties" en heb vervolgens wat geduld... AsiBot berekend nu nieuwe suggesties op basis van de laatste 40 karakters die <i><u>vóór je cursor</u></i> staan in het tekstveld.</p>
+        
+        <p>De berekeningen zijn niet eenvoudig. Dit betekent dat het laden van de suggesties op druk bezochte momenten best even kan duren.</p>
+            
+        <p>Als nieuwe suggesties zijn geladen, kun je de suggestie invoegen door op de gewenste tekst te klikken. Zijn ze niet naar wens kun je het gerust nog eens proberen of er een invoegen en de tekst naar eigen idee aanpassen.</p>
+        
+        <p>Voor vragen en/of opmerkingen kunt u contact opnemen via <a href="mailto:weasimov@gmail.com">weasimov@gmail.com</a></p>
+    </div>
+    <script>
+        $(".sluitcredits").on("click",function(){
+            $("body").removeClass("help");
+        });
+        // $("body").addClass("help");
+    </script>
+</div>
