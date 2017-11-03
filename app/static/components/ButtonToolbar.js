@@ -72,10 +72,10 @@ class ButtonToolbar extends React.Component {
 						
 					</RB.ButtonGroup>
 					<RB.ButtonGroup>
-						<span>Karakters</span>
+						<span>Aantal letters</span>
 						<RB.Label>{maxSeqLen}</RB.Label>
 						<Slider
-							defaultValue={maxSeqLen} min={10} max={200} step={5}
+							defaultValue={maxSeqLen} min={10} max={150} step={5}
 							onChange={this.props.onSeqLenChange}
 							title="Lengte"/>
 					</RB.ButtonGroup>
