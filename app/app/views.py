@@ -519,7 +519,7 @@ def reset():
         if user is None:
             form.email.errors = ('Opgegeven email-adres is onbekend.')
             return flask.render_template('reset.html', form=form)
-        subject = "Wachtwoord vergeten"
+        subject = "Wachtwoord vergeten?"
         token = ts.dumps(user.username, salt='recover-key')
 
         recover_url = flask.url_for('reset_with_token', token=token, _external=True)

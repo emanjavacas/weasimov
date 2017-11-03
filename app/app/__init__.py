@@ -22,12 +22,15 @@ app.config.from_object('config.Config')
 # Database
 db = SQLAlchemy(app)
 
+# mail
+mail = Mail(app)
+
+# celery
 celery = Celery(
     __name__,
     broker=os.environ.get('CELERY_BROKER_URL', 'redis://'),
     backend=os.environ.get('CELERY_BROKER_URL', 'redis://'))
 celery.config_from_object('celeryconfig')
-
 
 # Login Manager
 lm = LoginManager()
@@ -37,9 +40,6 @@ lm.login_view = 'register'
 
 # bcrypt
 bcrypt = Bcrypt(app)
-
-# mail
-mail = Mail(app)
 
 # Services
 model_dir = app.config['MODEL_DIR']
