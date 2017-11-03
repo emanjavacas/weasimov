@@ -96,8 +96,9 @@
 		}
 	}
 	form {
-		max-width:28rem;
+		max-width:32rem;
 		margin: 0 auto;
+		padding:1rem;
 		input.form-control {
 			background:darken($red,10);
 			border:0;
@@ -168,6 +169,54 @@
 			}
 			&:active { 
 				outline:none;
+			}
+		}
+		#gebruikscheck {
+			margin-right:1rem;
+			font-size:2rem;
+			cursor:pointer;
+			opacity: 0.25;
+			background:darken($red,20);
+			padding:0.25em;
+			@include rounded(3px);
+			width:1.5em;
+			height:1.5em;
+			text-align: center;
+			color:#fff;
+			vertical-align: middle;
+			&:before {
+				content:"";
+			}
+			&:hover {
+				opacity:1;
+			}
+		}
+		#gebruiksvoorwaarden {
+			display:none;
+			~ button {
+				opacity:0.5;
+				pointer-events: none;
+			}
+			~ #checktext {
+				display:inline-block;
+				color:#fff;
+				opacity: 0.5;
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+			}
+		}
+		#gebruiksvoorwaarden:checked {
+			~ label {
+				&:before {
+					content:"\f00c";
+				}
+			}
+			~ button {
+				opacity:1;
+				color:#fff;
+				pointer-events: auto;
 			}
 		}
 	}
