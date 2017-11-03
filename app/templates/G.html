@@ -3,15 +3,49 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Weasimov</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Hoofdstuk 10 - De robot van de Machine is de mens</title>
         <link rel="stylesheet" href="static/css/_main.css">
+        <script src="static/js/vendor/jquery-3.2.1.min.js"> </script>
     </head>
     <body>
+
+        <div id="credits" class="overlay">
+            <div id="close" class='sluitcredits'>sluit</div>
+            <div id='wrap'>
+                <p>Het tiende verhaal De robot van de Machine is de mens in deze speciale Nederland Leest uitgave van Ik, robot is geschreven door Ronald Giphart in samenwerking met een robot ontwikkeld door Folgert Karsdorp (Meertens Instituut, Amsterdam), Enrique Manjavacas, Ben Burtenshaw en Mike Kestemont (Universiteit Antwerpen). Met dank aan boek.be voor het raadplegen van metadata. © 2017, Ronald Giphart</p>
+            </div>
+        </div>
+        
         <div id="layout" class="giphart">
+            <div class="toptop">
+                <a href="./">AsiBot</a>
+                <button id="clickcredits">Colofon</button>
+                <script>
+                    $("#clickcredits").click(function(){
+                        $("body").addClass("credits");
+                    })
+                    $(".sluitcredits").on("click",function(){
+                        $("body").removeClass("credits");
+                    });
+                </script>
+            </div>
             <div class="wrap">
                 <div class="content">
                 
-                    <p>Hoofdstuk 10 - De robot van de Machine is de mens</p>
+                    <h1>Hoofdstuk 10 - De robot van de Machine is de mens</h1>
+
+                    <ul id='legenda'>
+                        <label>AsiBot legenda</label>
+                        <li style="background:rgba(179,226,205,1)">R. Giphart</li>
+                        <li style="background:rgba(253,205,172,1)">I. Asimov</li>
+                        <li style="background:rgba(203,213,232,1)">A. Dante</li>
+                        <li style="background:rgba(244,202,228,1)">I. Robhart</li>
+                        <li style="background:rgba(255,242,174,1)">Ik, Robot</li>
+                        <li style="background:rgba(204,204,204,1)">G. Revimov</li>
+                        <li style="background:rgba(230,245,201,1)">I. Nescimov</li>
+                        <li style="background:rgba(241,226,204,1)">K. Hembot</li>
+                    </ul>
                 
                     <p></p>
                 
