@@ -1,4 +1,3 @@
-
 from functools import wraps
 from datetime import datetime
 import uuid
@@ -10,7 +9,8 @@ import flask_login
 from flask_socketio import join_room, leave_room, emit
 from sqlalchemy import desc, and_
 
-from app import app, db, lm
+from celery import states
+from app import app, db, lm, celery
 from . import socketio
 from .models import User, Doc, Text, Edit, Generation
 from .forms import LoginForm, RegisterForm, EmailForm, PasswordForm
@@ -49,9 +49,16 @@ def load_user(id):
 def before_request():
     flask.g.user = flask_login.current_user
 
+
 @app.route('/giphart', methods=['GET', 'POST'])
 def giphart():
     return flask.render_template('G.html')
+
+
+@app.route('/disclaimer', methods=['GET', 'POST'])
+def disclaimer():
+    return flask.render_template('disclaimer.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -68,6 +75,7 @@ def login():
         socketio.emit('login', {'user_id': user.id}, namespace='/monitor')
         return flask.redirect(flask.url_for('index'))
     return flask.render_template('login.html', title='Sign in', form=form)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -352,6 +360,35 @@ def savesession():
 @app.route('/generate', methods=['POST'])
 @flask_login.login_required
 def generate():
+    user_id = int(flask_login.current_user.id)
+    model = flask.request.json['model']
+    seed = flask.request.json["seed"]
+    seed_doc_id = flask.request.json['seed_doc_id']
+    temperature = float(flask.request.json['temperature'])
+    max_seq_len = int(flask.request.json['max_seq_len'])
+    job = generate_task.apply_async(args=(user_id, model, seed, seed_doc_id, temperature, max_seq_len))
+    return flask.jsonify({}), 202, {
+        'Location': flask.url_for('get_status', id=job.id)
+    }
+
+
+@app.route('/status/<id>', methods=['GET'])
+def get_status(id):
+    """
+    Return status about an asynchronous task. If this request returns a 202
+    status code, it means that task hasn't finished yet. Else, the response
+    from the task is returned.
+    """
+    task = generate_task.AsyncResult(id)
+    if task.state == states.PENDING or task.state == states.RECEIVED or task.state == states.STARTED:
+        return flask.jsonify({}), 202, {
+            'Location': flask.url_for('get_status', id=id)
+        }
+    return flask.jsonify(task.info)
+
+
+@celery.task
+def generate_task(user_id, model, seed, seed_doc_id, temperature, max_seq_len):
     """
     seed: str
     seed_doc_id: int, doc id where the generation was triggered
@@ -359,52 +396,43 @@ def generate():
     temperature: float
     max_seq_len: int
     """
-    user_id = int(flask_login.current_user.id)
-    model = flask.request.json['model']
-    app.synthesizer.load(model_names=(model,))  # maybe load model
-    seed = flask.request.json["seed"]
-    seed_doc_id = flask.request.json['seed_doc_id']
-    temperature = float(flask.request.json['temperature'])
-    max_seq_len = int(flask.request.json['max_seq_len'])
-    try:
-        timestamp = datetime.utcnow()
-        hyps = app.synthesizer.sample(
-            model_name=model,
-            seed_texts=None if not seed else [seed],
-            temperature=temperature,
-            batch_size=app.config.get('DEFAULTS', {}).get('batch_size', 3),
-            ignore_eos=app.config.get('DEFAULTS', {}).get('ignore_eos', False),
-            max_seq_len=max_seq_len,
-            max_tries=1)
-        generation_id = str(uuid.uuid4())
-        for hyp in hyps:
-            generation = Generation(
-                generation_id=generation_id,
-                user_id=user_id,
-                seed_doc_id=seed_doc_id,
-                model=model,
-                seed=seed or '',
+    with app.app_context():
+        app.synthesizer.load(model_names=(model, ))  # maybe load model
+        try:
+            timestamp = datetime.utcnow()
+            hyps = app.synthesizer.sample(
+                model_name=model,
+                seed_texts=None if not seed else [seed],
                 temperature=temperature,
+                batch_size=app.config.get('DEFAULTS', {}).get('batch_size', 3),
+                ignore_eos=app.config.get('DEFAULTS', {}).get('ignore_eos', False),
                 max_seq_len=max_seq_len,
-                text=hyp['text'],
-                timestamp=timestamp)
-            db.session.add(generation)
-            db.session.flush()  # ensure generation gets the id
-            hyp['id'] = generation.id
-            hyp["generation_id"] = generation_id
-            hyp["timestamp"] = timestamp
-            hyp["model"] = model
-        db.session.commit()
-        elapsed = round((datetime.utcnow() - timestamp).total_seconds(), 2)
-        return flask.jsonify(status='OK',
-                             hyps=hyps,
-                             seed=seed,
-                             model=model,
-                             elapsed=elapsed)
-    except Exception as e:
-        if app.debug is True:
-            raise e
-        return flask.jsonify(status='Error', message=str(e)), 500
+                max_tries=1)
+            generation_id = str(uuid.uuid4())
+            for hyp in hyps:
+                generation = Generation(
+                    generation_id=generation_id,
+                    user_id=user_id,
+                    seed_doc_id=seed_doc_id,
+                    model=model,
+                    seed=seed or '',
+                    temperature=temperature,
+                    max_seq_len=max_seq_len,
+                    text=hyp['text'],
+                    timestamp=timestamp)
+                db.session.add(generation)
+                db.session.flush()  # ensure generation gets the id
+                hyp['id'] = generation.id
+                hyp["generation_id"] = generation_id
+                hyp["timestamp"] = timestamp
+                hyp["model"] = model
+            db.session.commit()
+            elapsed = round((datetime.utcnow() - timestamp).total_seconds(), 2)
+            return {'status': 'OK', 'hyps': hyps, 'seed': seed, 'model': model, 'elapsed': elapsed}
+        except Exception as e:
+            if app.debug is True:
+                raise e
+            return {'status': 'Error', 'message': str(e), 'code': 500}
 
 
 # WebSockets

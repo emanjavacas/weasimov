@@ -16,6 +16,8 @@ class Config:
         SQLALCHEMY_DATABASE_URI = os.environ['WEASIMOV_DB_URL']
         USE_MYSQL = True
     SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SECRET_KEY = "=\x07BoZ\xeb\xb0\x13\x88\xf8mW(\x93}\xe6k\r\xebA\xbf\xff\xb1v"
 
     # Sentence sampler
     FILEDIR = os.path.join(basedir, 'data/novels/')
@@ -33,6 +35,9 @@ class Config:
         'fine_robot_large.LSTM.1l.4096h.64e.256b.1.87.pt': 'Robot Ik'
     }
 
+    # Celery config
+    CELERY_CONFIG = {}
+
     # Mail settings
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
@@ -45,13 +50,13 @@ class Config:
     DEFAULTS = {
         "temperature": 0.35,
         "max_seq_len": 100,
-        "batch_size": 3,
+        "batch_size": 2,
         "ignore_eos": True,
         "gpu": False
     }
 
     IGNORE_UNNAMED = True  # ignore models if not listed in MODEL_NAMES?
-    MONITORS = ['admin']
+    MONITORS = ['admin@admin.asi']
 
 
 class TestingConfig(Config):

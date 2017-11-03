@@ -68,6 +68,26 @@ function shortenSeed(seed, maxLength){
 }
 
 
+function check_generation_status(status_url, success, error) {
+  $.ajax({
+    contentType: 'application/json;charset=UTF-8',
+    url: status_url,
+    type: 'GET',
+    dataType: 'json',
+    success: function (data) {
+      console.log(data);
+      if (data.status === 'OK') {
+        success(data);
+      } else {
+        setTimeout(function() {
+          check_generation_status(status_url, success, error);
+        }, 2000); // timeout for two seconde before polling again.
+      }
+    },
+    error: error
+  })
+}
+
 // AJAX stuff
 /**
  * seed: str
@@ -88,10 +108,14 @@ function launchGeneration(seed, model, appState, success, error) {
 			  max_seq_len: maxSeqLen}),
     type: 'POST',
     dataType: 'json',
-    success: success,
+    success: function (data, status, request) {
+      var status_url = request.getResponseHeader('Location');
+      check_generation_status(status_url, success, error);
+    },
     error: error
   });
 }
+
 
 /**
  * doc_id: int
@@ -125,7 +149,6 @@ function createDoc(screenName, success, error) {
     error: (response) => error(response)
   });
 }
-
 
 /**
  * text: json
