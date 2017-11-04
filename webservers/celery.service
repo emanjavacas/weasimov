@@ -8,6 +8,7 @@ User=ubuntu
 Group=www-data
 EnvironmentFile=-/etc/default/celeryd
 Environment=OMP_NUM_THREADS=4
+Environment='ASI_MAIL_PASSWORD=1001 generations'
 WorkingDirectory=/home/ubuntu/weasimov-public/app
 ExecStart=/bin/sh -c '${CELERY_BIN} multi start ${CELERYD_NODES} \
   -A ${CELERY_APP} --pidfile=${CELERYD_PID_FILE} \
