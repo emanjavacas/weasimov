@@ -1,0 +1,30 @@
+# Names of nodes to start
+CELERYD_NODES="generation-node generation-giphart mail-node"
+
+# Absolute or relative path to the 'celery' command:
+CELERY_BIN="/home/ubuntu/.pyenv/versions/anaconda3-4.4.0/bin/celery"
+
+# App instance to use
+CELERY_APP="app.celery"
+
+# Where to chdir at start.
+CELERYD_CHDIR="/home/ubuntu/weasimov-public/app/"
+
+# Extra command-line arguments to the worker
+# pool of 14 processes each of which should have 4 threads set by OMP_NUM_THREADS=4
+CELERYD_OPTS="--time-limit=300 --concurrency=14 -Ofair -c:generation-giphart 1 -c:mail-node 1 -Q:mail-node mail-queue"
+
+# Set logging level to DEBUG
+CELERYD_LOG_LEVEL="INFO"
+
+# %n will be replaced with the first part of the nodename.
+CELERYD_LOG_FILE="/var/log/celery/%n%I.log"
+CELERYD_PID_FILE="/var/run/celery/%n.pid"
+
+# Workers should run as an unprivileged user.
+CELERYD_USER="www-data"
+CELERYD_GROUP="www-data"
+
+# If enabled pid and log directories will be created if missing,
+# and owned by the userid/group configured.
+CELERY_CREATE_DIRS=1
