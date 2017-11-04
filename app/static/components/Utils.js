@@ -75,7 +75,6 @@ function check_generation_status(status_url, success, error) {
     type: 'GET',
     dataType: 'json',
     success: function (data) {
-      console.log(data);
       if (data.status === 'OK') {
         success(data);
       } else {
