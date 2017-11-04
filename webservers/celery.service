@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=forking
-User=celery
+User=ubuntu
 Group=celery
 EnvironmentFile=-/etc/default/celeryd
 Environment=OMP_NUM_THREADS=4
