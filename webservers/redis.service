@@ -1,7 +1,7 @@
-Description=Redis In-Memory Data Store                       
-After=network.target                                         
-                                                             
-[Service]                                                    
+Description=Redis In-Memory Data Store
+After=network.target
+                                         
+[Service]
 Type=forking
 User=ubuntu
 Group=www-data
@@ -12,6 +12,6 @@ ExecStartPre=/usr/bin/touch /var/log/redis.log
 ExecStart=/usr/bin/redis-server
 ExecStop=/usr/bin/redis-cli shutdown
 ExecReload=/bin/kill -USR2 $MAINPID
-                                                             
-[Install]                                                    
-WantedBy=multi-user.target                                   
+                          
+[Install]
+WantedBy=multi-user.target
