@@ -1,12 +1,11 @@
-Description=Redis In-Memory Data Store
+[Unit]
+Description=Redis Service
 After=network.target
                                          
 [Service]
 Type=forking
 User=ubuntu
 Group=www-data
-Environment=statedir=/run/redis
-PermissionsStartOnly=true
 PIDFile=/run/redis/redis.pid
 ExecStartPre=/usr/bin/touch /var/log/redis.log
 ExecStart=/usr/bin/redis-server
