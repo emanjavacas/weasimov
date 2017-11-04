@@ -8,9 +8,9 @@ Group=www-data
 Environment=statedir=/run/redis
 PermissionsStartOnly=true
 PIDFile=/run/redis/redis.pid
-ExecStartPre=touch /var/log/redis.log
-ExecStart=redis-server
-ExecStop=redis-cli shutdown
+ExecStartPre=/usr/bin/touch /var/log/redis.log
+ExecStart=/usr/bin/redis-server
+ExecStop=/usr/bin/redis-cli shutdown
 ExecReload=/bin/kill -USR2 $MAINPID
 Restart=always
 RestartSec=3
