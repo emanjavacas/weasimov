@@ -57,6 +57,11 @@ class Config:
 
     IGNORE_UNNAMED = True  # ignore models if not listed in MODEL_NAMES?
     MONITORS = ['admin@admin.asi']
+    DEMO_USERS = [
+        'ronaldgiphart@icloud.com', 'folgert.karsdorp@meertens.knaw.nl',
+        'enrique.manjavacas@gmail.com', 'ben.burtenshaw@gmail.com',
+        'mike.kestemont@gmail.com'
+    ]
 
 
 class TestingConfig(Config):
