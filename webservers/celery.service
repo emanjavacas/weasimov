@@ -6,7 +6,7 @@ After=network.target
 Type=forking
 User=ubuntu
 Group=www-data
-EnvironmentFile=-/etc/conf.d/celery
+EnvironmentFile=-/etc/default/celeryd
 Environment=OMP_NUM_THREADS=4
 WorkingDirectory=/home/ubuntu/weasimov-public/app
 ExecStart=/bin/sh -c '${CELERY_BIN} multi start ${CELERYD_NODES} \
