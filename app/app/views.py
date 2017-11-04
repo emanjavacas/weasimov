@@ -366,7 +366,13 @@ def generate():
     seed_doc_id = flask.request.json['seed_doc_id']
     temperature = float(flask.request.json['temperature'])
     max_seq_len = int(flask.request.json['max_seq_len'])
-    job = generate_task.apply_async(args=(user_id, model, seed, seed_doc_id, temperature, max_seq_len))
+    if flask_login.current_user.username in app.config.DEMO_USERS:
+        job = generate_task.apply_async(
+            args=(user_id, model, seed, seed_doc_id, temperature, max_seq_len),
+            queue='demo-queue')
+    else:
+        job = generate_task.apply_async(
+            args=(user_id, model, seed, seed_doc_id, temperature, max_seq_len))
     return flask.jsonify({}), 202, {
         'Location': flask.url_for('get_status', id=job.id)
     }
