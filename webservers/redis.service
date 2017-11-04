@@ -4,10 +4,10 @@ After=network.target
                                          
 [Service]
 Type=forking
-User=ubuntu
+User=redis
 Group=www-data
 PIDFile=/run/redis/redis.pid
-ExecStartPre=/usr/bin/touch /var/log/redis.log
+ExecStartPre=/usr/bin/touch /var/log/redis/redis.log
 ExecStart=/usr/bin/redis-server
 ExecStop=/usr/bin/redis-cli shutdown
 ExecReload=/bin/kill -USR2 $MAINPID
