@@ -12,7 +12,7 @@ from sqlalchemy import desc, and_
 from celery import states
 from app import app, db, lm, celery
 from . import socketio
-from .models import User, Doc, Text, Edit, Generation
+from .models import User, Doc, Text, Edit, Generation, Task
 from .forms import LoginForm, RegisterForm, EmailForm, PasswordForm
 from .utils import send_email, ts
 
@@ -97,10 +97,29 @@ def register():
     return flask.render_template('register.html', title='Sign Up', form=form)
 
 
+def cancel_celery_task(user_id):
+    tasks = list(Task.query.filter_by(user_id=user_id, is_active=True).all())
+    if tasks:
+        celery.control.revoke([task.task_id for task in tasks])
+        for task in tasks:
+            task.is_active = False
+        db.session.commit()
+        print("Revoked tasks", tasks)
+
+
+@app.route('/closetab', methods=['POST', 'GET'])
+@flask_login.login_required
+def closetab():
+    user_id = int(flask_login.current_user.id)
+    cancel_celery_task(user_id)
+    socketio.emit('logout', {'user_id': user_id}, namespace='/monitor')
+
+
 @app.route('/logout', methods=['POST', 'GET'])
 @flask_login.login_required
 def logout():
     user_id = int(flask_login.current_user.id)
+    cancel_celery_task(user_id)
     flask_login.logout_user()
     user = User.query.get(user_id)
     user.active = False
@@ -366,13 +385,16 @@ def generate():
     seed_doc_id = flask.request.json['seed_doc_id']
     temperature = float(flask.request.json['temperature'])
     max_seq_len = int(flask.request.json['max_seq_len'])
-    if flask_login.current_user.username in app.config.DEMO_USERS:
+    if flask_login.current_user.username in app.config.get('DEMO_USERS', []):
         job = generate_task.apply_async(
             args=(user_id, model, seed, seed_doc_id, temperature, max_seq_len),
             queue='demo-queue')
     else:
         job = generate_task.apply_async(
             args=(user_id, model, seed, seed_doc_id, temperature, max_seq_len))
+    task = Task(user_id=user_id, task_id=job.id, is_active=True)
+    db.session.add(task)
+    db.session.commit()
     return flask.jsonify({}), 202, {
         'Location': flask.url_for('get_status', id=job.id)
     }
@@ -385,12 +407,15 @@ def get_status(id):
     status code, it means that task hasn't finished yet. Else, the response
     from the task is returned.
     """
-    task = generate_task.AsyncResult(id)
-    if task.state == states.PENDING or task.state == states.RECEIVED or task.state == states.STARTED:
+    job = generate_task.AsyncResult(id)
+    if job.state == states.PENDING or job.state == states.RECEIVED or job.state == states.STARTED:
         return flask.jsonify({}), 202, {
             'Location': flask.url_for('get_status', id=id)
         }
-    return flask.jsonify(task.info)
+    task = Task.query.filter_by(task_id=id).first()
+    task.is_active = False
+    db.session.commit()
+    return flask.jsonify(job.info)
 
 
 @celery.task
