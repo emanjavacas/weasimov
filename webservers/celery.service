@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=forking
-User=ubuntu
-Group=www-data
+User=celery
+Group=celery
 EnvironmentFile=-/etc/default/celeryd
 Environment=OMP_NUM_THREADS=4
 Environment=PYTHONIOENCODING=UTF-8
