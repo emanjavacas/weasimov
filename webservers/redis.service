@@ -1,16 +1,14 @@
 [Unit]
-Description=Redis Service
+Description=Redis In-Memory Data Store
 After=network.target
-                                         
+
 [Service]
 Type=forking
 User=redis
-Group=www-data
-PIDFile=/run/redis/redis.pid
-ExecStartPre=/usr/bin/touch /var/log/redis/redis.log
-ExecStart=/usr/bin/redis-server
+Group=redis
+ExecStart=/usr/bin/redis-server /etc/redis/redis.conf
 ExecStop=/usr/bin/redis-cli shutdown
-ExecReload=/bin/kill -USR2 $MAINPID
-                          
+Restart=always
+
 [Install]
 WantedBy=multi-user.target
