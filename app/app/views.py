@@ -399,7 +399,7 @@ def generate():
     }
 
 
-@app.route('/status/<id>', methods=['GET'])
+@app.route('/status/<id>/', methods=['GET'])
 def get_status(id):
     """
     Return status about an asynchronous task. If this request returns a 202
@@ -559,7 +559,7 @@ def reset():
     return flask.render_template('reset.html', form=form)
 
 
-@app.route('/reset/<token>', methods=['GET', 'POST'])
+@app.route('/reset/<token>/', methods=['GET', 'POST'])
 def reset_with_token(token):
     email = ts.loads(token, salt="recover-key", max_age=86400)
     form = PasswordForm()
