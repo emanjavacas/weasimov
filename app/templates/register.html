@@ -49,6 +49,11 @@
                 <button type="submit">start</button>
             </div>
         </form>
+        <script>
+            $('form input').on('keypress', function(e) {
+                if(e.keyCode==13 && !$("#gebruiksvoorwaarden").is(":checked")) e.preventDefault();
+            });
+        </script>
     </div>
     {% include "credits.html" %}        
 </div>
