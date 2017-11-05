@@ -104,7 +104,6 @@ def cancel_celery_task(user_id):
         for task in tasks:
             task.is_active = False
         db.session.commit()
-        print("Revoked tasks", tasks)
 
 
 @app.route('/closetab', methods=['POST', 'GET'])
