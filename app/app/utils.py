@@ -12,7 +12,7 @@ def send_email(recipient, subject, html):
         sender=app.config['MAIL_USERNAME'],
         recipients=[recipient])
     msg.html = html
-    send_async_mail.apply_async(args=(msg), queue='mail-queue')
+    send_async_mail.apply_async(args=(msg,), queue='mail-queue')
 
 @celery.task
 def send_async_mail(msg):
