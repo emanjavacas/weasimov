@@ -223,7 +223,7 @@ class Navbar extends React.Component {
           <RB.Button className="mobilehide right" href={(this.props.isMonitor) ? "/monitor" : null}>
             {this.props.username || "loading"}
           </RB.Button>
-          <RB.Button href="http://ad.nl" target="_blank" className="right">schrijfwedstrijd</RB.Button>
+          <RB.Button href="https://www.ad.nl/binnenland/schrijfwedstrijd-iedereen-maakt-kans-dankzij-robot~ae88229b/" target="_blank" className="right">schrijfwedstrijd</RB.Button>
           <RB.Button href="logout" className="right">uitloggen</RB.Button>
         </div>
       </div>
