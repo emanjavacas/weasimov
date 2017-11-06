@@ -70,10 +70,10 @@ function shortenSeed(seed, maxLength){
 
 function check_generation_status(status_url, success, error) {
   $.ajax({
-    contentType: 'application/json;charset=UTF-8',
+    // contentType: 'application/json;charset=UTF-8',
     url: status_url,
     type: 'GET',
-    dataType: 'json',
+    // dataType: 'json',
     success: function (data) {
       if (data.status === 'OK') {
         success(data);
@@ -109,6 +109,7 @@ function launchGeneration(seed, model, appState, success, error) {
     dataType: 'json',
     success: function (data, status, request) {
       var status_url = request.getResponseHeader('Location');
+      status_url = "/status/" + status_url.split("/status/")[1];
       check_generation_status(status_url, success, error);
     },
     error: error
