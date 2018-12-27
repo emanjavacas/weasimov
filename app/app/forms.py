@@ -27,14 +27,14 @@ class LoginForm(Form):
 class RegisterForm(Form):
     username = StringField('username', validators=[DataRequired(), Email()])
     password = PasswordField('password', validators=[DataRequired()])
-    cpassword = PasswordField('confirm password', validators=[DataRequired()])
+    # cpassword = PasswordField('confirm password', validators=[DataRequired()])
 
     def validate_fields(self):
         if not self.available_username():
             self.username.errors = ('Opgegeven email-adres is al in gebruik.',)
             return False
-        if self.password.data != self.cpassword.data:
-            self.cpassword.errors = ('Wachtwoorden zijn niet hetzelfde', )
+        if not self.password.data:
+            self.cpassword.errors = ('Voer een wachtwoord in.', )
             return False
         return True
 

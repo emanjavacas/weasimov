@@ -1,0 +1,79 @@
+.giphart {
+    .toptop {
+        max-width:88rem;
+        padding:1em;
+        margin:0 auto;
+        a, button  {
+            background:transparent;
+            display:inline-block;
+            border:none;
+            color:#ccc;
+            outline:none;
+        }
+    }
+    ul {
+        float:right;
+        width:22rem;
+        overflow: hidden;
+        background:$bg;
+        color:#fff;
+        padding:1rem;
+        margin:0 0 2rem 2rem;
+        @include rounded(5px);
+        @media(min-width:1300px){
+            position: fixed;
+            top:8rem;
+            right:2rem;
+            background:darken($bg,5);
+        }
+        label {
+            display:block;
+            text-align: center;
+            font-size:1rem;
+        }
+        li {
+            color:$bg;
+            padding:0.25em 1em;
+            font-size:1.5rem;
+            @include rounded(3px);
+            margin-bottom:0.25em;
+        }
+    }
+    h1 {
+        margin:1em auto;
+        margin-bottom:2em;
+        max-width:16em;
+        text-align:center;
+        line-height:1.5em;
+    }
+    .wrap {
+        max-width:44em;
+        background:#f0f0f0;
+        margin:0em auto 4em auto;
+        padding:4em;
+        font-size:2rem;
+        @include padding();
+        @include rounded(3px);
+        @media (max-width:56em){
+            margin:0 0 1em 0;
+            padding:2em;
+            @include rounded(0px);
+        }
+        @media (max-width:24em){
+            margin:1em 0;
+            padding:1em;
+            font-size:1.5rem;
+        }
+    }
+    hr {
+        border-top:3px solid #333;
+        margin:4em auto 0 auto;
+        width:3em;
+    }
+    .toegift{
+        font-style:italic;
+        margin:4em auto;
+        max-width:30em;
+        font-size:1.5rem;
+    }
+}

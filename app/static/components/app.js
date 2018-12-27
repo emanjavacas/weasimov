@@ -279,8 +279,12 @@ class App extends React.Component {
       this.onGenerationError);
     this.setState({loadingHyps: true});
   }
-
-  generate(model) {
+  
+  /* GENERATE */
+  generate(models) {
+    for(var i in models){
+      if(models[i].active) var model = models[i].path;
+    }
     const {editorState} = this.getDocState();
     const currentContent = editorState.getCurrentContent();
     const selection = editorState.getSelection();
@@ -289,7 +293,7 @@ class App extends React.Component {
       let focusBlock = currentContent.getBlockForKey(selection.anchorKey);
       seed = focusBlock.getText();
       seed = seed.substring(
-        Math.max(selection.focusOffset - 200, 0), selection.focusOffset);
+        Math.max(selection.focusOffset - 100, 0), selection.focusOffset);
     }
     if (seed.trim().length == 0) {
       const startKey = currentContent.getFirstBlock().getKey();
@@ -306,8 +310,8 @@ class App extends React.Component {
 	      return null;
 	    }
           }).join('\n');
-      if (seed.length > 200) {
-        seed = seed.substring(seed.length - 200);
+      if (seed.length > 100) {
+        seed = seed.substring(seed.length - 100);
       }
     }
     this.launchGeneration(seed, model);
@@ -359,7 +363,7 @@ class App extends React.Component {
       const currentBlock = EditorUtils.getSelectedBlocks(newContent, selection);
       const oldBlock = EditorUtils.getSelectedBlocks(oldContent, selection);
       const edit = jsonpatch.compare(oldBlock.toJS(), currentBlock.toJS());
-      Utils.saveChange(edit, this.state.docId);
+      // Utils.saveChange(edit, this.state.docId);
     }
     this.setDocState('editorState', newEditorState);
   }
@@ -417,87 +421,77 @@ class App extends React.Component {
     return false;
   }
 
+  toggleCredits() {
+    console.log("toggle credits");
+  }
+
   render() {
     if (!this.state.init) {
       return <Utils.LoadingApp/>;
     } else {
       const {loading} = this.getDocState();
       if (loading) { // is the current doc's editorState loading (being fetched from server)?
-	return <span>Loading editor</span>; // TODO: nicer component
+        return <span>Loading editor</span>; // TODO: nicer component
       } else { // get doc's editorState and render TextEditor
-	const {editorState} = this.getDocState();
-	return (
-	  <div>
-	    <Navbar
-	       username={this.state.username}
-	       isMonitor={this.state.isMonitor}
-	       activeDoc={this.state.docId}
-	       docs={this.state.docs}
-	       onSelectDoc={this.selectDoc}
-	       onSubmitScreenName={this.editDocName}
-	       onSubmitNewDoc={this.createDoc}
-	       onSubmitRemoveDoc={this.removeDoc}/>
-	    <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
+        const {editorState} = this.getDocState();
+        return (
+          <div>
+            <Navbar
+              username={this.state.username}
+              isMonitor={this.state.isMonitor}
+              activeDoc={this.state.docId}
+              docs={this.state.docs}
+              onSelectDoc={this.selectDoc}
+              onSubmitScreenName={this.editDocName}
+              onSubmitNewDoc={this.createDoc}
+              onSubmitRemoveDoc={this.removeDoc}/>
+            <NotificationSystem ref={(el) => {this._notificationSystem = el;}}/>
             <RB.Grid fluid={true}>
-	      <RB.Row>
-		<RB.Col lg={2} md={2} sm={1}></RB.Col>
-		<RB.Col lg={8} md={8} sm={10}>
-		  
-		  <RB.Row>
-		    <Sticky enabled={true} top={0} innerZ={1001}>
-		      <div className="panel panel-default generate-panel">
-			<div className="panel-heading">
-			  <ButtonToolbar
-			     temperature={this.state.temperature} 
-			     onTemperatureChange={this.onTemperatureChange}
-			     maxSeqLen={this.state.maxSeqLen}
-			     onSeqLenChange={this.onSeqLenChange}
-			     models={this.state.models}
-			     onGenerate={this.generate}/>
-			</div>
-		      </div>
-		    </Sticky>
-		  </RB.Row>
-		  
-		  <RB.Row>
-		    <TextEditor
-		       editorState={editorState}
-		       onChange={this.onEditorChange}
-		       handleKeyCommand={this.handleKeyCommand}
-		       onTab={this.onTab}
-		       toggleInlineStyle={this.toggleInlineStyle}
-		       handleBeforeInput={this.handleBeforeInput}/>
-		    <Utils.Spacer height="50px"/>
-		  </RB.Row>
-		  
-		  <RB.Row>
-    		    <Suggestions
-		       ref="suggestions"
-    		       hyps={this.state.hyps}
-		       elapsed={this.state.lastGenerationTime}
-		       models={this.state.models}
-		       isCollapsed={this.state.suggestionsCollapsed}
-		       onCollapse={this.toggleSuggestions}
-    		       loadingHyps={this.state.loadingHyps}
-    		       onRegenerate={this.regenerate}
-    		       onHypSelect={this.insertHypAtCursor}
-		       onHypDismiss={this.dismissHyp}
-		       hasHadHyps={this.state.hasHadHyps}
-		       resetHyps={this.resetHyps}/>
-		  </RB.Row>
-		  
-		</RB.Col>
-		<RB.Col lg={2} md={2} sm={1}></RB.Col>
-	      </RB.Row>
-	      
-	    </RB.Grid>
+              <RB.Row className="mainrow">
+                <RB.Col lg={7} md={7} sm={7}>
+                  <TextEditor
+                    editorState={editorState}
+                    onChange={this.onEditorChange}
+                    handleKeyCommand={this.handleKeyCommand}
+                    onTab={this.onTab}
+                    toggleInlineStyle={this.toggleInlineStyle}
+                    handleBeforeInput={this.handleBeforeInput}/>
+                </RB.Col>
+                <RB.Col lg={5} md={5} sm={5} className="asibotpanel">
+                  <div className="panel">
+                    <ButtonToolbar
+                      temperature={this.state.temperature} 
+                      onTemperatureChange={this.onTemperatureChange}
+                      maxSeqLen={this.state.maxSeqLen}
+                      onSeqLenChange={this.onSeqLenChange}
+                      models={this.state.models}
+                      onGenerate={this.generate}
+                      loadingHyps={this.state.loadingHyps}
+                      elapsed={this.state.lastGenerationTime}
+                      />
+                    <Suggestions
+                      ref="suggestions"
+                      hyps={this.state.hyps}
+                      elapsed={this.state.lastGenerationTime}
+                      models={this.state.models}
+                      isCollapsed={this.state.suggestionsCollapsed}
+                      onCollapse={this.toggleSuggestions}
+                      loadingHyps={this.state.loadingHyps}
+                      onRegenerate={this.regenerate}
+                      onHypSelect={this.insertHypAtCursor}
+                      onHypDismiss={this.dismissHyp}
+                      hasHadHyps={this.state.hasHadHyps}
+                      resetHyps={this.resetHyps}/>
+                  </div>
+                </RB.Col>
+              </RB.Row>
+            </RB.Grid>
           </div>
-	);
+        );
       }
     }
   }
 };
-
 
 ReactDOM.render(<App/>, document.getElementById('app'));
 

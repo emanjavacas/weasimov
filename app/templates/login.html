@@ -2,8 +2,23 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="text-center" style="padding:50px 0">
-    <div class="login-message">login</div>
+<div class="text-center opening">
+    <div class='topbar'>
+        <a href='http://www.nederlandleest.nl' class='logo nlleest' target="_blank"></a>
+        <a class='logo credits' id="togglecredits">credits</a>
+        <a href='/register' class='loginlink'>registreer</a>
+        <script>
+                $("#togglecredits").on("click",function(){
+                    $("body").toggleClass("credits");
+                });
+            </script>
+    </div>
+    <div class="row kop">
+        <div class='vcenter'>
+            <h1>AsiBot</h1>
+            <h3>Welkom terug</h3>
+        </div>
+    </div>
     <div class="login-form-1">
         <form action="" method="POST" name="login" class="text-left">
             <div class="login-form-main-message"></div>
@@ -13,36 +28,36 @@
                     <fieldset>
                     <div class="form-group">
                         <label for="name" class="sr-only">{{ form.username.label }}</label>
-                        {{ form.username(class="form-control", placeholder="username") }}
+                        {{ form.username(class="form-control", placeholder="e-mailadres") }}
                         {% if form.username.errors %}
                         {% for error in form.username.errors %}
-                            <span class="help-block" style="color: brown">{{ error }}</span>
+                            <span class="help-block">{{ error }}</span>
                         {% endfor %} 
                         {% endif %} 
                     </div>
                     <div class="form-group">
                     <label for="password" class="sr-only">{{ form.password.label }}</label>
-                    {{ form.password(class="form-control", placeholder="password") }}
+                    {{ form.password(class="form-control", placeholder="wachtwoord") }}
                     {% if form.password.errors %}
                     {% for error in form.password.errors %}
-                        <span class="help-block" style="color: brown">{{ error }}</span>
+                        <span class="help-block">{{ error }}</span>
                     {% endfor %}
                     {% endif %}
                     </div>
                     <div class="form-group login-group-checkbox">
                         {{ form.remember_me() }}
-                        <label for="remember_me">remember</label>
+                        <label for="remember_me">blijf ingelogd</label>
                     </div>
                     </fieldset>
                 </div>
-                <button class="login-button" id="login-button" type="submit">
-                <i class="fa fa-chevron-right"></i>
-                </button>
+                <button class="login-button" type="submit">login</button>
             </div>
             <div class="etc-login-form">
-				<p>nieuwe gebruiker? <a href="{{ url_for('register') }}">registreer</a></p>
+                <p>Wachtwoord vergeten?<br><a href="{{ url_for('reset') }}">Reset je wachtwoord hier</a></p>
+                
 			</div>
         </form>
     </div>
+    {% include "credits.html" %}    
 </div>
 {% endblock %}

@@ -1,0 +1,8 @@
+# python settings
+PYTHONIOENCODING=UTF-8
+LC_ALL=en_US.UTF-8
+PYTHONPATH=${PYTHONPATH}:/home/ubuntu/seqmod
+
+# asibot environment settings
+ASI_MAIL_PASSWORD='1001 generations'
+WEASIMOV_DB_URL=mysql+mysqldb://weasimov:weasimov@127.0.0.1/weasimov

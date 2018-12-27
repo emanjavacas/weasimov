@@ -1,8 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="text-center" style="padding:50px 0">
-    <div class="login-message">nieuw wachtwoord</div>
+<div class="text-center opening">
+    <div class='topbar'>
+        <a href='http://www.nederlandleest.nl' class='logo nlleest' target="_blank"></a>
+        <a href='http://www.ad.nl' class='logo algdag' target="_blank"></a>
+        <a href='/register' class='loginlink'>registreer</a>
+    </div>
+    <div class="row kop">
+        <div class='vcenter'>
+            <h1>AsiBot</h1>
+            <h3>Voor hier je nieuwe wachtwoord in</h3>
+        </div>
+    </div>
     <div class="login-form-1">
         <form action="{{ url_for('reset_with_token', token=token) }}" method="POST" class="text-left">
             <div class="login-form-main-message"></div>
@@ -14,7 +24,7 @@
                     </div>
                 </div>
                 <button type="submit" class="login-button" id="reset-button">
-                <i class="fa fa-chevron-right"></i>
+                    Ok
                 </button>
             </div>
         </form>

@@ -2,44 +2,59 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="text-center" style="padding:50px 0">
-    <div class="login-message">registreer</div>
+<div class="text-center opening">
+    <div class='topbar'>
+        <a href='http://www.nederlandleest.nl' class='logo nlleest' target="_blank"></a>
+        <a class='logo credits' id="togglecredits">credits</a>
+        <a href='/login' class='loginlink'>login</a>
+        <script>
+            $("#togglecredits").on("click",function(){
+                $("body").toggleClass("credits");
+            });
+        </script>
+    </div>
+    <div class="row kop">
+        <div class='vcenter'>
+            <h1>AsiBot</h1>
+            <h3>Schrijf samen met een robot</h3>
+            <h6>Doe mee aan de <a href="https://www.ad.nl/binnenland/schrijfwedstrijd-iedereen-maakt-kans-dankzij-robot~ae88229b/" target="_blank">schrijfwedstrijd</a></h6>
+        </div>
+    </div>
     <div class="login-form-1">
         <form action="" method="POST" name="register" class="text-left">
             <div class="login-form-main-message"></div>
             <div class="main-login-form">
-                <div class="login-group">
+                <div class="">
                     {{ form.hidden_tag() }}
                     <div class="form-group">
-                    {{ form.username.label(class="sr-only")}} {{ form.username(class="form-control", placeholder="username") }}
+                    {{ form.username.label(class="sr-only")}} {{ form.username(class="form-control", placeholder="e-mailadres") }}
                     {% if form.username.errors %} 
                     {% for error in form.username.errors %}
-                        <span class="help-block" style="color: brown">{{ error }}</span>
+                        <span class="help-block">{{ error }}</span>
                     {% endfor %} 
                     {% endif %} 
                     </div>
                     <div class="form-group">
-                    {{ form.password.label(class="sr-only") }} {{ form.password(class="form-control", placeholder="password") }}
+                    {{ form.password.label(class="sr-only") }} {{ form.password(class="form-control", placeholder="wachtwoord") }}
                     {% if form.password.errors %}
                     {% for error in form.password.errors %}
-                        <span class="help-block" style="color: brown">{{ error }}</span>
-                    {% endfor %}
-                    {% endif %}
-                    </div>
-                    <div class="form-group">
-                    {{ form.cpassword.label(class="sr-only") }} {{ form.cpassword(class="form-control", placeholder="confirm") }}
-                    {% if form.cpassword.errors %}
-                    {% for error in form.cpassword.errors %}
-                        <span class="help-block" style="color: brown">{{ error }}</span>
+                        <span class="help-block">{{ error }}</span>
                     {% endfor %}
                     {% endif %}
                     </div>
                 </div>
-                <button type="submit" class="login-button" id="register-button">
-                    <i class="fa fa-chevron-right"></i>
-                </button>
+                <input type="checkbox" id="gebruiksvoorwaarden"></input>
+                <label id="gebruikscheck" class='fa' for="gebruiksvoorwaarden"></label>
+                <div id='checktext'>Ik ga akkoord met de <a href="./disclaimer" target="_blank">gebruiksvoorwaarden</a>.</div>
+                <button type="submit">start</button>
             </div>
         </form>
+        <script>
+            $('form input').on('keypress', function(e) {
+                if(e.keyCode==13 && !$("#gebruiksvoorwaarden").is(":checked")) e.preventDefault();
+            });
+        </script>
     </div>
+    {% include "credits.html" %}        
 </div>
 {% endblock %}

@@ -1,4 +1,3 @@
-
 from functools import wraps
 from datetime import datetime
 import uuid
@@ -10,9 +9,10 @@ import flask_login
 from flask_socketio import join_room, leave_room, emit
 from sqlalchemy import desc, and_
 
-from app import app, db, lm
+from celery import states
+from app import app, db, lm, celery
 from . import socketio
-from .models import User, Doc, Text, Edit, Generation
+from .models import User, Doc, Text, Edit, Generation, Task
 from .forms import LoginForm, RegisterForm, EmailForm, PasswordForm
 from .utils import send_email, ts
 
@@ -50,6 +50,16 @@ def before_request():
     flask.g.user = flask_login.current_user
 
 
+@app.route('/giphart', methods=['GET', 'POST'])
+def giphart():
+    return flask.render_template('G.html')
+
+
+@app.route('/disclaimer', methods=['GET', 'POST'])
+def disclaimer():
+    return flask.render_template('disclaimer.html')
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if flask.g.user is not None and flask.g.user.is_authenticated:
@@ -69,6 +79,8 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if flask.g.user is not None and flask.g.user.is_authenticated:
+        return flask.redirect(flask.url_for('index'))
     form = RegisterForm()
     if form.validate_on_submit() and form.validate_fields():
         user = User(username=form.username.data,
@@ -85,10 +97,28 @@ def register():
     return flask.render_template('register.html', title='Sign Up', form=form)
 
 
+def cancel_celery_task(user_id):
+    tasks = list(Task.query.filter_by(user_id=user_id, is_active=True).all())
+    if tasks:
+        celery.control.revoke([task.task_id for task in tasks])
+        for task in tasks:
+            task.is_active = False
+        db.session.commit()
+
+
+@app.route('/closetab', methods=['POST', 'GET'])
+@flask_login.login_required
+def closetab():
+    user_id = int(flask_login.current_user.id)
+    cancel_celery_task(user_id)
+    socketio.emit('logout', {'user_id': user_id}, namespace='/monitor')
+
+
 @app.route('/logout', methods=['POST', 'GET'])
 @flask_login.login_required
 def logout():
     user_id = int(flask_login.current_user.id)
+    cancel_celery_task(user_id)
     flask_login.logout_user()
     user = User.query.get(user_id)
     user.active = False
@@ -348,6 +378,47 @@ def savesession():
 @app.route('/generate', methods=['POST'])
 @flask_login.login_required
 def generate():
+    user_id = int(flask_login.current_user.id)
+    model = flask.request.json['model']
+    seed = flask.request.json["seed"]
+    seed_doc_id = flask.request.json['seed_doc_id']
+    temperature = float(flask.request.json['temperature'])
+    max_seq_len = int(flask.request.json['max_seq_len'])
+    if flask_login.current_user.username in app.config.get('DEMO_USERS', []):
+        job = generate_task.apply_async(
+            args=(user_id, model, seed, seed_doc_id, temperature, max_seq_len),
+            queue='demo-queue')
+    else:
+        job = generate_task.apply_async(
+            args=(user_id, model, seed, seed_doc_id, temperature, max_seq_len))
+    task = Task(user_id=user_id, task_id=job.id, is_active=True)
+    db.session.add(task)
+    db.session.commit()
+    return flask.jsonify({}), 202, {
+        'Location': flask.url_for('get_status', id=job.id)
+    }
+
+
+@app.route('/status/<id>', methods=['GET'])
+def get_status(id):
+    """
+    Return status about an asynchronous task. If this request returns a 202
+    status code, it means that task hasn't finished yet. Else, the response
+    from the task is returned.
+    """
+    job = generate_task.AsyncResult(id)
+    if job.state == states.PENDING or job.state == states.RECEIVED or job.state == states.STARTED:
+        return flask.jsonify({}), 202, {
+            'Location': flask.url_for('get_status', id=id)
+        }
+    task = Task.query.filter_by(task_id=id).first()
+    task.is_active = False
+    db.session.commit()
+    return flask.jsonify(job.info)
+
+
+@celery.task
+def generate_task(user_id, model, seed, seed_doc_id, temperature, max_seq_len):
     """
     seed: str
     seed_doc_id: int, doc id where the generation was triggered
@@ -355,52 +426,43 @@ def generate():
     temperature: float
     max_seq_len: int
     """
-    user_id = int(flask_login.current_user.id)
-    model = flask.request.json['model']
-    app.synthesizer.load(model_names=(model,))  # maybe load model
-    seed = flask.request.json["seed"]
-    seed_doc_id = flask.request.json['seed_doc_id']
-    temperature = float(flask.request.json['temperature'])
-    max_seq_len = int(flask.request.json['max_seq_len'])
-    try:
-        timestamp = datetime.utcnow()
-        hyps = app.synthesizer.sample(
-            model_name=model,
-            seed_texts=None if not seed else [seed],
-            temperature=temperature,
-            batch_size=app.config.get('DEFAULTS', {}).get('batch_size', 3),
-            ignore_eos=app.config.get('DEFAULTS', {}).get('ignore_eos', False),
-            max_seq_len=max_seq_len,
-            max_tries=1)
-        generation_id = str(uuid.uuid4())
-        for hyp in hyps:
-            generation = Generation(
-                generation_id=generation_id,
-                user_id=user_id,
-                seed_doc_id=seed_doc_id,
-                model=model,
-                seed=seed or '',
+    with app.app_context():
+        app.synthesizer.load(model_names=(model, ))  # maybe load model
+        try:
+            timestamp = datetime.utcnow()
+            hyps = app.synthesizer.sample(
+                model_name=model,
+                seed_texts=None if not seed else [seed],
                 temperature=temperature,
+                batch_size=app.config.get('DEFAULTS', {}).get('batch_size', 3),
+                ignore_eos=app.config.get('DEFAULTS', {}).get('ignore_eos', False),
                 max_seq_len=max_seq_len,
-                text=hyp['text'],
-                timestamp=timestamp)
-            db.session.add(generation)
-            db.session.flush()  # ensure generation gets the id
-            hyp['id'] = generation.id
-            hyp["generation_id"] = generation_id
-            hyp["timestamp"] = timestamp
-            hyp["model"] = model
-        db.session.commit()
-        elapsed = round((datetime.utcnow() - timestamp).total_seconds(), 2)
-        return flask.jsonify(status='OK',
-                             hyps=hyps,
-                             seed=seed,
-                             model=model,
-                             elapsed=elapsed)
-    except Exception as e:
-        if app.debug is True:
-            raise e
-        return flask.jsonify(status='Error', message=str(e)), 500
+                max_tries=1)
+            generation_id = str(uuid.uuid4())
+            for hyp in hyps:
+                generation = Generation(
+                    generation_id=generation_id,
+                    user_id=user_id,
+                    seed_doc_id=seed_doc_id,
+                    model=model,
+                    seed=seed or '',
+                    temperature=temperature,
+                    max_seq_len=max_seq_len,
+                    text=hyp['text'],
+                    timestamp=timestamp)
+                db.session.add(generation)
+                db.session.flush()  # ensure generation gets the id
+                hyp['id'] = generation.id
+                hyp["generation_id"] = generation_id
+                hyp["timestamp"] = timestamp
+                hyp["model"] = model
+            db.session.commit()
+            elapsed = round((datetime.utcnow() - timestamp).total_seconds(), 2)
+            return {'status': 'OK', 'hyps': hyps, 'seed': seed, 'model': model, 'elapsed': elapsed}
+        except Exception as e:
+            if app.debug is True:
+                raise e
+            return {'status': 'Error', 'message': str(e), 'code': 500}
 
 
 # WebSockets
@@ -487,7 +549,7 @@ def reset():
         if user is None:
             form.email.errors = ('Opgegeven email-adres is onbekend.')
             return flask.render_template('reset.html', form=form)
-        subject = "Wachtwoord vergeten"
+        subject = "Wachtwoord vergeten?"
         token = ts.dumps(user.username, salt='recover-key')
 
         recover_url = flask.url_for('reset_with_token', token=token, _external=True)

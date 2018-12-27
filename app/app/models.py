@@ -1,4 +1,3 @@
-
 import datetime
 import json
 
@@ -111,6 +110,13 @@ class Text(db.Model):
     doc_id = db.Column(db.Integer)
     text = db.Column(JSONEncodedDict)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer)
+    task_id = db.Column(db.String(120))
+    is_active = db.Column(db.SmallInteger, default=False)
 
 
 class Edit(db.Model):

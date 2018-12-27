@@ -21,17 +21,7 @@ function NBSP(props) {
 
 function LoadingApp(props) {
   return (
-    <RB.Grid>
-      <RB.Row>
-	<RB.Col md={2}/>
-	<RB.Col md={8}>
-	  <RB.Jumbotron style={{backgroundColor:"#f5f5f5"}}>
-	    <h2>Loading...</h2>
-	  </RB.Jumbotron>
-	</RB.Col>
-	<RB.Col md={2}/>
-      </RB.Row>
-    </RB.Grid>
+      <div>LOADING</div>
   );
 }
 
@@ -78,6 +68,25 @@ function shortenSeed(seed, maxLength){
 }
 
 
+function check_generation_status(status_url, success, error) {
+  $.ajax({
+    // contentType: 'application/json;charset=UTF-8',
+    url: status_url,
+    type: 'GET',
+    // dataType: 'json',
+    success: function (data) {
+      if (data.status === 'OK') {
+        success(data);
+      } else {
+        setTimeout(function() {
+          check_generation_status(status_url, success, error);
+        }, 2000); // timeout for two seconde before polling again.
+      }
+    },
+    error: error
+  })
+}
+
 // AJAX stuff
 /**
  * seed: str
@@ -98,10 +107,15 @@ function launchGeneration(seed, model, appState, success, error) {
 			  max_seq_len: maxSeqLen}),
     type: 'POST',
     dataType: 'json',
-    success: success,
+    success: function (data, status, request) {
+      var status_url = request.getResponseHeader('Location');
+      status_url = "/status/" + status_url.split("/status/")[1];
+      check_generation_status(status_url, success, error);
+    },
     error: error
   });
 }
+
 
 /**
  * doc_id: int
@@ -135,7 +149,6 @@ function createDoc(screenName, success, error) {
     error: (response) => error(response)
   });
 }
-
 
 /**
  * text: json

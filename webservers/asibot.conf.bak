@@ -1,0 +1,15 @@
+server {
+    listen 80;
+    server_name 18.216.97.188;
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/home/ubuntu/weasimov-public/app/weasimov.sock;
+    }
+
+    location ~* .(js|css|ico|png)$ {
+        root /home/ubuntu/weasimov-public/app/;
+        expires 365d;
+    }
+
+}

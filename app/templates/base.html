@@ -3,22 +3,26 @@
   <head>
    <meta charset="utf-8">
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-   <title>WeAsimov</title>
+   <title>AsiBot</title>
    <meta name="viewport" content="width=device-width, initial-scale=1">
    <!-- Favicon -->
    <link rel="shortcut icon" href="{{ url_for('.static', filename='favicon.ico') }}">
    <!-- Stylesheets -->
-   <link rel="stylesheet" href="{{ url_for('.static', filename='css/vendor/draft.css') }}">
-   <link rel="stylesheet" href="{{ url_for('.static', filename='css/vendor/rc-slider.css') }}">
-   <link rel="stylesheet" href="{{ url_for('.static', filename='css/vendor/bootstrap.min.css') }}">
-   <link rel="stylesheet" href="{{ url_for('.static', filename='css/vendor/font-awesome.min.css') }}">
-   <link rel="stylesheet" href="{{ url_for('.static', filename='css/vendor/spinners.css') }}">
-   <link rel="stylesheet" href="{{ url_for('.static', filename='css/main.css') }}">
+   <link rel="stylesheet" href="{{ url_for('.static', filename='css/_main.css') }}">
    <!-- Jquery -->
    <script src="static/js/vendor/jquery-3.2.1.min.js"> </script>
   </head>
   <body>
       {% block content %}
       {% endblock %}
+
+      <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-109154526-1"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-109154526-1');
+      </script>
   </body>
 </html>

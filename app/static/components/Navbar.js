@@ -172,75 +172,61 @@ class Navbar extends React.Component {
     this.toggleNewDocModal = () => this.setState({showNewDocModal: !this.state.showNewDocModal});
     this.toggleRemoveDocModal = () => {
       if (Object.keys(this.props.docs).length === 1) {
-	console.log("This is your last doc, you can't remove it");
-	return;
+        console.log("This is your last doc, you can't remove it");
+        return;
       }
       this.setState({showRemoveDocModal: !this.state.showRemoveDocModal});
     };
     this.toggleDropdown = (newValue) => {
       this.setState({
-	dropdownOpen: (newValue === null) ? !this.state.dropdownOpen : newValue
+        dropdownOpen: (newValue === null) ? !this.state.dropdownOpen : newValue
       });
     };
+    this.togglecredits = () => {
+      $("body").removeClass("menu");
+      $("body").toggleClass("credits");
+    }
+    this.togglehelp = () => {
+      $("body").removeClass("menu");
+      $("body").toggleClass("help");
+    }
+    this.togglemenu = () => {
+      $("body").toggleClass("menu");
+    }
+    this.toggleasibot = () => {
+      $("body").toggleClass("asibotopen");
+    }
     this.onSelectDoc = (docId) => {
       if (docId === this.props.activeDoc) { // don't do anything if selecting same doc
-	this.toggleDropdown(false);
-      } else {
-  this.props.onSelectDoc(docId);
-  this.toggleDropdown(false);
+        this.toggleDropdown(false);
+            } else {
+        this.props.onSelectDoc(docId);
+        this.toggleDropdown(false);
       }
     };
   }
 
+  
+
   render() {
     return (
-      <RB.Navbar>
-	<NewDocModal
-	   show={this.state.showNewDocModal}
-	   close={this.toggleNewDocModal}
-	   onSubmit={this.props.onSubmitNewDoc}/>
-	<RemoveDocModal
-	   show={this.state.showRemoveDocModal}
-	   close={this.toggleRemoveDocModal}
-	   doc={this.props.docs[this.props.activeDoc]}
-	   onSubmit={this.props.onSubmitRemoveDoc}/>
-	<RB.Navbar.Header>
-	  <RB.Navbar.Brand>
-            <a href="#">AsiBot</a>
-	  </RB.Navbar.Brand>
-	  <RB.Navbar.Toggle/>
-	</RB.Navbar.Header>
-	<RB.Navbar.Collapse>
-	  <RB.ButtonGroup style={{marginTop:"7px", display: "inline-flex"}}>
-	    <ScreenNameInput
-	       screenName={this.props.docs[this.props.activeDoc].screen_name}
-	       onSubmit={this.props.onSubmitScreenName}/>
-	    <RB.DropdownButton
-	       title=" "
-	       id="nav-dropdown"
-	       open={this.state.dropdownOpen}
-	       onToggle={this.toggleDropdown}
-	       style={{zIndex: 9999999}}
-	       pullRight>
-	      {makeDocItems(this.props.docs, this.props.activeDoc, this.onSelectDoc)}
-	    </RB.DropdownButton>
-	    <RB.Button onClick={this.toggleNewDocModal}>
-	      <i className="fa fa-file" style={{fontSize: "16px"}}/>
-	    </RB.Button>
-	    <RB.Button onClick={this.toggleRemoveDocModal}>
-	      <i className="fa fa-trash-o" style={{fontSize: "16px"}}/>
-	    </RB.Button>
-	  </RB.ButtonGroup>
-	  <RB.ButtonGroup className="pull-right" style={{marginTop:"7px"}}>
-	    <RB.Button href={(this.props.isMonitor) ? "/monitor" : null}>
-	      {this.props.username || "loading"}
-            </RB.Button>
-	    <RB.Button href="logout">
-	      <i className="fa fa-sign-out" style={{fontSize: "16px"}}/>
-            </RB.Button>
-	  </RB.ButtonGroup>
-	</RB.Navbar.Collapse>
-      </RB.Navbar>
+      <div id="navbar">
+        <RB.Button className="menutoggle" onClick={this.togglemenu}>MENU</RB.Button>
+        <RB.Button onClick={this.toggleasibot} className="asibotsuggesties right">
+            AsiBot suggesties
+            <i className="fa fa-caret-right" style={{fontSize: "16px"}}/>
+          </RB.Button>
+        <div id="burgerfold">
+          <RB.Button className="mobilehide">Asibot</RB.Button>
+          <RB.Button onClick={this.togglecredits}>credits</RB.Button>
+          <RB.Button onClick={this.togglehelp}>help</RB.Button>
+          <RB.Button className="mobilehide right" href={(this.props.isMonitor) ? "/monitor" : null}>
+            {this.props.username || "loading"}
+          </RB.Button>
+          <RB.Button href="https://www.ad.nl/binnenland/schrijfwedstrijd-iedereen-maakt-kans-dankzij-robot~ae88229b/" target="_blank" className="right">schrijfwedstrijd</RB.Button>
+          <RB.Button href="logout" className="right">uitloggen</RB.Button>
+        </div>
+      </div>
     );
   }
 }

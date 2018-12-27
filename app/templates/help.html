@@ -1,0 +1,29 @@
+<div id="help" class="overlay">
+    <div id="close" class='sluitcredits'>sluit</div>
+    <div id='wrap'>
+        <p>Voor een goede samenwerking met AsiBot, raden we aan eerst zelf te beginnen met schrijven in het tekstveld. Met name halverwege een zin kan AsiBot met interessante suggesties komen.</p>
+        <p>Je kunt de suggesties iets sturen door middel van drie parameters:</p>
+        <ul>
+            <li>Het type robot. Klik hiervoor op een van de namen aan de rechterzijde;</li>
+            <li>De creativiteit (Elke robot reageert net iets anders op de waarde. We raden 0.35 als startwaarde aan.);</li>
+            <li>Het aantal letters (inclusief spaties en interpunctie).</li>
+        </ul>
+        <p>Klik op "genereer suggesties" en heb vervolgens wat geduld... AsiBot berekend nu nieuwe suggesties op basis van de laatste 100 letters (inclusief spaties en interpunctie) die <i><u>vóór je cursor</u></i> staan in het tekstveld.</p>
+
+        <p>De robots zijn op verschillende datacollecties getraind. Zo is "Ik, Robot" getraind op de verhalen in
+        <em>Ik, Robot</em>, en zijn Revimov en Nescimov getraind op respectievelijk Gerard Reve en Nescio in combinatie met het 
+        werk van Isaac Asimov. De K. Hembot is getraind op het werk van Kristien Hemmerechts en Asimov, en de Robhart-bot put inspiratie uit een combinatie van Ronald Giphart en <em>Ik, Robot</em>. (De gewone Giphart-bot werkt overigens iets beter.).</p>
+        
+        <p>De berekeningen zijn niet eenvoudig en vragen veel rekenkracht van de servers. Dit betekent dat het laden van de suggesties op drukke momenten best even kan duren. Duurt het te lang, kom dan op een ander moment terug.</p>
+            
+        <p>Als nieuwe suggesties zijn geladen, kun je er een invoegen door op de gewenste tekst te klikken. Zijn ze niet naar wens, dan kun je het gerust nog eens proberen, of er een invoegen en de tekst naar eigen idee aanpassen.</p>
+        
+        <p>Voor vragen en/of opmerkingen kunt u contact opnemen via <a href="mailto:weasimov@gmail.com">weasimov@gmail.com</a>.</p>
+    </div>
+    <script>
+        $(".sluitcredits").on("click",function(){
+            $("body").removeClass("help");
+        });
+        // $("body").addClass("help");
+    </script>
+</div>

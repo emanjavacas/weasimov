@@ -1,0 +1,223 @@
+.opening {
+	position:absolute;
+	@include gr($red,$red2,$red);
+	top:0;
+	left:0;
+	width:100%;
+	min-height:100%;
+	overflow: hidden;
+	padding-bottom:8rem;
+	a {
+		color:#fff;
+		text-decoration: underline;
+	}
+	.topbar {
+		background:transparent;
+		width:100%;
+		text-align: left;
+		padding:3rem;
+		margin-bottom:2rem;
+		.logo {
+			display: inline-block;
+			margin:0rem;
+			margin-right:2rem;
+			height:5rem;
+			width:5rem;
+			background-repeat: no-repeat;
+			background-position: center;
+			background-size: contain;
+			// vertical-align: bottom;
+			vertical-align: middle;
+			&.nlleest {
+				background-image: url("images/NLL-logo.png");
+			}
+			&.algdag {
+				background-image: url("images/algemeendagbladlogo.png");
+			}
+		}
+		.credits,
+		.loginlink {
+			color:rgba(#fff,0.5);
+			text-decoration: none;
+			font-size:2rem;
+			vertical-align: middle;
+			&:hover {
+				color:#fff;
+			}
+		}
+		.credits {
+			cursor:pointer;
+			height:auto;
+			vertical-align: middle;
+		}
+		.loginlink {
+			float:right;
+			margin:1rem;
+			
+		}
+		@media (max-width:800px){
+			padding:1rem;
+			.logo {
+				width:3rem;
+				height:3rem;
+			}
+			.loginlink {
+				margin:.5rem;
+				font-size:1.5rem;
+			}
+			.credits {
+				font-size:1.5rem;
+				height:auto;
+			}
+		}
+	}
+	.kop {
+		color:#fff;
+		min-height:200px;
+		.vcenter {
+			display:inline-block;
+			vertical-align: middle;
+			float:none;
+		}
+		h1 {
+			font-size:4em;
+		}
+		h6 {
+			margin: 1em auto 1em auto;
+			font-size:1.25em;
+			color: rgba(#fff,0.5);
+			a {
+				color:inherit;
+				cursor: pointer;
+				&:hover {
+					color:#fff;
+				}
+			}
+		}
+	}
+	form {
+		max-width:32rem;
+		margin: 0 auto;
+		padding:1rem;
+		input.form-control {
+			background:darken($red,10);
+			border:0;
+			font-size:2rem;
+			padding:0.25em 1em;
+			height:auto;
+			color:#fff;
+			outline:none;
+			@include placeholder {
+				color:rgba(#fff,0.5);
+			}
+			&:focus {
+				border:0;
+				background:darken($red,15);
+				@include shadow(none);
+			}
+		}
+		.help-block {
+			display: block;
+			padding:0.5em;
+			font-style:italic;
+			color:darken($red,20);
+			text-align: center;
+		}
+		.etc-login-form {
+			color:darken($red,20);
+			text-align: center;
+			a {
+				text-decoration: underline;
+				color:darken($red,20);
+				&:hover {
+					color:darken($red,30);
+				}
+			}
+		}
+		.login-group-checkbox {
+			input {
+				display:none;
+			}
+			label {
+				font-weight:normal;
+				// background:darken($red,10);
+				padding:0em 1em;
+				color:rgba(#000,0.2);
+				cursor:pointer;
+				@include rounded(3px);
+				display:block;
+				margin:0 auto;
+				text-align:center;
+			}
+			input:checked + label {
+				// background:darken($red,15);
+				color:rgba(#000,0.8);
+			}
+		}
+		button {
+			border:0;
+			background:darken($red,10);
+			font-size:2rem;
+			color:rgba(#fff,0.5);
+			padding: 0.25em 1em;
+			margin:1rem auto 2rem auto;
+			display: block;
+			outline:none;
+			&:hover {
+				color:#fff;
+				background:darken($red,15);
+			}
+			&:active { 
+				outline:none;
+			}
+		}
+		#gebruikscheck {
+			margin-right:1rem;
+			font-size:2rem;
+			cursor:pointer;
+			opacity: 0.25;
+			background:darken($red,20);
+			padding:0.25em;
+			@include rounded(3px);
+			width:1.5em;
+			height:1.5em;
+			text-align: center;
+			color:#fff;
+			vertical-align: middle;
+			&:before {
+				content:"";
+			}
+			&:hover {
+				opacity:1;
+			}
+		}
+		#gebruiksvoorwaarden {
+			display:none;
+			~ button {
+				opacity:0.5;
+				pointer-events: none;
+			}
+			~ #checktext {
+				display:inline-block;
+				color:#fff;
+				opacity: 0.5;
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+			}
+		}
+		#gebruiksvoorwaarden:checked {
+			~ label {
+				&:before {
+					content:"\f00c";
+				}
+			}
+			~ button {
+				opacity:1;
+				color:#fff;
+				pointer-events: auto;
+			}
+		}
+	}
+}

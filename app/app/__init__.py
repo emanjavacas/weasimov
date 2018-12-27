@@ -1,4 +1,4 @@
-
+import os
 from .synthesizer import Synthesizer
 from .sentence_sampler import RandomSentenceSampler
 
@@ -9,6 +9,8 @@ from flask_socketio import SocketIO
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 
+from celery import Celery
+
 app = flask.Flask(
     __name__,
     static_folder='../static',
@@ -18,9 +20,17 @@ app = flask.Flask(
 app.config.from_object('config.Config')
 
 # Database
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = "=\x07BoZ\xeb\xb0\x13\x88\xf8mW(\x93}\xe6k\r\xebA\xbf\xff\xb1v"
 db = SQLAlchemy(app)
+
+# mail
+mail = Mail(app)
+
+# celery
+celery = Celery(
+    __name__,
+    broker=os.environ.get('CELERY_BROKER_URL', 'redis://'),
+    backend=os.environ.get('CELERY_BROKER_URL', 'redis://'))
+celery.config_from_object('celeryconfig')
 
 # Login Manager
 lm = LoginManager()
@@ -30,9 +40,6 @@ lm.login_view = 'register'
 
 # bcrypt
 bcrypt = Bcrypt(app)
-
-# mail
-mail = Mail(app)
 
 # Services
 model_dir = app.config['MODEL_DIR']
@@ -46,6 +53,6 @@ app.synthesizer = Synthesizer(
     sentence_sampler=sentence_sampler)
 
 # WebSockets
-socketio = SocketIO(app)
+socketio = SocketIO(app) #  message_queue=app.config['SOCKETIO_MESSAGE_QUEUE'],  async_mode='threading')
 
 from app import views, models

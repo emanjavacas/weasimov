@@ -1,0 +1,39 @@
+<!-- extend from base layout -->
+{% extends "base.html" %} {% block content %}
+
+<div class="text-center opening">
+    <div class='topbar'>
+        <a href='http://www.nederlandleest.nl' class='logo nlleest' target="_blank"></a>
+        <a class='logo credits' id="togglecredits">credits</a>
+        <a href='/register' class='loginlink'>registreer</a>
+        <script>
+            $("#togglecredits").on("click", function () {
+                $("body").toggleClass("credits");
+            });
+        </script>
+    </div>
+    <div class="row kop">
+        <div class='vcenter'>
+            <h1>Disclaimer</h1>
+            <h3>Ga akkoord met de gebruiksvoorwaarden</h3>
+            <h6>
+                <p style="margin: 0 auto; max-width: 64rem; padding:1rem;">Door gebruik te maken van de applicatie, hierna te benoemen AsiBot op
+                    <a href="http://www.asibot.nl" target="_blank">www.asibot.nl</a>, geeft u expliciet toestemming om uw persoonsgegevens (in versleutelde vorm) en schrijfdata integraal
+                    en voor onbeperkte tijd op te slaan, te analyseren en te publiceren ten behoeve van wetenschappelijke onderzoeksdoeleinden.</p>
+                
+                <p style="margin: 0 auto; max-width: 64rem; padding:1rem; ">Uw data worden in versleutelde vorm opgeslagen, dit houdt in dat de gegevens door de onderzoekers niet zijn te herleiden
+                    tot uw persoon (pseudonimisering). Deze pseudonimisering is alleen ongedaan te maken met behulp van de sleutel, welke
+                    in het bezit is van het Meertens Instituut, Amsterdam. De pseudonimiserig wordt alleen ongedaan gemaakt als de gebruiker
+                    daarom vraagt of als geautomatiseerd contact opgenomen wordt met de gebruiker.</p>
+                
+                <p style="margin: 0 auto; max-width: 64rem; padding:1rem;">De wetenschappelijke onderzoeksdoeleinden vallen onder een <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.nl" target="_blank">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA
+                    4.0) licentie</a>. Hetzelfde geldt voor de teksten die met
+                    AsiBot zijn geschreven. Deze gegevens zullen enkel voor wetenschappelijke onderzoeksdoeleinden worden aangewend en deze
+                    activiteiten hebben geen commercieel oogmerk. Voorts gelden de voorwaarden en condities geformuleerd in de algemene voorwaarden
+                    van de <a href="https://www.cpnb.nl/privacybeleid" target="_blank">Stichting Collectieve Propaganda van het Nederlandse Boek</a>.</p>
+            </h6>
+        </div>
+    </div>
+ {% include "credits.html" %}
+</div>
+{% endblock %}

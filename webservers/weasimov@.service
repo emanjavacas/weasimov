@@ -1,0 +1,15 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+PartOf=weasimov.target
+
+[Service]
+User=ubuntu
+Group=www-data
+EnvironmentFile=-/etc/default/gunicornd
+WorkingDirectory=/home/ubuntu/weasimov-public/app
+ExecStartPre=/home/ubuntu/.pyenv/bin/pyenv local anaconda3-4.4.0
+ExecStart=/home/ubuntu/.pyenv/versions/anaconda3-4.4.0/bin/gunicorn -b 127.0.0.1:%i -w 1 -k eventlet wsgi:app
+
+[Install]
+WantedBy=weasimov.target
