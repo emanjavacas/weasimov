@@ -1,2 +1,4 @@
 # weasimov
-Code for the "Ik, Robot" project
+Code for the "AsiBot" project.
+
+https://platformdh.uantwerpen.be/index.php/projects/asibot/
